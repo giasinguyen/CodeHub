@@ -100,4 +100,72 @@ export const authAPI = {
   changePassword: (passwords) => api.put('/users/profile/password', passwords),
 };
 
+// Snippets API methods
+export const snippetsAPI = {
+  // Get all snippets with pagination
+  getSnippets: (page = 0, size = 10, sort = 'createdAt,desc') => 
+    api.get(`/snippets?page=${page}&size=${size}&sort=${sort}`),
+  
+  // Get snippet by ID
+  getSnippetById: (id) => api.get(`/snippets/${id}`),
+  
+  // Search snippets
+  searchSnippets: (query, page = 0, size = 10) => 
+    api.get(`/snippets/search?q=${encodeURIComponent(query)}&page=${page}&size=${size}`),
+  
+  // Get trending snippets
+  getTrendingSnippets: (type = 'most-liked', page = 0, size = 10) => 
+    api.get(`/snippets/trending/${type}?page=${page}&size=${size}`),
+  
+  // Create new snippet
+  createSnippet: (snippetData) => api.post('/snippets', snippetData),
+  
+  // Update snippet
+  updateSnippet: (id, snippetData) => api.put(`/snippets/${id}`, snippetData),
+  
+  // Delete snippet
+  deleteSnippet: (id) => api.delete(`/snippets/${id}`),
+  
+  // Like/unlike snippet
+  toggleLike: (id) => api.post(`/snippets/${id}/like`),
+  
+  // Get like status
+  getLikeStatus: (id) => api.get(`/snippets/${id}/like/status`),
+  
+  // Get comments
+  getComments: (id, page = 0, size = 10) => 
+    api.get(`/snippets/${id}/comments?page=${page}&size=${size}`),
+  
+  // Add comment
+  addComment: (id, commentData) => api.post(`/snippets/${id}/comments`, commentData),
+  
+  // Delete comment
+  deleteComment: (snippetId, commentId) => 
+    api.delete(`/snippets/${snippetId}/comments/${commentId}`),
+  
+  // Get available languages
+  getLanguages: () => api.get('/snippets/languages'),
+  
+  // Get available tags
+  getTags: () => api.get('/snippets/tags'),
+};
+
+// Users API methods
+export const usersAPI = {
+  // Get all users
+  getUsers: (page = 0, size = 10) => 
+    api.get(`/users?page=${page}&size=${size}`),
+  
+  // Get user by ID
+  getUserById: (id) => api.get(`/users/${id}`),
+  
+  // Get user snippets
+  getUserSnippets: (id, page = 0, size = 10) => 
+    api.get(`/users/${id}/snippets?page=${page}&size=${size}`),
+  
+  // Get current user snippets
+  getCurrentUserSnippets: (page = 0, size = 10) => 
+    api.get(`/users/profile/snippets?page=${page}&size=${size}`),
+};
+
 export default apiClient;

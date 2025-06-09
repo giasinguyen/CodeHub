@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -13,69 +13,128 @@ import {
   Clock,
   Eye
 } from 'lucide-react';
-import { Button, Card } from '../components/ui';
+import { Button, Card, Loading } from '../components/ui';
+import { snippetsAPI } from '../services/api';
 
 const Home = () => {
-  // Mock data for featured snippets
-  const featuredSnippets = [
-    {
-      id: 1,
-      title: 'React Custom Hook for API Calls',
-      description: 'A reusable custom hook for handling API requests with loading states and error handling.',
-      language: 'JavaScript',
-      languageColor: '#f7df1e',
-      author: 'john_doe',
-      authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=john',
-      views: 1234,
-      stars: 45,
-      forks: 12,
-      createdAt: '2 days ago',
-      tags: ['React', 'Hooks', 'API']
-    },
-    {
-      id: 2,
-      title: 'Python Data Validation Decorator',
-      description: 'Clean and efficient data validation using Python decorators for function parameters.',
-      language: 'Python',
-      languageColor: '#3776ab',
-      author: 'jane_smith',
-      authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jane',
-      views: 892,
-      stars: 32,
-      forks: 8,
-      createdAt: '1 week ago',
-      tags: ['Python', 'Validation', 'Decorators']
-    },
-    {
-      id: 3,
-      title: 'CSS Grid Auto-fit Layout',
-      description: 'Responsive grid layout that automatically adjusts columns based on screen size.',
-      language: 'CSS',
-      languageColor: '#1572b6',
-      author: 'design_guru',
-      authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=design',
-      views: 567,
-      stars: 28,
-      forks: 15,
-      createdAt: '3 days ago',
-      tags: ['CSS', 'Grid', 'Responsive']
-    }
-  ];
+  const [featuredSnippets, setFeaturedSnippets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [languages, setLanguages] = useState([]);
 
+  // Load featured snippets from API
+  useEffect(() => {
+    const loadFeaturedSnippets = async () => {
+      try {
+        setLoading(true);
+        // Get trending snippets
+        const response = await snippetsAPI.getTrendingSnippets('most-liked', 0, 6);
+        
+        if (response.data && response.data.content) {
+          // Transform API data to match component expectations
+          const transformedSnippets = response.data.content.map(snippet => ({
+            id: snippet.id,
+            title: snippet.title,
+            description: snippet.description,
+            language: snippet.language,
+            languageColor: getLanguageColor(snippet.language),
+            author: snippet.owner?.username || 'Anonymous',
+            authorAvatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${snippet.owner?.username || 'anonymous'}`,
+            views: snippet.viewCount || 0,
+            stars: snippet.likeCount || 0,
+            forks: 0, // Not available in current API
+            createdAt: formatTimeAgo(snippet.createdAt),
+            tags: snippet.tags || []
+          }));
+          
+          setFeaturedSnippets(transformedSnippets);
+        }
+      } catch (error) {
+        console.error('Error loading featured snippets:', error);
+        // Fallback to empty array if API fails
+        setFeaturedSnippets([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const loadLanguages = async () => {
+      try {
+        const response = await snippetsAPI.getLanguages();
+        if (response.data) {
+          const transformedLanguages = response.data.map(lang => ({
+            name: lang.name,
+            color: getLanguageColor(lang.name),
+            count: lang.count || 0
+          }));
+          setLanguages(transformedLanguages);
+        }
+      } catch (error) {
+        console.error('Error loading languages:', error);
+        // Fallback to default languages
+        setLanguages([
+          { name: 'JavaScript', color: '#f7df1e', count: 2340 },
+          { name: 'Python', color: '#3776ab', count: 1890 },
+          { name: 'TypeScript', color: '#3178c6', count: 1456 },
+          { name: 'Java', color: '#ed8b00', count: 1234 },
+          { name: 'CSS', color: '#1572b6', count: 987 },
+          { name: 'PHP', color: '#777bb4', count: 876 }
+        ]);
+      }
+    };
+
+    loadFeaturedSnippets();
+    loadLanguages();
+  }, []);
+
+  // Helper function to get language color
+  const getLanguageColor = (language) => {
+    const colors = {
+      'JavaScript': '#f7df1e',
+      'TypeScript': '#3178c6',
+      'Python': '#3776ab',
+      'Java': '#ed8b00',
+      'CSS': '#1572b6',
+      'HTML': '#e34f26',
+      'PHP': '#777bb4',
+      'C++': '#00599c',
+      'C#': '#239120',
+      'Go': '#00add8',
+      'Rust': '#000000',
+      'Ruby': '#cc342d',
+      'Swift': '#fa7343',
+      'Kotlin': '#7f52ff',
+      'Dart': '#0175c2',
+      'SQL': '#336791',
+      'Shell': '#89e051',
+      'JSON': '#000000',
+      'XML': '#0060ac',
+      'YAML': '#cb171e'
+    };
+    return colors[language] || '#6b7280';
+  };
+
+  // Helper function to format time ago
+  const formatTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'just now';
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) return `${diffInWeeks} weeks ago`;
+    
+    return date.toLocaleDateString();
+  };
   const stats = [
     { label: 'Code Snippets', value: '10,000+', icon: Code2 },
     { label: 'Active Developers', value: '5,000+', icon: Users },
     { label: 'Programming Languages', value: '50+', icon: BookOpen },
     { label: 'Stars Given', value: '25,000+', icon: Star }
-  ];
-
-  const languages = [
-    { name: 'JavaScript', color: '#f7df1e', count: 2340 },
-    { name: 'Python', color: '#3776ab', count: 1890 },
-    { name: 'TypeScript', color: '#3178c6', count: 1456 },
-    { name: 'Java', color: '#ed8b00', count: 1234 },
-    { name: 'CSS', color: '#1572b6', count: 987 },
-    { name: 'PHP', color: '#777bb4', count: 876 }
   ];
 
   return (
@@ -157,90 +216,98 @@ const Home = () => {
             <p className="text-slate-400 max-w-2xl mx-auto">
               Discover the most popular and useful code snippets shared by our community
             </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredSnippets.map((snippet, index) => (
-              <motion.div
-                key={snippet.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className="h-full hover:scale-105 transition-transform duration-300">
-                  <Card.Header>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: snippet.languageColor }}
-                        ></div>
-                        <span className="text-sm text-slate-400">{snippet.language}</span>
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-slate-400">
-                        <div className="flex items-center space-x-1">
-                          <Eye className="w-4 h-4" />
-                          <span>{snippet.views}</span>
+          </motion.div>          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {loading ? (
+              <div className="col-span-full flex justify-center">
+                <Loading size="lg" />
+              </div>
+            ) : featuredSnippets.length > 0 ? (
+              featuredSnippets.map((snippet, index) => (
+                <motion.div
+                  key={snippet.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="h-full hover:scale-105 transition-transform duration-300">
+                    <Card.Header>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: snippet.languageColor }}
+                          ></div>
+                          <span className="text-sm text-slate-400">{snippet.language}</span>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4" />
-                          <span>{snippet.stars}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <h3 className="text-lg font-semibold text-white mb-2">
-                      {snippet.title}
-                    </h3>
-                    <p className="text-slate-400 text-sm line-clamp-2">
-                      {snippet.description}
-                    </p>
-                  </Card.Header>
-
-                  <Card.Content>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {snippet.tags.map((tag, tagIndex) => (
-                        <span
-                          key={tagIndex}
-                          className="px-2 py-1 bg-slate-700 text-xs text-slate-300 rounded-md"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </Card.Content>
-
-                  <Card.Footer>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={snippet.authorAvatar}
-                          alt={snippet.author}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <div>
-                          <div className="text-sm font-medium text-white">
-                            {snippet.author}
+                        <div className="flex items-center space-x-4 text-sm text-slate-400">
+                          <div className="flex items-center space-x-1">
+                            <Eye className="w-4 h-4" />
+                            <span>{snippet.views}</span>
                           </div>
-                          <div className="flex items-center space-x-1 text-xs text-slate-400">
-                            <Clock className="w-3 h-3" />
-                            <span>{snippet.createdAt}</span>
+                          <div className="flex items-center space-x-1">
+                            <Star className="w-4 h-4" />
+                            <span>{snippet.stars}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm">
-                          <GitFork className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Star className="w-4 h-4" />
-                        </Button>
+                      <h3 className="text-lg font-semibold text-white mb-2">
+                        {snippet.title}
+                      </h3>
+                      <p className="text-slate-400 text-sm line-clamp-2">
+                        {snippet.description}
+                      </p>
+                    </Card.Header>
+
+                    <Card.Content>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {snippet.tags.map((tag, tagIndex) => (
+                          <span
+                            key={tagIndex}
+                            className="px-2 py-1 bg-slate-700 text-xs text-slate-300 rounded-md"
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       </div>
-                    </div>
-                  </Card.Footer>
-                </Card>
-              </motion.div>
-            ))}
+                    </Card.Content>
+
+                    <Card.Footer>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={snippet.authorAvatar}
+                            alt={snippet.author}
+                            className="w-8 h-8 rounded-full"
+                          />
+                          <div>
+                            <div className="text-sm font-medium text-white">
+                              {snippet.author}
+                            </div>
+                            <div className="flex items-center space-x-1 text-xs text-slate-400">
+                              <Clock className="w-3 h-3" />
+                              <span>{snippet.createdAt}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button variant="ghost" size="sm">
+                            <GitFork className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Star className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card.Footer>
+                  </Card>
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-slate-400">No featured snippets available at the moment.</p>
+              </div>
+            )}
           </div>
 
           <div className="text-center mt-12">

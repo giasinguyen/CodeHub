@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Home,
   Code2,
@@ -11,47 +11,49 @@ import {
   Clock,
   Tag,
   Settings,
-} from 'lucide-react';
+} from "lucide-react";
 
-const Sidebar = ({ className = '' }) => {
+const Sidebar = ({ className = "" }) => {
   const location = useLocation();
   const menuItems = [
     {
-      section: 'Explore',
+      section: "Explore",
       items: [
-        { icon: Home, label: 'Home', path: '/' },
-        { icon: Code2, label: 'Code Snippets', path: '/snippets' },
-        { icon: Users, label: 'Developers', path: '/users' },
-        { icon: TrendingUp, label: 'Trending', path: '/trending' },
+        { icon: Home, label: "Home", path: "/" },
+        { icon: Code2, label: "Code Snippets", path: "/snippets" },
+        { icon: Users, label: "Developers", path: "/users" },
+        { icon: TrendingUp, label: "Trending", path: "/trending" },
       ],
     },
     {
-      section: 'Collection',
+      section: "Collection",
       items: [
-        { icon: BookOpen, label: 'My Snippets', path: '/my-snippets' },
-        { icon: Star, label: 'Favorites', path: '/favorites' },
-        { icon: Clock, label: 'Recent', path: '/recent' },
+        { icon: BookOpen, label: "My Snippets", path: "/my-snippets" },
+        { icon: Star, label: "Favorites", path: "/favorites" },
+        { icon: Clock, label: "Recent", path: "/recent" },
       ],
     },
     {
-      section: 'Categories',
+      section: "Categories",
       items: [
-        { icon: Tag, label: 'JavaScript', path: '/tags/javascript' },
-        { icon: Tag, label: 'Python', path: '/tags/python' },
-        { icon: Tag, label: 'React', path: '/tags/react' },
-        { icon: Tag, label: 'Node.js', path: '/tags/nodejs' },
-        { icon: Tag, label: 'CSS', path: '/tags/css' },
+        { icon: Tag, label: "JavaScript", path: "/tags/javascript" },
+        { icon: Tag, label: "Python", path: "/tags/python" },
+        { icon: Tag, label: "React", path: "/tags/react" },
+        { icon: Tag, label: "Node.js", path: "/tags/nodejs" },
+        { icon: Tag, label: "CSS", path: "/tags/css" },
       ],
     },
   ];
 
   const isActivePath = (path) => {
-    if (path === '/') return location.pathname === '/';
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
   return (
-    <aside className={`w-64 bg-slate-900/50 border-r border-slate-700 ${className}`}>
+    <aside
+      className={`w-64 bg-slate-900/50 border-r border-slate-700 ${className}`}
+    >
       <div className="h-full overflow-y-auto py-6">
         <div className="px-4 space-y-8">
           {menuItems.map((section, sectionIndex) => (
@@ -69,9 +71,10 @@ const Sidebar = ({ className = '' }) => {
                       className={`
                         relative flex items-center space-x-3 px-3 py-2 rounded-lg
                         transition-all duration-200 group
-                        ${isActive
-                          ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                        ${
+                          isActive
+                            ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                            : "text-slate-300 hover:text-white hover:bg-slate-800"
                         }
                       `}
                     >
@@ -81,14 +84,20 @@ const Sidebar = ({ className = '' }) => {
                           layoutId="sidebar-indicator"
                         />
                       )}
-                      
-                      <item.icon className={`
+
+                      <item.icon
+                        className={`
                         w-5 h-5 transition-colors
-                        ${isActive ? 'text-cyan-400' : 'text-slate-400 group-hover:text-white'}
-                      `} />
-                      
+                        ${
+                          isActive
+                            ? "text-cyan-400"
+                            : "text-slate-400 group-hover:text-white"
+                        }
+                      `}
+                      />
+
                       <span className="text-sm font-medium">{item.label}</span>
-                      
+
                       {isActive && (
                         <motion.div
                           className="ml-auto w-2 h-2 bg-cyan-400 rounded-full"
@@ -103,7 +112,7 @@ const Sidebar = ({ className = '' }) => {
               </nav>
             </div>
           ))}
-        </div>        {/* Quick Actions */}
+        </div>
         <div className="px-4 mt-8">
           <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-4">
             <h4 className="text-sm font-semibold text-cyan-400 mb-2">
@@ -121,7 +130,6 @@ const Sidebar = ({ className = '' }) => {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="px-4 mt-8 pt-8 border-t border-slate-700">
           <Link
             to="/settings"

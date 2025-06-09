@@ -59,7 +59,7 @@ const Navbar = () => {
             <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-2 rounded-lg">
               <Code2 className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-white">CodeHub</span>
+            <span className="text-xl font-bold text-white pr-4">CodeHub</span>
           </Link>
 
           {/* Desktop Navigation */}

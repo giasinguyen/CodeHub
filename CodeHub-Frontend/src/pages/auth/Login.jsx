@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Code2, Eye, EyeOff, Github, Mail } from 'lucide-react';
+import { Code2, Eye, EyeOff, Github, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button, Input, Card } from '../../components/ui';
 
@@ -9,9 +8,8 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  
-  const [formData, setFormData] = useState({
-    email: '',
+    const [formData, setFormData] = useState({
+    username: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -34,14 +32,11 @@ const Login = () => {
       }));
     }
   };
-
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+    if (!formData.username) {
+      newErrors.username = 'Username is required';
     }
     
     if (!formData.password) {
@@ -53,7 +48,6 @@ const Login = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -61,7 +55,7 @@ const Login = () => {
     
     setIsLoading(true);
     try {
-      await login(formData.email, formData.password);
+      await login(formData);
       navigate(from, { replace: true });
     } catch (error) {
       setErrors({
@@ -74,14 +68,8 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center"
-        >
+      <div className="max-w-md w-full space-y-8">        {/* Header */}
+        <div className="text-center">
           <Link to="/" className="inline-flex items-center justify-center space-x-3 mb-6">
             <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-3 rounded-xl">
               <Code2 className="w-8 h-8 text-white" />
@@ -95,27 +83,20 @@ const Login = () => {
           <p className="text-slate-400">
             Sign in to your account to continue
           </p>
-        </motion.div>
-
-        {/* Login Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
+        </div>        {/* Login Form */}
+        <div>
           <Card className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email */}
+            <form onSubmit={handleSubmit} className="space-y-6">{/* Username */}
               <div>
                 <Input
-                  label="Email"
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  label="Username"
+                  type="text"
+                  name="username"
+                  value={formData.username}
                   onChange={handleChange}
-                  placeholder="Enter your email"
-                  icon={Mail}
-                  error={errors.email}
+                  placeholder="Enter your username"
+                  icon={User}
+                  error={errors.username}
                   disabled={isLoading}
                 />
               </div>
@@ -219,25 +200,19 @@ const Login = () => {
                   Sign up
                 </Link>
               </p>
-            </div>
-          </Card>
-        </motion.div>
+            </div>          </Card>
+        </div>
 
         {/* Demo Credentials */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="text-center"
-        >
+        <div className="text-center">
           <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
             <h3 className="text-sm font-semibold text-slate-300 mb-2">Demo Credentials</h3>
             <div className="text-xs text-slate-400 space-y-1">
-              <p>Email: demo@codehub.dev</p>
-              <p>Password: demo123</p>
+              <p>Username: john_doe</p>
+              <p>Password: password123</p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -19,16 +19,11 @@ public class AuthController {
     
     @Autowired
     private AuthService authService;
-    
-    @PostMapping("/login")
+      @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticate user and return JWT token")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        try {
-            AuthResponse authResponse = authService.login(loginRequest);
-            return ResponseEntity.ok(authResponse);
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid username or password");
-        }
+        AuthResponse authResponse = authService.login(loginRequest);
+        return ResponseEntity.ok(authResponse);
     }
     
     @PostMapping("/register")

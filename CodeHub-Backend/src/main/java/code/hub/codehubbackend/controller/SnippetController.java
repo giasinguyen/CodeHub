@@ -110,4 +110,36 @@ public class SnippetController {
         List<String> tags = snippetService.getAvailableTags();
         return ResponseEntity.ok(tags);
     }
+    
+    @GetMapping("/search")
+    @Operation(summary = "Search snippets", description = "Search snippets by keyword in title, description, or code")
+    public ResponseEntity<Page<SnippetResponse>> searchSnippets(
+            @Parameter(description = "Search keyword") @RequestParam String keyword,
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Sort by: newest, oldest, likes, views") @RequestParam(defaultValue = "newest") String sort) {
+        
+        Page<SnippetResponse> snippets = snippetService.searchSnippets(keyword, page, size, sort);
+        return ResponseEntity.ok(snippets);
+    }
+    
+    @GetMapping("/trending/most-liked")
+    @Operation(summary = "Get most liked snippets", description = "Get snippets ordered by like count")
+    public ResponseEntity<Page<SnippetResponse>> getMostLikedSnippets(
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size) {
+        
+        Page<SnippetResponse> snippets = snippetService.getMostLikedSnippets(page, size);
+        return ResponseEntity.ok(snippets);
+    }
+    
+    @GetMapping("/trending/most-viewed")
+    @Operation(summary = "Get most viewed snippets", description = "Get snippets ordered by view count")
+    public ResponseEntity<Page<SnippetResponse>> getMostViewedSnippets(
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size) {
+        
+        Page<SnippetResponse> snippets = snippetService.getMostViewedSnippets(page, size);
+        return ResponseEntity.ok(snippets);
+    }
 }

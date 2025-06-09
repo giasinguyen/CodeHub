@@ -26,12 +26,10 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
            "(:tag IS NULL OR :tag MEMBER OF s.tags)")
     Page<Snippet> findByLanguageAndTag(@Param("language") String language, 
                                       @Param("tag") String tag, 
-                                      Pageable pageable);
-    
-    @Query("SELECT s FROM Snippet s WHERE " +
-           "LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(s.code) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+                                      Pageable pageable);    @Query("SELECT s FROM Snippet s WHERE " +
+           "UPPER(s.title) LIKE UPPER(CONCAT('%', :keyword, '%')) OR " +
+           "UPPER(s.language) LIKE UPPER(CONCAT('%', :keyword, '%')) OR " +
+           "EXISTS (SELECT t FROM s.tags t WHERE UPPER(t) LIKE UPPER(CONCAT('%', :keyword, '%')))")
     Page<Snippet> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
     
     @Query("SELECT s FROM Snippet s ORDER BY s.likeCount DESC")
@@ -39,10 +37,19 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
     
     @Query("SELECT s FROM Snippet s ORDER BY s.viewCount DESC")
     Page<Snippet> findMostViewed(Pageable pageable);
-    
-    @Query("SELECT DISTINCT s.language FROM Snippet s WHERE s.language IS NOT NULL ORDER BY s.language")
+      @Query("SELECT DISTINCT s.language FROM Snippet s WHERE s.language IS NOT NULL ORDER BY s.language")
     List<String> findDistinctLanguages();
     
     @Query("SELECT DISTINCT tag FROM Snippet s JOIN s.tags tag ORDER BY tag")
     List<String> findDistinctTags();
+    
+    // User statistics queries
+    @Query("SELECT COUNT(s) FROM Snippet s WHERE s.owner = :user")
+    Long countByOwner(@Param("user") User user);
+    
+    @Query("SELECT COALESCE(SUM(s.likeCount), 0) FROM Snippet s WHERE s.owner = :user")
+    Long sumLikesByOwner(@Param("user") User user);
+    
+    @Query("SELECT COALESCE(SUM(s.viewCount), 0) FROM Snippet s WHERE s.owner = :user")
+    Long sumViewsByOwner(@Param("user") User user);
 }

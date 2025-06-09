@@ -5,6 +5,8 @@ import code.hub.codehubbackend.dto.comment.CommentResponse;
 import code.hub.codehubbackend.entity.Comment;
 import code.hub.codehubbackend.entity.Snippet;
 import code.hub.codehubbackend.entity.User;
+import code.hub.codehubbackend.exception.ResourceNotFoundException;
+import code.hub.codehubbackend.exception.UnauthorizedException;
 import code.hub.codehubbackend.repository.CommentRepository;
 import code.hub.codehubbackend.repository.SnippetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,16 +32,15 @@ public class CommentService {
         Page<Comment> comments = commentRepository.findBySnippetIdOrderByCreatedAtDesc(snippetId, pageable);
         return comments.map(this::convertToResponse);
     }
-    
-    @Transactional
+      @Transactional
     public CommentResponse createComment(Long snippetId, CommentCreateRequest request) {
         User currentUser = getCurrentUser();
         if (currentUser == null) {
-            throw new RuntimeException("You must be logged in to comment");
+            throw new UnauthorizedException("You must be logged in to comment");
         }
         
         Snippet snippet = snippetRepository.findById(snippetId)
-                .orElseThrow(() -> new RuntimeException("Snippet not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Snippet", "id", snippetId));
         
         Comment comment = Comment.builder()
                 .snippet(snippet)
@@ -50,15 +51,14 @@ public class CommentService {
         comment = commentRepository.save(comment);
         return convertToResponse(comment);
     }
-    
-    @Transactional
+      @Transactional
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
         
         User currentUser = getCurrentUser();
         if (currentUser == null || !comment.getAuthor().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You can only delete your own comments");
+            throw new UnauthorizedException("You can only delete your own comments");
         }
         
         commentRepository.delete(comment);

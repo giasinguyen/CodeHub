@@ -28,8 +28,7 @@ public class AuthService {
     
     @Autowired
     private JwtUtils jwtUtils;
-    
-    public AuthResponse login(LoginRequest loginRequest) {
+      public AuthResponse login(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -38,6 +37,10 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
         
+        // Safe casting with proper error handling
+        if (!(authentication.getPrincipal() instanceof User)) {
+            throw new RuntimeException("Authentication principal is not a User instance");
+        }
         User user = (User) authentication.getPrincipal();
         
         return AuthResponse.builder()

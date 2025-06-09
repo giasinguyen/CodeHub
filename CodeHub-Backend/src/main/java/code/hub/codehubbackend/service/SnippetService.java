@@ -5,8 +5,12 @@ import code.hub.codehubbackend.dto.snippet.SnippetResponse;
 import code.hub.codehubbackend.dto.snippet.SnippetUpdateRequest;
 import code.hub.codehubbackend.dto.snippet.SnippetVersionResponse;
 import code.hub.codehubbackend.entity.*;
+import code.hub.codehubbackend.exception.ResourceNotFoundException;
+import code.hub.codehubbackend.exception.UnauthorizedException;
 import code.hub.codehubbackend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -58,11 +62,9 @@ public class SnippetService {
         }
         
         return snippets.map(this::convertToResponse);
-    }
-    
-    public SnippetResponse getSnippetById(Long id) {
+    }    public SnippetResponse getSnippetById(Long id) {
         Snippet snippet = snippetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Snippet not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Snippet", "id", id));
         
         // Increment view count
         snippet.incrementViewCount();
@@ -70,8 +72,8 @@ public class SnippetService {
         
         return convertToResponse(snippet);
     }
-    
-    @Transactional
+      @Transactional
+    @CacheEvict(value = {"languages", "tags", "mostLiked", "mostViewed"}, allEntries = true)
     public SnippetResponse createSnippet(SnippetCreateRequest request, List<MultipartFile> files) {
         User currentUser = getCurrentUser();
         
@@ -90,23 +92,21 @@ public class SnippetService {
                 .mediaUrls(mediaUrls != null ? mediaUrls : List.of())
                 .owner(currentUser)
                 .build();
-        
-        snippet = snippetRepository.save(snippet);
+          snippet = snippetRepository.save(snippet);
         
         // Create initial version
         createVersion(snippet, snippet.getCode(), snippet.getDescription(), "Initial version");
         
         return convertToResponse(snippet);
-    }
-    
-    @Transactional
+    }    @Transactional
+    @CacheEvict(value = {"languages", "tags", "mostLiked", "mostViewed"}, allEntries = true)
     public SnippetResponse updateSnippet(Long id, SnippetUpdateRequest request, List<MultipartFile> files) {
         Snippet snippet = snippetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Snippet not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Snippet", "id", id));
         
         User currentUser = getCurrentUser();
         if (!snippet.getOwner().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You can only update your own snippets");
+            throw new UnauthorizedException("You can only update your own snippets");
         }
         
         // Create version before updating
@@ -118,8 +118,7 @@ public class SnippetService {
             List<String> newMediaUrls = fileUploadService.uploadFiles(files);
             snippet.getMediaUrls().addAll(newMediaUrls);
         }
-        
-        // Update snippet
+          // Update snippet
         snippet.setTitle(request.getTitle());
         snippet.setCode(request.getCode());
         snippet.setLanguage(request.getLanguage());
@@ -128,40 +127,37 @@ public class SnippetService {
         
         snippet = snippetRepository.save(snippet);
         return convertToResponse(snippet);
-    }
-    
-    @Transactional
+    }    @Transactional
+    @CacheEvict(value = {"languages", "tags", "mostLiked", "mostViewed"}, allEntries = true)
     public void deleteSnippet(Long id) {
         Snippet snippet = snippetRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Snippet not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Snippet", "id", id));
         
         User currentUser = getCurrentUser();
         if (!snippet.getOwner().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You can only delete your own snippets");
+            throw new UnauthorizedException("You can only delete your own snippets");
         }
         
         snippetRepository.delete(snippet);
     }
     
     public List<SnippetVersionResponse> getSnippetVersions(Long snippetId) {
-        List<SnippetVersion> versions = versionRepository.findBySnippetIdOrderByVersionNumberDesc(snippetId);
-        return versions.stream()
+        List<SnippetVersion> versions = versionRepository.findBySnippetIdOrderByVersionNumberDesc(snippetId);        return versions.stream()
                 .map(this::convertVersionToResponse)
                 .collect(Collectors.toList());
     }
-    
-    @Transactional
+      @Transactional
     public SnippetResponse revertToVersion(Long snippetId, Long versionId) {
         Snippet snippet = snippetRepository.findById(snippetId)
-                .orElseThrow(() -> new RuntimeException("Snippet not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Snippet", "id", snippetId));
         
         User currentUser = getCurrentUser();
         if (!snippet.getOwner().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You can only revert your own snippets");
+            throw new UnauthorizedException("You can only revert your own snippets");
         }
         
         SnippetVersion version = versionRepository.findById(versionId)
-                .orElseThrow(() -> new RuntimeException("Version not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("SnippetVersion", "id", versionId));
         
         // Create new version before reverting
         createVersion(snippet, snippet.getCode(), snippet.getDescription(), 
@@ -174,11 +170,12 @@ public class SnippetService {
         snippet = snippetRepository.save(snippet);
         return convertToResponse(snippet);
     }
-    
+      @Cacheable("languages")
     public List<String> getAvailableLanguages() {
         return snippetRepository.findDistinctLanguages();
     }
     
+    @Cacheable("tags")
     public List<String> getAvailableTags() {
         return snippetRepository.findDistinctTags();
     }
@@ -201,8 +198,34 @@ public class SnippetService {
         
         versionRepository.save(version);
     }
+      private SnippetVersionResponse convertVersionToResponse(SnippetVersion version) {
+        return SnippetVersionResponse.builder()
+                .id(version.getId())
+                .code(version.getCode())
+                .description(version.getDescription())
+                .versionNumber(version.getVersionNumber())
+                .changeMessage(version.getChangeMessage())
+                .createdAt(version.getCreatedAt())
+                .build();
+    }
+      private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+        
+        // Check if the principal is actually a User object
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User) {
+            return (User) principal;
+        }
+        
+        // For anonymous users or other cases, return null
+        return null;
+    }
     
-    private SnippetResponse convertToResponse(Snippet snippet) {
+    // Public method for UserService to use
+    public SnippetResponse convertToResponse(Snippet snippet) {
         User currentUser = getCurrentUser();
         boolean isLiked = currentUser != null && 
                          likeRepository.existsByUserIdAndSnippetId(currentUser.getId(), snippet.getId());
@@ -230,23 +253,31 @@ public class SnippetService {
                 .isLiked(isLiked)
                 .build();
     }
-    
-    private SnippetVersionResponse convertVersionToResponse(SnippetVersion version) {
-        return SnippetVersionResponse.builder()
-                .id(version.getId())
-                .code(version.getCode())
-                .description(version.getDescription())
-                .versionNumber(version.getVersionNumber())
-                .changeMessage(version.getChangeMessage())
-                .createdAt(version.getCreatedAt())
-                .build();
+
+    public Page<SnippetResponse> searchSnippets(String keyword, int page, int size, String sort) {
+        Sort sortBy = switch (sort) {
+            case "likes" -> Sort.by(Sort.Direction.DESC, "likeCount");
+            case "views" -> Sort.by(Sort.Direction.DESC, "viewCount");
+            case "oldest" -> Sort.by(Sort.Direction.ASC, "createdAt");
+            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+        };
+        
+        Pageable pageable = PageRequest.of(page, size, sortBy);
+        Page<Snippet> snippets = snippetRepository.searchByKeyword(keyword, pageable);
+        
+        return snippets.map(this::convertToResponse);
+    }
+      @Cacheable(value = "mostLiked", key = "#page + '_' + #size")
+    public Page<SnippetResponse> getMostLikedSnippets(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Snippet> snippets = snippetRepository.findMostLiked(pageable);
+        return snippets.map(this::convertToResponse);
     }
     
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return null;
-        }
-        return (User) authentication.getPrincipal();
+    @Cacheable(value = "mostViewed", key = "#page + '_' + #size")
+    public Page<SnippetResponse> getMostViewedSnippets(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Snippet> snippets = snippetRepository.findMostViewed(pageable);
+        return snippets.map(this::convertToResponse);
     }
 }

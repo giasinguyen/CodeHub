@@ -1,12 +1,162 @@
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Layout } from './components/layout';
+import ErrorBoundary from './components/ErrorBoundary';
+import { 
+  Home, 
+  Snippets, 
+  SnippetDetail, 
+  Login, 
+  Register 
+} from './pages';
+import './App.css';
 
-function App() {
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-cyan-500"></div>
+      </div>
+    );
+  }
+  
+  return user ? children : <Navigate to="/login" replace />;
+};
 
+// Public Route Component (redirect if authenticated)
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-cyan-500"></div>
+      </div>
+    );
+  }
+  
+  return !user ? children : <Navigate to="/" replace />;
+};
+
+const AppRoutes = () => {
   return (
-    <>
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<Layout><Home /></Layout>} />
+      <Route path="/snippets" element={<Layout><Snippets /></Layout>} />
+      <Route path="/snippets/:id" element={<Layout><SnippetDetail /></Layout>} />
       
-    </>
-  )
-}
+      {/* Auth Routes - Only accessible when not logged in */}
+      <Route 
+        path="/login" 
+        element={
+          <PublicRoute>
+            <Layout><Login /></Layout>
+          </PublicRoute>
+        } 
+      />
+      <Route 
+        path="/register" 
+        element={
+          <PublicRoute>
+            <Layout><Register /></Layout>
+          </PublicRoute>
+        } 
+      />
+      
+      {/* Protected Routes - Only accessible when logged in */}
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <div className="min-h-screen bg-slate-900 p-8">
+                <div className="max-w-7xl mx-auto">
+                  <h1 className="text-3xl font-bold text-white mb-8">Dashboard</h1>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-slate-800 p-6 rounded-lg">
+                      <h2 className="text-xl font-semibold text-white mb-2">My Snippets</h2>
+                      <p className="text-slate-400">Manage your code snippets</p>
+                    </div>
+                    <div className="bg-slate-800 p-6 rounded-lg">
+                      <h2 className="text-xl font-semibold text-white mb-2">Bookmarks</h2>
+                      <p className="text-slate-400">View saved snippets</p>
+                    </div>
+                    <div className="bg-slate-800 p-6 rounded-lg">
+                      <h2 className="text-xl font-semibold text-white mb-2">Analytics</h2>
+                      <p className="text-slate-400">Track your activity</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Layout>
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/create" 
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <div className="min-h-screen bg-slate-900 p-8">
+                <div className="max-w-4xl mx-auto">
+                  <h1 className="text-3xl font-bold text-white mb-8">Create New Snippet</h1>
+                  <div className="bg-slate-800 p-6 rounded-lg">
+                    <p className="text-slate-400">Create snippet form will go here...</p>
+                  </div>
+                </div>
+              </div>
+            </Layout>
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* 404 Route */}
+      <Route 
+        path="*" 
+        element={
+          <Layout>
+            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+              <div className="text-center">
+                <h1 className="text-6xl font-bold text-white mb-4">404</h1>
+                <h2 className="text-2xl font-semibold text-slate-300 mb-4">Page Not Found</h2>
+                <p className="text-slate-400 mb-8">The page you're looking for doesn't exist.</p>
+                <button 
+                  onClick={() => window.history.back()}
+                  className="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-3 rounded-lg font-medium transition-colors mr-4"
+                >
+                  Go Back
+                </button>
+                <a 
+                  href="/"
+                  className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  Go Home
+                </a>
+              </div>
+            </div>
+          </Layout>
+        } 
+      />
+    </Routes>
+  );
+};
 
-export default App
+const App = () => {
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
+  );
+};
+
+export default App;

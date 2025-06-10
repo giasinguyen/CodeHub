@@ -47,16 +47,22 @@ const Login = () => {
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-  const handleSubmit = async (e) => {
+  };  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
     setIsLoading(true);
     try {
-      await login(formData);
-      navigate(from, { replace: true });
+      const result = await login(formData);
+      if (result.success) {
+        // Navigate after successful login
+        navigate(from, { replace: true });
+      } else {
+        setErrors({
+          submit: result.error || 'Login failed. Please try again.'
+        });
+      }
     } catch (error) {
       setErrors({
         submit: error.message || 'Login failed. Please try again.'

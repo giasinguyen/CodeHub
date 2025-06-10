@@ -96,7 +96,8 @@ export const authAPI = {
   logout: () => api.post('/auth/logout'),
   refreshToken: () => api.post('/auth/refresh'),
   getCurrentUser: () => api.get('/users/profile'),
-  updateProfile: (userData) => api.put('/users/profile', userData),  changePassword: (passwords) => api.put('/users/profile/password', passwords),
+  updateProfile: (userData) => api.put('/users/profile', userData),
+  changePassword: (passwords) => api.put('/users/profile/password', passwords),
 };
 
 // Upload API methods
@@ -142,19 +143,18 @@ export const snippetsAPI = {
   
   // Get trending snippets
   getTrendingSnippets: (type = 'most-liked', page = 0, size = 10) => 
-    api.get(`/snippets/trending/${type}?page=${page}&size=${size}`),
-    // Create new snippet
+    api.get(`/snippets/trending/${type}?page=${page}&size=${size}`),  // Create new snippet
   createSnippet: (snippetData) => {
     const formData = new FormData();
     // Remove authorId as it's not needed - backend gets it from auth context
-    const { authorId, ...snippetPayload } = snippetData;
+    const { authorId: _authorId, ...snippetPayload } = snippetData;
     formData.append('snippet', JSON.stringify(snippetPayload));
     return api.postFormData('/snippets', formData);
   },
-    // Update snippet
+  // Update snippet
   updateSnippet: (id, snippetData) => {
     const formData = new FormData();
-    const { authorId, ...snippetPayload } = snippetData;
+    const { authorId: _authorId, ...snippetPayload } = snippetData;
     formData.append('snippet', JSON.stringify(snippetPayload));
     return api.putFormData(`/snippets/${id}`, formData);
   },

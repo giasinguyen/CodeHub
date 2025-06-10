@@ -67,7 +67,6 @@ const Register = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -75,12 +74,20 @@ const Register = () => {
     
     setIsLoading(true);
     try {
-      await register(formData.username, formData.email, formData.password);
-      navigate('/login', { 
-        state: { 
-          message: 'Account created successfully! Please sign in to continue.' 
-        }
+      const result = await register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password
       });
+      
+      if (result.success) {
+        // Navigate to dashboard after successful registration
+        navigate('/', { replace: true });
+      } else {
+        setErrors({
+          submit: result.error || 'Registration failed. Please try again.'
+        });
+      }
     } catch (error) {
       setErrors({
         submit: error.message || 'Registration failed. Please try again.'

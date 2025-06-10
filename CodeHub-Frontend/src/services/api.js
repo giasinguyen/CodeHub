@@ -96,8 +96,35 @@ export const authAPI = {
   logout: () => api.post('/auth/logout'),
   refreshToken: () => api.post('/auth/refresh'),
   getCurrentUser: () => api.get('/users/profile'),
-  updateProfile: (userData) => api.put('/users/profile', userData),
-  changePassword: (passwords) => api.put('/users/profile/password', passwords),
+  updateProfile: (userData) => api.put('/users/profile', userData),  changePassword: (passwords) => api.put('/users/profile/password', passwords),
+};
+
+// Upload API methods
+export const uploadAPI = {
+  // Upload avatar
+  uploadAvatar: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.postFormData('/upload/avatar', formData);
+  },
+  
+  // Upload cover photo
+  uploadCoverPhoto: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.postFormData('/upload/cover', formData);
+  },
+  
+  // Upload general image
+  uploadImage: (file, folder = 'general') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+    return api.postFormData('/upload/image', formData);
+  },
+  
+  // Delete image
+  deleteImage: (imageUrl) => api.delete(`/upload/image?imageUrl=${encodeURIComponent(imageUrl)}`),
 };
 
 // Snippets API methods
@@ -116,12 +143,21 @@ export const snippetsAPI = {
   // Get trending snippets
   getTrendingSnippets: (type = 'most-liked', page = 0, size = 10) => 
     api.get(`/snippets/trending/${type}?page=${page}&size=${size}`),
-  
-  // Create new snippet
-  createSnippet: (snippetData) => api.post('/snippets', snippetData),
-  
-  // Update snippet
-  updateSnippet: (id, snippetData) => api.put(`/snippets/${id}`, snippetData),
+    // Create new snippet
+  createSnippet: (snippetData) => {
+    const formData = new FormData();
+    // Remove authorId as it's not needed - backend gets it from auth context
+    const { authorId, ...snippetPayload } = snippetData;
+    formData.append('snippet', JSON.stringify(snippetPayload));
+    return api.postFormData('/snippets', formData);
+  },
+    // Update snippet
+  updateSnippet: (id, snippetData) => {
+    const formData = new FormData();
+    const { authorId, ...snippetPayload } = snippetData;
+    formData.append('snippet', JSON.stringify(snippetPayload));
+    return api.putFormData(`/snippets/${id}`, formData);
+  },
   
   // Delete snippet
   deleteSnippet: (id) => api.delete(`/snippets/${id}`),
@@ -158,6 +194,12 @@ export const usersAPI = {
   
   // Get user by ID
   getUserById: (id) => api.get(`/users/${id}`),
+  
+  // Get current user profile
+  getCurrentUser: () => api.get('/users/profile'),
+  
+  // Search users by username
+  searchByUsername: (username) => api.get(`/users/search?username=${encodeURIComponent(username)}`),
   
   // Get user snippets
   getUserSnippets: (id, page = 0, size = 10) => 

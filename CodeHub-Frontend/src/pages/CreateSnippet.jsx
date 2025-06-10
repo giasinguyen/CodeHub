@@ -20,7 +20,6 @@ import toast from 'react-hot-toast';
 
 const CreateSnippet = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -120,13 +119,10 @@ const CreateSnippet = () => {
     e.preventDefault();
     
     if (!validateForm()) return;
-    
-    setIsLoading(true);
+      setIsLoading(true);
     try {
-      const snippetData = {
-        ...formData,
-        authorId: user?.id
-      };
+      // Remove authorId - backend gets it from authenticated user context
+      const snippetData = { ...formData };
       
       const response = await snippetsAPI.createSnippet(snippetData);
       
@@ -143,7 +139,6 @@ const CreateSnippet = () => {
       setIsLoading(false);
     }
   };
-
   const handleDraft = async () => {
     if (!formData.title.trim() && !formData.code.trim()) {
       toast.error('Please add at least a title or code to save as draft');
@@ -154,8 +149,7 @@ const CreateSnippet = () => {
     try {
       const draftData = {
         ...formData,
-        visibility: 'draft',
-        authorId: user?.id
+        visibility: 'draft'
       };
       
       await snippetsAPI.createSnippet(draftData);

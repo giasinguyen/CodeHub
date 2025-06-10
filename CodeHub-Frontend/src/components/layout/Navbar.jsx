@@ -147,9 +147,8 @@ const Navbar = () => {
                         exit={{ opacity: 0, scale: 0.95, y: -10 }}
                         className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl"
                       >
-                        <div className="py-2">
-                          <Link
-                            to={`/profile/${user?.username}`}
+                        <div className="py-2">                          <Link
+                            to="/profile"
                             className="flex items-center space-x-2 px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white"
                             onClick={() => setIsUserMenuOpen(false)}
                           >
@@ -262,9 +261,8 @@ const Navbar = () => {
                   >
                     <Plus className="w-4 h-4" />
                     <span>Create</span>
-                  </Link>
-                  <Link
-                    to={`/profile/${user?.username}`}
+                  </Link>                  <Link
+                    to="/profile"
                     className="flex items-center space-x-2 px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

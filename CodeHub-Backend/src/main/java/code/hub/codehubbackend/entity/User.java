@@ -37,8 +37,25 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Role role = Role.USER;
+      private String avatarUrl;
     
-    private String avatarUrl;
+    private String coverPhotoUrl;
+    
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+    
+    private String fullName;
+    
+    private String location;
+    
+    private String websiteUrl;
+    
+    private String githubUrl;
+    
+    private String twitterUrl;
+    
+    private String linkedinUrl;
     
     @Column(updatable = false)
     @Builder.Default

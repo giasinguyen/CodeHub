@@ -40,8 +40,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         return convertToProfileResponse(user);
     }
-    
-    @Transactional
+      @Transactional
     public UserProfileResponse updateUserProfile(UserUpdateRequest request) {
         User currentUser = getCurrentUser();
         
@@ -54,6 +53,38 @@ public class UserService {
         
         if (request.getAvatarUrl() != null) {
             currentUser.setAvatarUrl(request.getAvatarUrl());
+        }
+        
+        if (request.getCoverPhotoUrl() != null) {
+            currentUser.setCoverPhotoUrl(request.getCoverPhotoUrl());
+        }
+        
+        if (request.getBio() != null) {
+            currentUser.setBio(request.getBio());
+        }
+        
+        if (request.getFullName() != null) {
+            currentUser.setFullName(request.getFullName());
+        }
+        
+        if (request.getLocation() != null) {
+            currentUser.setLocation(request.getLocation());
+        }
+        
+        if (request.getWebsiteUrl() != null) {
+            currentUser.setWebsiteUrl(request.getWebsiteUrl());
+        }
+        
+        if (request.getGithubUrl() != null) {
+            currentUser.setGithubUrl(request.getGithubUrl());
+        }
+        
+        if (request.getTwitterUrl() != null) {
+            currentUser.setTwitterUrl(request.getTwitterUrl());
+        }
+        
+        if (request.getLinkedinUrl() != null) {
+            currentUser.setLinkedinUrl(request.getLinkedinUrl());
         }
         
         currentUser = userRepository.save(currentUser);
@@ -74,8 +105,7 @@ public class UserService {
         User currentUser = getCurrentUser();
         return getUserSnippets(currentUser.getId(), page, size);
     }
-    
-    private UserProfileResponse convertToProfileResponse(User user) {
+      private UserProfileResponse convertToProfileResponse(User user) {
         // Calculate user statistics
         Long snippetCount = snippetRepository.countByOwner(user);
         Long totalLikes = snippetRepository.sumLikesByOwner(user);
@@ -87,6 +117,14 @@ public class UserService {
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .avatarUrl(user.getAvatarUrl())
+                .coverPhotoUrl(user.getCoverPhotoUrl())
+                .bio(user.getBio())
+                .fullName(user.getFullName())
+                .location(user.getLocation())
+                .websiteUrl(user.getWebsiteUrl())
+                .githubUrl(user.getGithubUrl())
+                .twitterUrl(user.getTwitterUrl())
+                .linkedinUrl(user.getLinkedinUrl())
                 .createdAt(user.getCreatedAt())
                 .snippetCount(snippetCount != null ? snippetCount : 0L)
                 .totalLikes(totalLikes != null ? totalLikes : 0L)

@@ -8,6 +8,7 @@ import {
   Snippets, 
   SnippetDetail,
   CreateSnippet,
+  Profile,
   Login, 
   Register 
 } from './pages';
@@ -105,6 +106,22 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <Layout><CreateSnippet /></Layout>
           </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute>
+            <Layout><Profile /></Layout>
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/profile/:userId" 
+        element={
+          <Layout><Profile /></Layout>
         } 
       />
       

@@ -18,6 +18,14 @@ public class UserProfileResponse {
     private String email;
     private String role;
     private String avatarUrl;
+    private String coverPhotoUrl;
+    private String bio;
+    private String fullName;
+    private String location;
+    private String websiteUrl;
+    private String githubUrl;
+    private String twitterUrl;
+    private String linkedinUrl;
     private Instant createdAt;
     private Long snippetCount;
     private Long totalLikes;

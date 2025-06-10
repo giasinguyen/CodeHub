@@ -40,8 +40,7 @@ public class AuthService {
         // Safe casting with proper error handling
         if (!(authentication.getPrincipal() instanceof User)) {
             throw new RuntimeException("Authentication principal is not a User instance");
-        }
-        User user = (User) authentication.getPrincipal();
+        }        User user = (User) authentication.getPrincipal();
         
         return AuthResponse.builder()
                 .token(jwt)
@@ -50,6 +49,9 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .avatarUrl(user.getAvatarUrl())
+                .coverPhotoUrl(user.getCoverPhotoUrl())
+                .bio(user.getBio())
+                .fullName(user.getFullName())
                 .build();
     }
     
@@ -71,8 +73,7 @@ public class AuthService {
                 .build();
         
         userRepository.save(user);
-        
-        // Generate JWT token for immediate login
+          // Generate JWT token for immediate login
         String jwt = jwtUtils.generateTokenFromUsername(user.getUsername());
         
         return AuthResponse.builder()
@@ -82,6 +83,9 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .avatarUrl(user.getAvatarUrl())
+                .coverPhotoUrl(user.getCoverPhotoUrl())
+                .bio(user.getBio())
+                .fullName(user.getFullName())
                 .build();
     }
 }

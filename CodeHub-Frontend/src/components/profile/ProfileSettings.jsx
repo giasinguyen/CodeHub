@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { User, Mail, MapPin, Globe, Github, Twitter, Linkedin, Save, Camera, Bell, Shield, Eye, Trash2 } from 'lucide-react';
+import { User, Mail, MapPin, Globe, Github, Twitter, Linkedin, Save, Bell, Shield, Eye, Trash2, AlertTriangle } from 'lucide-react';
 import { Button, Input, Card } from '../ui';
-import { authAPI, uploadAPI } from '../../services/api';
+import AvatarUpload from './AvatarUpload';
+import PasswordChangeModal from './PasswordChangeModal';
+import { authAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
-const ProfileSettings = ({ user, onUserUpdate }) => {
-  const [activeSection, setActiveSection] = useState('profile');
+const ProfileSettings = ({ user, onUserUpdate }) => {  const [activeSection, setActiveSection] = useState('profile');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [hasChanges, setHasChanges] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   
   // Profile form data
   const [profileData, setProfileData] = useState({
@@ -44,14 +48,22 @@ const ProfileSettings = ({ user, onUserUpdate }) => {
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'danger', label: 'Danger Zone', icon: Trash2 }
-  ];
-
-  const handleProfileChange = (e) => {
+  ];  const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setProfileData(prev => ({
       ...prev,
       [name]: value
     }));
+    
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+    
+    setHasChanges(true);
   };
 
   const handlePrivacyChange = (setting) => {
@@ -68,7 +80,68 @@ const ProfileSettings = ({ user, onUserUpdate }) => {
     }));
   };
 
+  const validateProfileData = () => {
+    const newErrors = {};
+
+    // Username validation
+    if (!profileData.username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (profileData.username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    } else if (!/^[a-zA-Z0-9_]+$/.test(profileData.username)) {
+      newErrors.username = 'Username can only contain letters, numbers, and underscores';
+    }
+
+    // Email validation
+    if (!profileData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    // URL validations
+    const urlFields = ['websiteUrl', 'githubUrl', 'twitterUrl', 'linkedinUrl'];
+    urlFields.forEach(field => {
+      if (profileData[field] && !isValidUrl(profileData[field])) {
+        newErrors[field] = 'Please enter a valid URL';
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const handleAvatarUpdate = (imageUrl) => {
+    setProfileData(prev => ({
+      ...prev,
+      avatarUrl: imageUrl
+    }));
+    setHasChanges(true);
+  };
+
+  const handleCoverPhotoUpdate = (imageUrl) => {
+    setProfileData(prev => ({
+      ...prev,
+      coverPhotoUrl: imageUrl
+    }));
+    setHasChanges(true);
+  };
+
   const saveProfile = async () => {
+    if (!validateProfileData()) {
+      toast.error('Please fix the errors before saving');
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await authAPI.updateProfile(profileData);
@@ -129,6 +202,7 @@ const ProfileSettings = ({ user, onUserUpdate }) => {
           onChange={handleProfileChange}
           placeholder="Enter your username"
           icon={User}
+          error={errors.username}
         />
         
         <Input
@@ -139,6 +213,7 @@ const ProfileSettings = ({ user, onUserUpdate }) => {
           onChange={handleProfileChange}
           placeholder="Enter your email"
           icon={Mail}
+          error={errors.email}
         />
         
         <Input
@@ -331,7 +406,6 @@ const ProfileSettings = ({ user, onUserUpdate }) => {
       </div>
     </div>
   );
-
   const renderSecuritySettings = () => (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-white">Security Settings</h3>
@@ -340,7 +414,12 @@ const ProfileSettings = ({ user, onUserUpdate }) => {
         <Card.Content className="p-6">
           <h4 className="font-medium text-white mb-2">Change Password</h4>
           <p className="text-slate-400 mb-4">Update your password to keep your account secure</p>
-          <Button variant="outline">Change Password</Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowPasswordModal(true)}
+          >
+            Change Password
+          </Button>
         </Card.Content>
       </Card>
 
@@ -426,9 +505,7 @@ const ProfileSettings = ({ user, onUserUpdate }) => {
             </nav>
           </Card.Content>
         </Card>
-      </div>
-
-      {/* Settings Content */}
+      </div>      {/* Settings Content */}
       <div className="lg:col-span-3">
         <Card>
           <Card.Content className="p-6">
@@ -436,6 +513,12 @@ const ProfileSettings = ({ user, onUserUpdate }) => {
           </Card.Content>
         </Card>
       </div>
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal 
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
     </div>
   );
 };

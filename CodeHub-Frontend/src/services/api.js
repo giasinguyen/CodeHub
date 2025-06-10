@@ -245,10 +245,20 @@ export const usersAPI = {
   // Get user snippets
   getUserSnippets: (id, page = 0, size = 10) => 
     api.get(`/users/${id}/snippets?page=${page}&size=${size}`),
-  
-  // Get current user snippets
+    // Get current user snippets
   getCurrentUserSnippets: (page = 0, size = 10) => 
     api.get(`/users/profile/snippets?page=${page}&size=${size}`),
+};
+
+// Activity API methods
+export const activityAPI = {
+  // Get current user activities
+  getCurrentUserActivities: (filter = 'all', page = 0, size = 10) =>
+    api.get(`/activities/me?filter=${filter}&page=${page}&size=${size}`),
+  
+  // Get user activities by ID
+  getUserActivities: (userId, filter = 'all', page = 0, size = 10) =>
+    api.get(`/activities/user/${userId}?filter=${filter}&page=${page}&size=${size}`),
 };
 
 export default apiClient;

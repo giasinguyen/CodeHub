@@ -23,9 +23,11 @@ public class CommentService {
     
     @Autowired
     private CommentRepository commentRepository;
+      @Autowired
+    private SnippetRepository snippetRepository;
     
     @Autowired
-    private SnippetRepository snippetRepository;
+    private ActivityService activityService;
     
     public Page<CommentResponse> getSnippetComments(Long snippetId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -41,14 +43,16 @@ public class CommentService {
         
         Snippet snippet = snippetRepository.findById(snippetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Snippet", "id", snippetId));
-        
-        Comment comment = Comment.builder()
+          Comment comment = Comment.builder()
                 .snippet(snippet)
                 .author(currentUser)
                 .content(request.getContent())
                 .build();
         
         comment = commentRepository.save(comment);
+        
+        // Create comment activity
+        activityService.createCommentActivity(snippet, request.getContent());
         return convertToResponse(comment);
     }
       @Transactional

@@ -3,6 +3,7 @@ package code.hub.codehubbackend.service;
 import code.hub.codehubbackend.dto.snippet.SnippetResponse;
 import code.hub.codehubbackend.dto.user.UserProfileResponse;
 import code.hub.codehubbackend.dto.user.UserUpdateRequest;
+import code.hub.codehubbackend.dto.user.PasswordChangeRequest;
 import code.hub.codehubbackend.entity.Snippet;
 import code.hub.codehubbackend.entity.User;
 import code.hub.codehubbackend.exception.ResourceNotFoundException;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +28,13 @@ public class UserService {
     
     @Autowired
     private SnippetRepository snippetRepository;
+      @Autowired
+    private SnippetService snippetService;
+      @Autowired
+    private ActivityService activityService;
     
     @Autowired
-    private SnippetService snippetService;
+    private PasswordEncoder passwordEncoder;
     
     public UserProfileResponse getCurrentUserProfile() {
         User currentUser = getCurrentUser();
@@ -86,8 +92,11 @@ public class UserService {
         if (request.getLinkedinUrl() != null) {
             currentUser.setLinkedinUrl(request.getLinkedinUrl());
         }
+          currentUser = userRepository.save(currentUser);
         
-        currentUser = userRepository.save(currentUser);
+        // Create profile update activity
+        activityService.createProfileUpdateActivity();
+        
         return convertToProfileResponse(currentUser);
     }
     
@@ -99,13 +108,31 @@ public class UserService {
         Page<Snippet> snippets = snippetRepository.findByOwner(user, pageable);
         
         return snippets.map(snippet -> snippetService.convertToResponse(snippet));
-    }
-    
-    public Page<SnippetResponse> getCurrentUserSnippets(int page, int size) {
+    }    public Page<SnippetResponse> getCurrentUserSnippets(int page, int size) {
         User currentUser = getCurrentUser();
         return getUserSnippets(currentUser.getId(), page, size);
     }
-      private UserProfileResponse convertToProfileResponse(User user) {
+    
+    @Transactional
+    public void changePassword(PasswordChangeRequest request) {
+        User currentUser = getCurrentUser();
+        
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), currentUser.getPasswordHash())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+        
+        // Validate new password is different
+        if (passwordEncoder.matches(request.getNewPassword(), currentUser.getPasswordHash())) {
+            throw new RuntimeException("New password must be different from current password");
+        }
+        
+        // Update password
+        currentUser.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(currentUser);
+    }
+    
+    private UserProfileResponse convertToProfileResponse(User user) {
         // Calculate user statistics
         Long snippetCount = snippetRepository.countByOwner(user);
         Long totalLikes = snippetRepository.sumLikesByOwner(user);

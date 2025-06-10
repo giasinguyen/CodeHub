@@ -16,9 +16,11 @@ public class LikeService {
     
     @Autowired
     private LikeRepository likeRepository;
+      @Autowired
+    private SnippetRepository snippetRepository;
     
     @Autowired
-    private SnippetRepository snippetRepository;
+    private ActivityService activityService;
     
     @Transactional
     public boolean toggleLike(Long snippetId) {
@@ -31,12 +33,15 @@ public class LikeService {
                 .orElseThrow(() -> new RuntimeException("Snippet not found"));
         
         boolean exists = likeRepository.existsByUserIdAndSnippetId(currentUser.getId(), snippetId);
-        
-        if (exists) {
+          if (exists) {
             // Unlike
             likeRepository.deleteByUserIdAndSnippetId(currentUser.getId(), snippetId);
             snippet.decrementLikeCount();
             snippetRepository.save(snippet);
+            
+            // Create unlike activity
+            activityService.createLikeActivity(snippet, false);
+            
             return false;
         } else {
             // Like
@@ -49,6 +54,9 @@ public class LikeService {
             likeRepository.save(like);
             snippet.incrementLikeCount();
             snippetRepository.save(snippet);
+            
+            // Create like activity
+            activityService.createLikeActivity(snippet, true);
             return true;
         }
     }

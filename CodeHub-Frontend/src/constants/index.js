@@ -1,5 +1,13 @@
 // API Configuration
-export const API_BASE_URL = 'http://localhost:8080/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
+// Environment
+export const ENV = {
+  NODE_ENV: import.meta.env.MODE,
+  IS_DEV: import.meta.env.DEV,
+  IS_PROD: import.meta.env.PROD,
+  DEBUG: import.meta.env.VITE_DEBUG === 'true',
+};
 
 // API Endpoints
 export const API_ENDPOINTS = {

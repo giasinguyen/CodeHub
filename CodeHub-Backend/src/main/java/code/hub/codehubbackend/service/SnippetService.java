@@ -39,9 +39,11 @@ public class SnippetService {
     
     @Autowired
     private CommentRepository commentRepository;
+      @Autowired
+    private FileUploadService fileUploadService;
     
     @Autowired
-    private FileUploadService fileUploadService;
+    private ActivityService activityService;
     
     public Page<SnippetResponse> getAllSnippets(int page, int size, String language, String tag, String sort) {
         Sort sortBy = switch (sort) {
@@ -98,9 +100,11 @@ public class SnippetService {
                 .owner(currentUser)
                 .build();
           snippet = snippetRepository.save(snippet);
-        
-        // Create initial version
+          // Create initial version
         createVersion(snippet, snippet.getCode(), snippet.getDescription(), "Initial version");
+        
+        // Create activity for snippet creation
+        activityService.createSnippetActivity(snippet, Activity.ActivityType.SNIPPET_CREATED);
         
         return convertToResponse(snippet);
     }@Transactional
@@ -122,8 +126,7 @@ public class SnippetService {
         if (files != null && !files.isEmpty()) {
             List<String> newMediaUrls = fileUploadService.uploadFiles(files);
             snippet.getMediaUrls().addAll(newMediaUrls);
-        }
-          // Update snippet
+        }        // Update snippet
         snippet.setTitle(request.getTitle());
         snippet.setCode(request.getCode());
         snippet.setLanguage(request.getLanguage());
@@ -131,17 +134,23 @@ public class SnippetService {
         snippet.setTags(request.getTags());
         
         snippet = snippetRepository.save(snippet);
+        
+        // Create activity for snippet update
+        activityService.createSnippetActivity(snippet, Activity.ActivityType.SNIPPET_UPDATED);
+        
         return convertToResponse(snippet);
     }    @Transactional
     @CacheEvict(value = {"languages", "tags", "mostLiked", "mostViewed"}, allEntries = true)
     public void deleteSnippet(Long id) {
         Snippet snippet = snippetRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Snippet", "id", id));
-        
-        User currentUser = getCurrentUser();
+          User currentUser = getCurrentUser();
         if (!snippet.getOwner().getId().equals(currentUser.getId())) {
             throw new UnauthorizedException("You can only delete your own snippets");
         }
+        
+        // Delete related activities before deleting snippet
+        activityService.deleteActivitiesByTarget(id, "snippet");
         
         snippetRepository.delete(snippet);
     }

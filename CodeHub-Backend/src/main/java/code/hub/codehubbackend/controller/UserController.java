@@ -2,6 +2,7 @@ package code.hub.codehubbackend.controller;
 
 import code.hub.codehubbackend.dto.user.UserProfileResponse;
 import code.hub.codehubbackend.dto.user.UserUpdateRequest;
+import code.hub.codehubbackend.dto.user.PasswordChangeRequest;
 import code.hub.codehubbackend.dto.snippet.SnippetResponse;
 import code.hub.codehubbackend.service.UserService;
 import code.hub.codehubbackend.service.SnippetService;
@@ -60,8 +61,7 @@ public class UserController {
         Page<SnippetResponse> snippets = userService.getUserSnippets(id, page, size);
         return ResponseEntity.ok(snippets);
     }
-    
-    @GetMapping("/profile/snippets")
+      @GetMapping("/profile/snippets")
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Get current user's snippets", description = "Get all snippets created by the current user")
     public ResponseEntity<Page<SnippetResponse>> getCurrentUserSnippets(
@@ -70,5 +70,13 @@ public class UserController {
         
         Page<SnippetResponse> snippets = userService.getCurrentUserSnippets(page, size);
         return ResponseEntity.ok(snippets);
+    }
+    
+    @PutMapping("/profile/password")
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Change password", description = "Change the current user's password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody PasswordChangeRequest request) {
+        userService.changePassword(request);
+        return ResponseEntity.ok().build();
     }
 }

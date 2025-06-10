@@ -15,8 +15,10 @@ import {
 } from 'lucide-react';
 import { Button, Card, Loading } from '../components/ui';
 import { snippetsAPI } from '../services/api';
+import { useSnippet } from '../contexts/SnippetContext';
 
 const Home = () => {
+  const { refreshTrigger } = useSnippet();
   const [featuredSnippets, setFeaturedSnippets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [languages, setLanguages] = useState([]);
@@ -80,11 +82,9 @@ const Home = () => {
           { name: 'PHP', color: '#777bb4', count: 876 }
         ]);
       }
-    };
-
-    loadFeaturedSnippets();
+    };    loadFeaturedSnippets();
     loadLanguages();
-  }, []);
+  }, [refreshTrigger]);
 
   // Helper function to get language color
   const getLanguageColor = (language) => {

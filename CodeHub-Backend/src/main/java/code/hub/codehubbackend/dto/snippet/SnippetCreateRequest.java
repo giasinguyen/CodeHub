@@ -23,4 +23,10 @@ public class SnippetCreateRequest {
     private String description;
     
     private List<String> tags;
+    
+    // For now, accept visibility but don't use it until we implement the feature
+    private String visibility;
+    
+    // Media URLs for uploaded files
+    private List<String> mediaUrls;
 }

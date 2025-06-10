@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { Plus, Search, Filter, Star, Eye, GitFork, Clock, Globe, Lock, Users, Code2 } from 'lucide-react';
 import { Button, Input, Card, Loading } from '../ui';
 import { usersAPI } from '../../services/api';
+import { useSnippet } from '../../contexts/SnippetContext';
 import toast from 'react-hot-toast';
 
 const ProfileSnippets = ({ userId, isOwnProfile }) => {
+  const { refreshTrigger } = useSnippet();
   const [snippets, setSnippets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,7 +21,7 @@ const ProfileSnippets = ({ userId, isOwnProfile }) => {
   });
   useEffect(() => {
     loadSnippets();
-  }, [userId, filterBy, sortBy, pagination.page]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId, filterBy, sortBy, pagination.page, refreshTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadSnippets = async () => {
     try {

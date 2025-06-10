@@ -14,9 +14,11 @@ import {
 } from 'lucide-react';
 import { Button, Input, Card, Loading } from '../components/ui';
 import { snippetsAPI } from '../services/api';
+import { useSnippet } from '../contexts/SnippetContext';
 import toast from 'react-hot-toast';
 
 const Snippets = () => {
+  const { refreshTrigger, lastCreatedSnippet, clearCreatedSnippet } = useSnippet();
   const [snippets, setSnippets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,10 +26,9 @@ const Snippets = () => {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [sortBy, setSortBy] = useState('trending');
-  const [showFilters, setShowFilters] = useState(false);
-  const [pagination, setPagination] = useState({
+  const [showFilters, setShowFilters] = useState(false);  const [pagination, setPagination] = useState({
     page: 0,
-    size: 10,
+    size: 20, // Increased to show more snippets
     totalElements: 0,
     totalPages: 0
   });
@@ -70,20 +71,26 @@ const Snippets = () => {
     { value: 'newest', label: 'Newest', icon: Calendar },
     { value: 'popular', label: 'Most Popular', icon: Star },
     { value: 'viewed', label: 'Most Viewed', icon: Eye }
-  ];
-
-  useEffect(() => {
+  ];  useEffect(() => {
     const loadSnippets = async () => {
       try {
+        console.log('🔄 [Snippets] Starting to load snippets...');
+        console.log('📋 [Snippets] Current state:', {
+          debouncedSearchTerm,
+          sortBy,
+          pagination: pagination.page,
+          size: pagination.size
+        });
+        
         setLoading(true);
         setError(null);
         
         let response;
         if (debouncedSearchTerm.trim()) {
-          // Search snippets if there's a search term
+          console.log('🔍 [Snippets] Searching snippets with term:', debouncedSearchTerm);
           response = await snippetsAPI.searchSnippets(debouncedSearchTerm, pagination.page, pagination.size);
         } else if (sortBy === 'trending') {
-          // Get trending snippets
+          console.log('📈 [Snippets] Getting trending snippets...');
           response = await snippetsAPI.getTrendingSnippets('most-liked', pagination.page, pagination.size);
         } else {
           // Get all snippets with sorting
@@ -93,30 +100,86 @@ const Snippets = () => {
           else if (sortBy === 'liked') sort = 'likesCount,desc';
           else if (sortBy === 'viewed') sort = 'viewsCount,desc';
           
+          console.log('📝 [Snippets] Getting all snippets with sort:', sort);
           response = await snippetsAPI.getSnippets(pagination.page, pagination.size, sort);
         }
 
-        if (response.data) {
+        console.log('✅ [Snippets] API Response received:', response);
+        console.log('📊 [Snippets] Response data structure:', {
+          hasData: !!response.data,
+          dataKeys: response.data ? Object.keys(response.data) : [],
+          contentLength: response.data?.content?.length || 0,
+          totalElements: response.data?.totalElements,
+          totalPages: response.data?.totalPages,
+          currentPage: response.data?.number
+        });        if (response.data) {
           const { content, totalElements, totalPages, number } = response.data;
-          setSnippets(content || []);
+          console.log('🎯 [Snippets] Processing snippets:', {
+            contentArray: content,
+            snippetsCount: content?.length || 0,
+            firstSnippet: content?.[0],
+            isLoadMore: number > 0
+          });
+          
+          // If it's page 0 (first load) or search/filter changed, replace snippets
+          // If it's load more (page > 0), append to existing snippets
+          if (number === 0 || debouncedSearchTerm.trim() || sortBy !== 'trending') {
+            setSnippets(content || []);
+            console.log('📝 [Snippets] Replaced snippets list');
+          } else {
+            setSnippets(prev => {
+              const combined = [...prev, ...(content || [])];
+              console.log('➕ [Snippets] Appended snippets:', {
+                previousCount: prev.length,
+                newCount: content?.length || 0,
+                totalCount: combined.length
+              });
+              return combined;
+            });
+          }
+          
           setPagination(prev => ({
             ...prev,
             totalElements,
             totalPages,
             page: number
           }));
+          
+          console.log('✨ [Snippets] State updated successfully!');
         }
       } catch (error) {
-        console.error('Error loading snippets:', error);
+        console.error('❌ [Snippets] Error loading snippets:', error);
+        console.error('🔍 [Snippets] Error details:', {
+          message: error.message,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
         setError('Failed to load snippets. Please try again.');
         toast.error('Failed to load snippets');
       } finally {
         setLoading(false);
       }
-    };
+    };    loadSnippets();
+  }, [debouncedSearchTerm, sortBy, pagination.page, pagination.size, refreshTrigger]);
 
-    loadSnippets();
-  }, [debouncedSearchTerm, sortBy, pagination.page, pagination.size]);
+  // Reset pagination when search term or sort changes
+  useEffect(() => {
+    console.log('🔄 [Snippets] Resetting pagination due to search/sort change');
+    setPagination(prev => ({ ...prev, page: 0 }));
+  }, [debouncedSearchTerm, sortBy]);
+
+  // Clear the created snippet when navigating away or after highlighting
+  useEffect(() => {
+    if (lastCreatedSnippet) {
+      // Auto-clear after 5 seconds
+      const timer = setTimeout(() => {
+        clearCreatedSnippet();
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [lastCreatedSnippet, clearCreatedSnippet]);
 
   const filteredSnippets = snippets.filter(snippet => {
     // Only filter by language on the client side, search is handled by API
@@ -267,21 +330,70 @@ const Snippets = () => {
               </div>
             </div>
           )}
+        </div>        {/* Results Info */}
+        <div className="mb-6 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-slate-400">
+              Showing {filteredSnippets.length} of {pagination.totalElements} snippets
+              {pagination.totalPages > 1 && (
+                <span className="ml-2">
+                  (Page {pagination.page + 1} of {pagination.totalPages})
+                </span>
+              )}
+            </p>            <div className="text-sm text-slate-500 flex items-center space-x-2">
+              {pagination.totalElements > pagination.size && (
+                <>
+                  <span>{pagination.size} per page</span>
+                  <select
+                    value={pagination.size}
+                    onChange={(e) => {
+                      const newSize = parseInt(e.target.value);
+                      console.log('📏 [Snippets] Changing page size to:', newSize);
+                      setPagination(prev => ({ 
+                        ...prev, 
+                        size: newSize, 
+                        page: 0 // Reset to first page when changing size
+                      }));
+                    }}
+                    className="bg-slate-800 border border-slate-700 text-white px-2 py-1 rounded text-xs"
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </>
+              )}
+            </div>
+          </div>
+          {filteredSnippets.length !== snippets.length && (
+            <p className="text-xs text-slate-500">
+              Client-side filtered from {snippets.length} loaded snippets
+            </p>
+          )}
         </div>
 
-        {/* Results Info */}
-        <div className="mb-6">
-          <p className="text-slate-400">
-            Showing {filteredSnippets.length} of {snippets.length} snippets
-          </p>
-        </div>
-
-        {/* Snippets Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredSnippets.map((snippet) => (
-            <div key={snippet.id} className="hover:-translate-y-1 transition-transform duration-300">
-              <Card className="h-full hover:shadow-xl transition-all duration-300 border-slate-700">
-                <Card.Header>
+        {/* Snippets Grid */}        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredSnippets.map((snippet) => {
+            const isNewlyCreated = lastCreatedSnippet && snippet.id === lastCreatedSnippet.id;
+            return (
+              <div 
+                key={snippet.id} 
+                className={`hover:-translate-y-1 transition-transform duration-300 ${
+                  isNewlyCreated ? 'animate-pulse' : ''
+                }`}
+              >
+                <Card className={`h-full hover:shadow-xl transition-all duration-300 ${
+                  isNewlyCreated 
+                    ? 'border-cyan-500 bg-cyan-500/5 shadow-lg shadow-cyan-500/20' 
+                    : 'border-slate-700'
+                }`}>
+                  {isNewlyCreated && (
+                    <div className="bg-cyan-500 text-white text-xs font-medium px-3 py-1 text-center">
+                      ✨ Just Created!
+                    </div>
+                  )}
+                  <Card.Header>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-2">
                       <div
@@ -369,24 +481,29 @@ const Snippets = () => {
                         <Star className="w-4 h-4" />
                       </Button>
                     </div>
-                  </div>
-                </Card.Footer>
+                  </div>                </Card.Footer>
               </Card>
             </div>
-          ))}
-        </div>
-
-        {/* Load More */}
+            );
+          })}
+        </div>        {/* Load More */}
         {filteredSnippets.length > 0 && pagination.page < pagination.totalPages - 1 && (
           <div className="text-center mt-12">
+            <div className="mb-4">
+              <p className="text-slate-400 text-sm">
+                {pagination.totalElements - (pagination.page + 1) * pagination.size} more snippets available
+              </p>
+            </div>
             <Button 
               variant="outline" 
               size="lg"
               onClick={() => {
+                console.log('🔄 [Snippets] Loading next page:', pagination.page + 1);
                 setPagination(prev => ({ ...prev, page: prev.page + 1 }));
               }}
+              disabled={loading}
             >
-              Load More Snippets
+              {loading ? 'Loading...' : 'Load More Snippets'}
             </Button>
           </div>
         )}

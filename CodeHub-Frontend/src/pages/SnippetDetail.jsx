@@ -22,161 +22,86 @@ import {
 } from 'lucide-react';
 import { Button, Card, Loading } from '../components/ui';
 import { useAuth } from '../contexts/AuthContext';
+import { snippetsAPI } from '../services/api';
+import toast from 'react-hot-toast';
 
 const SnippetDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const [snippet, setSnippet] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isStarred, setIsStarred] = useState(false);
+  const [loading, setLoading] = useState(true);  const [isStarred, setIsStarred] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Mock data - replace with API call
-  const mockSnippet = {
-    id: parseInt(id),
-    title: 'React Custom Hook for API Calls',
-    description: 'A reusable custom hook for handling API requests with loading states, error handling, and data caching. Perfect for React applications that need to make frequent API calls.',
-    code: `import { useState, useEffect, useCallback } from 'react';
-
-const useApi = (url, options = {}) => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch(url, {
-        method: options.method || 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers
-        },
-        ...options
-      });
-
-      if (!response.ok) {
-        throw new Error(\`HTTP error! status: \${response.status}\`);
-      }
-
-      const result = await response.json();
-      setData(result);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [url, options]);
-
-  useEffect(() => {
-    if (url) {
-      fetchData();
-    }
-  }, [fetchData]);
-
-  const refetch = useCallback(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { 
-    data, 
-    loading, 
-    error, 
-    refetch 
+  // Helper function to get language color
+  const getLanguageColor = (language) => {
+    const colors = {
+      'JavaScript': '#f7df1e',
+      'TypeScript': '#3178c6',
+      'Python': '#3776ab',
+      'Java': '#ed8b00',
+      'CSS': '#1572b6',
+      'HTML': '#e34f26',
+      'PHP': '#777bb4',
+      'C++': '#00599c',
+      'C#': '#239120',
+      'Go': '#00add8',
+      'Rust': '#000000',
+      'Ruby': '#cc342d',
+      'Swift': '#fa7343',
+      'Kotlin': '#7f52ff',
+      'Dart': '#0175c2',
+      'SQL': '#336791',
+      'Shell': '#89e051'
+    };
+    return colors[language] || '#6b7280';
   };
-};
-
-// Usage example:
-const UserProfile = ({ userId }) => {
-  const { data: user, loading, error, refetch } = useApi(
-    \`/api/users/\${userId}\`
-  );
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  return (
-    <div>
-      <h1>{user?.name}</h1>
-      <p>{user?.email}</p>
-      <button onClick={refetch}>Refresh</button>
-    </div>
-  );
-};
-
-export default useApi;`,
-    language: 'JavaScript',
-    languageColor: '#f7df1e',
-    author: {
-      username: 'john_doe',
-      name: 'John Doe',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=john',
-      bio: 'Full-stack developer passionate about React and Node.js',
-      followers: 1240,
-      following: 890
-    },
-    stats: {
-      views: 1234,
-      stars: 45,
-      forks: 12,
-      bookmarks: 23
-    },
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-01-20T14:45:00Z',
-    tags: ['React', 'Hooks', 'API', 'JavaScript', 'Custom Hook', 'Frontend'],
-    comments: [
-      {
-        id: 1,
-        author: {
-          username: 'jane_smith',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jane'
-        },
-        content: 'This is really useful! I\'ve been looking for something like this. The error handling is well done.',
-        createdAt: '2024-01-16T09:20:00Z',
-        likes: 5
-      },
-      {
-        id: 2,
-        author: {
-          username: 'dev_mike',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mike'
-        },
-        content: 'Great snippet! One suggestion: you might want to add debouncing for frequent API calls.',
-        createdAt: '2024-01-17T16:45:00Z',
-        likes: 3
-      }
-    ],
-    relatedSnippets: [
-      {
-        id: 2,
-        title: 'React useDebounce Hook',
-        author: 'jane_smith',
-        language: 'JavaScript',
-        stars: 32
-      },
-      {
-        id: 3,
-        title: 'Async State Management Hook',
-        author: 'dev_mike',
-        language: 'TypeScript',
-        stars: 28
-      }
-    ]
-  };
-
   useEffect(() => {
-    // Simulate API call
     const loadSnippet = async () => {
-      setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSnippet(mockSnippet);
-      setLoading(false);
+      try {
+        console.log('🔄 [SnippetDetail] Loading snippet with ID:', id);
+        setLoading(true);
+        
+        const response = await snippetsAPI.getSnippetById(id);
+        console.log('✅ [SnippetDetail] Snippet loaded:', response.data);
+        
+        if (response.data) {
+          // Transform API data to match component expectations
+          const snippetData = {
+            ...response.data,
+            author: {
+              username: response.data.owner?.username || 'Anonymous',
+              name: response.data.owner?.fullName || response.data.owner?.username || 'Anonymous',
+              avatar: response.data.owner?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${response.data.owner?.username || 'anonymous'}`,
+              bio: response.data.owner?.bio || '',
+              followers: 0, // Not available in current API
+              following: 0  // Not available in current API
+            },
+            stats: {
+              views: response.data.viewCount || 0,
+              stars: response.data.likeCount || 0,
+              forks: 0, // Not available in current API
+              bookmarks: 0 // Not available in current API
+            },
+            languageColor: getLanguageColor(response.data.language),
+            comments: [], // TODO: Load comments separately
+            relatedSnippets: [] // TODO: Load related snippets
+          };
+          
+          setSnippet(snippetData);
+        }
+      } catch (error) {
+        console.error('❌ [SnippetDetail] Error loading snippet:', error);
+        toast.error('Failed to load snippet');
+        // Don't set snippet to null, let the loading state handle the error
+      } finally {
+        setLoading(false);
+      }
     };
 
-    loadSnippet();
+    if (id) {
+      loadSnippet();
+    }
   }, [id]);
 
   const handleCopyCode = async () => {

@@ -47,15 +47,24 @@ public class SnippetController {
         SnippetResponse snippet = snippetService.getSnippetById(id);
         return ResponseEntity.ok(snippet);
     }
-    
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+      @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('USER')")
-    @Operation(summary = "Create new snippet", description = "Create a new code snippet with optional file attachments")
-    public ResponseEntity<SnippetResponse> createSnippet(
+    @Operation(summary = "Create new snippet with files", description = "Create a new code snippet with optional file attachments")
+    public ResponseEntity<SnippetResponse> createSnippetWithFiles(
             @Parameter(description = "Snippet data") @Valid @RequestPart("snippet") SnippetCreateRequest request,
             @Parameter(description = "Optional file attachments") @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         
         SnippetResponse snippet = snippetService.createSnippet(request, files);
+        return ResponseEntity.ok(snippet);
+    }
+    
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Create new snippet", description = "Create a new code snippet")
+    public ResponseEntity<SnippetResponse> createSnippet(
+            @Parameter(description = "Snippet data") @Valid @RequestBody SnippetCreateRequest request) {
+        
+        SnippetResponse snippet = snippetService.createSnippet(request, null);
         return ResponseEntity.ok(snippet);
     }
     

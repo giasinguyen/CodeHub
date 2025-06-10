@@ -13,6 +13,15 @@ const apiClient = axios.create({
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
+    console.log('🚀 [API REQUEST]', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
+      headers: config.headers,
+      data: config.data
+    });
+    
     const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -20,14 +29,32 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('❌ [API REQUEST ERROR]', error);
     return Promise.reject(error);
   }
 );
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('✅ [API RESPONSE]', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.config.url,
+      data: response.data,
+      headers: response.headers
+    });
+    return response;
+  },
   (error) => {
+    console.error('❌ [API RESPONSE ERROR]', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      data: error.response?.data
+    });
+    
     const { response } = error;
     
     if (!response) {
@@ -131,25 +158,39 @@ export const uploadAPI = {
 // Snippets API methods
 export const snippetsAPI = {
   // Get all snippets with pagination
-  getSnippets: (page = 0, size = 10, sort = 'createdAt,desc') => 
-    api.get(`/snippets?page=${page}&size=${size}&sort=${sort}`),
+  getSnippets: (page = 0, size = 10, sort = 'createdAt,desc') => {
+    const url = `/snippets?page=${page}&size=${size}&sort=${sort}`;
+    console.log('🌐 [API] GET Snippets:', url);
+    return api.get(url);
+  },
   
   // Get snippet by ID
-  getSnippetById: (id) => api.get(`/snippets/${id}`),
+  getSnippetById: (id) => {
+    const url = `/snippets/${id}`;
+    console.log('🌐 [API] GET Snippet by ID:', url);
+    return api.get(url);
+  },
   
   // Search snippets
-  searchSnippets: (query, page = 0, size = 10) => 
-    api.get(`/snippets/search?q=${encodeURIComponent(query)}&page=${page}&size=${size}`),
+  searchSnippets: (query, page = 0, size = 10) => {
+    const url = `/snippets/search?q=${encodeURIComponent(query)}&page=${page}&size=${size}`;
+    console.log('🌐 [API] Search Snippets:', url);
+    return api.get(url);
+  },
   
   // Get trending snippets
-  getTrendingSnippets: (type = 'most-liked', page = 0, size = 10) => 
-    api.get(`/snippets/trending/${type}?page=${page}&size=${size}`),  // Create new snippet
+  getTrendingSnippets: (type = 'most-liked', page = 0, size = 10) => {
+    const url = `/snippets/trending/${type}?page=${page}&size=${size}`;
+    console.log('🌐 [API] GET Trending Snippets:', url);
+    return api.get(url);
+  },
+  
+  // Create new snippet
   createSnippet: (snippetData) => {
-    const formData = new FormData();
+    console.log('🌐 [API] POST Create Snippet:', snippetData);
     // Remove authorId as it's not needed - backend gets it from auth context
     const { authorId: _authorId, ...snippetPayload } = snippetData;
-    formData.append('snippet', JSON.stringify(snippetPayload));
-    return api.postFormData('/snippets', formData);
+    return api.post('/snippets', snippetPayload);
   },
   // Update snippet
   updateSnippet: (id, snippetData) => {

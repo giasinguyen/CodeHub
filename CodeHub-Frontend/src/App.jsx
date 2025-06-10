@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SnippetProvider } from './contexts/SnippetContext';
 import { Layout } from './components/layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import { 
@@ -160,9 +161,11 @@ const App = () => {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
+        <SnippetProvider>
+          <Router>
+            <AppRoutes />
+          </Router>
+        </SnippetProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

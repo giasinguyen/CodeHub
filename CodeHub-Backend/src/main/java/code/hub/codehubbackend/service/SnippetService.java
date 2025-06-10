@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,16 +72,20 @@ public class SnippetService {
         snippetRepository.save(snippet);
         
         return convertToResponse(snippet);
-    }
-      @Transactional
+    }    @Transactional
     @CacheEvict(value = {"languages", "tags", "mostLiked", "mostViewed"}, allEntries = true)
     public SnippetResponse createSnippet(SnippetCreateRequest request, List<MultipartFile> files) {
         User currentUser = getCurrentUser();
         
         // Upload files if provided
-        List<String> mediaUrls = null;
+        List<String> mediaUrls = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
             mediaUrls = fileUploadService.uploadFiles(files);
+        }
+        
+        // Also include any mediaUrls from the request (if any were provided)
+        if (request.getMediaUrls() != null && !request.getMediaUrls().isEmpty()) {
+            mediaUrls.addAll(request.getMediaUrls());
         }
         
         Snippet snippet = Snippet.builder()
@@ -88,8 +93,8 @@ public class SnippetService {
                 .code(request.getCode())
                 .language(request.getLanguage())
                 .description(request.getDescription())
-                .tags(request.getTags())
-                .mediaUrls(mediaUrls != null ? mediaUrls : List.of())
+                .tags(request.getTags() != null ? request.getTags() : List.of())
+                .mediaUrls(mediaUrls)
                 .owner(currentUser)
                 .build();
           snippet = snippetRepository.save(snippet);
@@ -98,7 +103,7 @@ public class SnippetService {
         createVersion(snippet, snippet.getCode(), snippet.getDescription(), "Initial version");
         
         return convertToResponse(snippet);
-    }    @Transactional
+    }@Transactional
     @CacheEvict(value = {"languages", "tags", "mostLiked", "mostViewed"}, allEntries = true)
     public SnippetResponse updateSnippet(Long id, SnippetUpdateRequest request, List<MultipartFile> files) {
         Snippet snippet = snippetRepository.findById(id)

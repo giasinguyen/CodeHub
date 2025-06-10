@@ -11,30 +11,37 @@ import {
   FileText,
   Globe,
   Lock,
-  Users
+  Users,
+  Copy,
+  Download,
+  Settings,
+  Palette,
+  Monitor
 } from 'lucide-react';
-import { Button, Input, Card } from '../components/ui';
+import { Button, Input, Card, CodeEditor } from '../components/ui';
 import { snippetsAPI } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
+import { useSnippet } from '../contexts/SnippetContext';
 import toast from 'react-hot-toast';
 
 const CreateSnippet = () => {
   const navigate = useNavigate();
-  
+  const { createSnippet } = useSnippet();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     code: '',
     language: 'javascript',
     visibility: 'public',
-    tags: []
+    tags: [],
+    mediaUrls: []
   });
-  
   const [newTag, setNewTag] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [isPreview, setIsPreview] = useState(false);
   const [availableLanguages, setAvailableLanguages] = useState([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdSnippet, setCreatedSnippet] = useState(null);
 
   // Load available languages on component mount
   useEffect(() => {
@@ -114,24 +121,28 @@ const CreateSnippet = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
-      setIsLoading(true);
+    setIsLoading(true);
     try {
       // Remove authorId - backend gets it from authenticated user context
       const snippetData = { ...formData };
       
-      const response = await snippetsAPI.createSnippet(snippetData);
+      const result = await createSnippet(snippetData);
       
-      toast.success('Snippet created successfully!');
-      navigate(`/snippets/${response.data.id}`);
+      if (result.success) {
+        setCreatedSnippet(result.data);
+        setShowSuccessModal(true);
+      } else {
+        setErrors({
+          submit: result.error
+        });
+      }
     } catch (error) {
       console.error('Error creating snippet:', error);
       const message = error.response?.data?.message || 'Failed to create snippet';
-      toast.error(message);
       setErrors({
         submit: message
       });
@@ -267,31 +278,15 @@ const CreateSnippet = () => {
                       </select>
                     </div>
                   </div>
-                </Card.Header>
-                <Card.Content>
-                  {isPreview ? (
-                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
-                      <pre className="text-sm text-slate-300 overflow-x-auto">
-                        <code>{formData.code || 'No code to preview...'}</code>
-                      </pre>
-                    </div>
-                  ) : (
-                    <div>
-                      <textarea
-                        name="code"
-                        value={formData.code}
-                        onChange={handleChange}
-                        placeholder="Paste or type your code here..."
-                        rows={20}
-                        className="w-full bg-slate-950 border border-slate-800 text-slate-300 px-4 py-3 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent font-mono text-sm resize-none"
-                        disabled={isLoading}
-                        required
-                      />
-                      {errors.code && (
-                        <p className="mt-1 text-sm text-red-400">{errors.code}</p>
-                      )}
-                    </div>
-                  )}
+                </Card.Header>                <Card.Content>
+                  <CodeEditor
+                    value={formData.code}
+                    onChange={handleChange}
+                    language={formData.language}
+                    placeholder="Paste or type your code here..."
+                    error={errors.code}
+                    name="code"
+                  />
                 </Card.Content>
               </Card>
             </div>
@@ -431,8 +426,66 @@ const CreateSnippet = () => {
                 </Card.Content>
               </Card>
             </div>
+          </div>        </form>
+
+        {/* Success Modal */}
+        {showSuccessModal && createdSnippet && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-800 rounded-lg p-6 max-w-md w-full">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Code2 className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Snippet Created Successfully!
+                </h3>
+                <p className="text-slate-400 mb-6">
+                  Your snippet "{createdSnippet.title}" has been created and is now available.
+                </p>
+                <div className="space-y-3">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => navigate(`/snippets/${createdSnippet.id}`)}
+                  >
+                    View Snippet
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => navigate('/snippets')}
+                  >
+                    Browse All Snippets
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => {
+                      setShowSuccessModal(false);
+                      setCreatedSnippet(null);
+                      // Reset form for creating another snippet
+                      setFormData({
+                        title: '',
+                        description: '',
+                        code: '',
+                        language: 'javascript',
+                        visibility: 'public',
+                        tags: [],
+                        mediaUrls: []
+                      });
+                      setErrors({});
+                    }}
+                  >
+                    Create Another Snippet
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
-        </form>
+        )}
       </div>
     </div>
   );

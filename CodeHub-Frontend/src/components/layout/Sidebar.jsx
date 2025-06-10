@@ -15,13 +15,12 @@ import {
 
 const Sidebar = ({ className = "" }) => {
   const location = useLocation();
-  const menuItems = [
-    {
+  const menuItems = [    {
       section: "Explore",
       items: [
         { icon: Home, label: "Home", path: "/" },
         { icon: Code2, label: "Code Snippets", path: "/snippets" },
-        { icon: Users, label: "Developers", path: "/users" },
+        { icon: Users, label: "Developers", path: "/developers" },
         { icon: TrendingUp, label: "Trending", path: "/trending" },
       ],
     },

@@ -147,8 +147,7 @@ public class ActivityService {
             log.error("Error creating comment activity", e);
         }
     }
-    
-    /**
+      /**
      * Create activity for profile update
      */
     @Transactional
@@ -174,6 +173,66 @@ public class ActivityService {
             log.info("Created profile update activity for user: {}", currentUser.getId());
         } catch (JsonProcessingException e) {
             log.error("Error creating profile update activity", e);
+        }
+    }
+    
+    /**
+     * Create activity for following a user
+     */
+    @Transactional
+    public void createFollowActivity(User userToFollow) {
+        try {
+            User currentUser = getCurrentUser();
+            
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("followedUser", Map.of(
+                "id", userToFollow.getId(),
+                "username", userToFollow.getUsername(),
+                "fullName", userToFollow.getFullName() != null ? userToFollow.getFullName() : userToFollow.getUsername()
+            ));
+            
+            Activity activity = Activity.builder()
+                    .user(currentUser)
+                    .type(Activity.ActivityType.USER_FOLLOWED)
+                    .targetId(userToFollow.getId())
+                    .targetType("user")
+                    .metadata(objectMapper.writeValueAsString(metadata))
+                    .build();
+            
+            activityRepository.save(activity);
+            log.info("Created follow activity: user {} followed user {}", currentUser.getId(), userToFollow.getId());
+        } catch (JsonProcessingException e) {
+            log.error("Error creating follow activity", e);
+        }
+    }
+    
+    /**
+     * Create activity for unfollowing a user
+     */
+    @Transactional
+    public void createUnfollowActivity(User userToUnfollow) {
+        try {
+            User currentUser = getCurrentUser();
+            
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("unfollowedUser", Map.of(
+                "id", userToUnfollow.getId(),
+                "username", userToUnfollow.getUsername(),
+                "fullName", userToUnfollow.getFullName() != null ? userToUnfollow.getFullName() : userToUnfollow.getUsername()
+            ));
+            
+            Activity activity = Activity.builder()
+                    .user(currentUser)
+                    .type(Activity.ActivityType.USER_UNFOLLOWED)
+                    .targetId(userToUnfollow.getId())
+                    .targetType("user")
+                    .metadata(objectMapper.writeValueAsString(metadata))
+                    .build();
+            
+            activityRepository.save(activity);
+            log.info("Created unfollow activity: user {} unfollowed user {}", currentUser.getId(), userToUnfollow.getId());
+        } catch (JsonProcessingException e) {
+            log.error("Error creating unfollow activity", e);
         }
     }
     

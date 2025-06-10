@@ -10,6 +10,7 @@ import {
   SnippetDetail,
   CreateSnippet,
   Profile,
+  Developers,
   Login, 
   Register 
 } from './pages';
@@ -52,6 +53,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Layout><Home /></Layout>} />
       <Route path="/snippets" element={<Layout><Snippets /></Layout>} />
       <Route path="/snippets/:id" element={<Layout><SnippetDetail /></Layout>} />
+      <Route path="/developers" element={<Layout><Developers /></Layout>} />
       
       {/* Auth Routes - Only accessible when not logged in */}
       <Route 

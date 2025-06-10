@@ -3,9 +3,12 @@ package code.hub.codehubbackend.controller;
 import code.hub.codehubbackend.dto.user.UserProfileResponse;
 import code.hub.codehubbackend.dto.user.UserUpdateRequest;
 import code.hub.codehubbackend.dto.user.PasswordChangeRequest;
+import code.hub.codehubbackend.dto.user.DeveloperResponse;
+import code.hub.codehubbackend.dto.user.CommunityStatsResponse;
+import code.hub.codehubbackend.dto.user.TrendingSkillResponse;
+import code.hub.codehubbackend.dto.user.LeaderboardUserResponse;
 import code.hub.codehubbackend.dto.snippet.SnippetResponse;
 import code.hub.codehubbackend.service.UserService;
-import code.hub.codehubbackend.service.SnippetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,17 +19,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "Users", description = "User management APIs")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class UserController {
-    
-    @Autowired
+      @Autowired
     private UserService userService;
-    
-    @Autowired
-    private SnippetService snippetService;
     
     @GetMapping("/profile")
     @PreAuthorize("hasRole('USER')")
@@ -71,12 +72,80 @@ public class UserController {
         Page<SnippetResponse> snippets = userService.getCurrentUserSnippets(page, size);
         return ResponseEntity.ok(snippets);
     }
-    
-    @PutMapping("/profile/password")
+      @PutMapping("/profile/password")
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Change password", description = "Change the current user's password")
     public ResponseEntity<Void> changePassword(@Valid @RequestBody PasswordChangeRequest request) {
         userService.changePassword(request);
+        return ResponseEntity.ok().build();
+    }
+    
+    // New endpoints for developers page
+    @GetMapping
+    @Operation(summary = "Get all developers", description = "Get a paginated list of all developers with filtering options")
+    public ResponseEntity<Page<DeveloperResponse>> getAllDevelopers(
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Sort by field") @RequestParam(defaultValue = "createdAt") String sort,
+            @Parameter(description = "Sort direction") @RequestParam(defaultValue = "desc") String direction,
+            @Parameter(description = "Search query") @RequestParam(required = false) String search,
+            @Parameter(description = "Filter by location") @RequestParam(required = false) String location,
+            @Parameter(description = "Filter by experience level") @RequestParam(required = false) Integer experience,
+            @Parameter(description = "Filter by skills") @RequestParam(required = false) List<String> skills) {
+        
+        Page<DeveloperResponse> developers = userService.getAllDevelopers(page, size, sort, direction, search, location, experience, skills);
+        return ResponseEntity.ok(developers);
+    }
+    
+    @GetMapping("/featured")
+    @Operation(summary = "Get featured developers", description = "Get a list of featured developers")
+    public ResponseEntity<List<DeveloperResponse>> getFeaturedDevelopers(
+            @Parameter(description = "Limit number of results") @RequestParam(defaultValue = "6") int limit) {
+        
+        List<DeveloperResponse> featured = userService.getFeaturedDevelopers(limit);
+        return ResponseEntity.ok(featured);
+    }
+    
+    @GetMapping("/stats/community")
+    @Operation(summary = "Get community statistics", description = "Get overall community statistics")
+    public ResponseEntity<CommunityStatsResponse> getCommunityStats() {
+        CommunityStatsResponse stats = userService.getCommunityStats();
+        return ResponseEntity.ok(stats);
+    }
+    
+    @GetMapping("/skills/trending")
+    @Operation(summary = "Get trending skills", description = "Get list of trending skills in the community")
+    public ResponseEntity<List<TrendingSkillResponse>> getTrendingSkills(
+            @Parameter(description = "Time period for trending analysis") @RequestParam(defaultValue = "week") String period,
+            @Parameter(description = "Limit number of results") @RequestParam(defaultValue = "10") int limit) {
+        
+        List<TrendingSkillResponse> trendingSkills = userService.getTrendingSkills(period, limit);
+        return ResponseEntity.ok(trendingSkills);
+    }
+    
+    @GetMapping("/leaderboard")
+    @Operation(summary = "Get leaderboard", description = "Get top developers leaderboard by category")
+    public ResponseEntity<List<LeaderboardUserResponse>> getLeaderboard(
+            @Parameter(description = "Leaderboard category") @RequestParam(defaultValue = "overall") String category,
+            @Parameter(description = "Limit number of results") @RequestParam(defaultValue = "10") int limit) {
+        
+        List<LeaderboardUserResponse> leaderboard = userService.getLeaderboard(category, limit);
+        return ResponseEntity.ok(leaderboard);
+    }
+    
+    @PostMapping("/{id}/follow")
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Follow a user", description = "Follow another developer")
+    public ResponseEntity<Void> followUser(@PathVariable Long id) {
+        userService.followUser(id);
+        return ResponseEntity.ok().build();
+    }
+    
+    @DeleteMapping("/{id}/follow")
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Unfollow a user", description = "Unfollow a developer")
+    public ResponseEntity<Void> unfollowUser(@PathVariable Long id) {
+        userService.unfollowUser(id);
         return ResponseEntity.ok().build();
     }
 }

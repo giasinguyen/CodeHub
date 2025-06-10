@@ -261,4 +261,92 @@ export const activityAPI = {
     api.get(`/activities/user/${userId}?filter=${filter}&page=${page}&size=${size}`),
 };
 
+// Developers API methods
+export const developersAPI = {
+  // Get all developers with filters
+  getDevelopers: (params = {}) => {
+    const { page = 0, size = 12, skills = [], location = '', experience = '', availability = '', sortBy = 'reputation' } = params;
+    let url = `/users?page=${page}&size=${size}&sort=${sortBy}`;
+    
+    if (skills.length > 0) {
+      url += `&skills=${skills.join(',')}`;
+    }
+    if (location) {
+      url += `&location=${encodeURIComponent(location)}`;
+    }
+    if (experience) {
+      url += `&experience=${experience}`;
+    }
+    if (availability) {
+      url += `&availability=${availability}`;
+    }
+    
+    console.log('🌐 [API] GET Developers:', url);
+    return api.get(url);
+  },
+
+  // Get developer by ID
+  getDeveloperById: (id) => {
+    const url = `/users/${id}`;
+    console.log('🌐 [API] GET Developer by ID:', url);
+    return api.get(url);
+  },
+
+  // Get featured developers
+  getFeaturedDevelopers: () => {
+    const url = '/users/featured';
+    console.log('🌐 [API] GET Featured Developers:', url);
+    return api.get(url);
+  },
+
+  // Get community stats
+  getCommunityStats: () => {
+    const url = '/users/stats/community';
+    console.log('🌐 [API] GET Community Stats:', url);
+    return api.get(url);
+  },
+
+  // Get trending skills
+  getTrendingSkills: () => {
+    const url = '/users/skills/trending';
+    console.log('🌐 [API] GET Trending Skills:', url);
+    return api.get(url);
+  },
+
+  // Get leaderboard
+  getLeaderboard: (type = 'reputation', limit = 10) => {
+    const url = `/users/leaderboard?type=${type}&limit=${limit}`;
+    console.log('🌐 [API] GET Leaderboard:', url);
+    return api.get(url);
+  },
+
+  // Search developers
+  searchDevelopers: (query, page = 0, size = 12) => {
+    const url = `/users/search?q=${encodeURIComponent(query)}&page=${page}&size=${size}`;
+    console.log('🌐 [API] Search Developers:', url);
+    return api.get(url);
+  },
+
+  // Follow/unfollow developer
+  toggleFollow: (userId) => {
+    const url = `/users/${userId}/follow`;
+    console.log('🌐 [API] Toggle Follow:', url);
+    return api.post(url);
+  },
+
+  // Get followers
+  getFollowers: (userId, page = 0, size = 20) => {
+    const url = `/users/${userId}/followers?page=${page}&size=${size}`;
+    console.log('🌐 [API] GET Followers:', url);
+    return api.get(url);
+  },
+
+  // Get following
+  getFollowing: (userId, page = 0, size = 20) => {
+    const url = `/users/${userId}/following?page=${page}&size=${size}`;
+    console.log('🌐 [API] GET Following:', url);
+    return api.get(url);
+  }
+};
+
 export default apiClient;

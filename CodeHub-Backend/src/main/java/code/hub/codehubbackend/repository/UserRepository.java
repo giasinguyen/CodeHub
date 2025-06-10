@@ -1,6 +1,8 @@
 package code.hub.codehubbackend.repository;
 
 import code.hub.codehubbackend.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,7 +21,33 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
     
     boolean existsByEmail(String email);
-    
-    @Query("SELECT u FROM User u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+      @Query("SELECT u FROM User u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<User> searchByUsername(@Param("keyword") String keyword);
+      // Methods for featured developers
+    @Query("SELECT u FROM User u LEFT JOIN Snippet s ON s.owner.id = u.id GROUP BY u.id ORDER BY COUNT(s) DESC, SUM(COALESCE(s.likeCount, 0)) DESC")
+    List<User> findTopDevelopersByActivity(Pageable pageable);
+    
+    Page<User> findTopByOrderByCreatedAtDesc(Pageable pageable);
+    
+    // Methods for community statistics  
+    @Query("SELECT COUNT(u) FROM User u WHERE u.updatedAt > :since")
+    Long countActiveUsersLastMonth(@Param("since") java.time.Instant since);
+    
+    default Long countActiveUsersLastMonth() {
+        java.time.Instant oneMonthAgo = java.time.Instant.now().minus(30, java.time.temporal.ChronoUnit.DAYS);
+        return countActiveUsersLastMonth(oneMonthAgo);
+    }
+    
+    // Methods for leaderboard
+    @Query("SELECT u FROM User u LEFT JOIN Snippet s ON s.owner.id = u.id GROUP BY u.id ORDER BY COUNT(s) DESC")
+    List<User> findTopUsersBySnippetCount(Pageable pageable);
+    
+    @Query("SELECT u FROM User u LEFT JOIN Snippet s ON s.owner.id = u.id GROUP BY u.id ORDER BY SUM(COALESCE(s.likeCount, 0)) DESC")
+    List<User> findTopUsersByTotalLikes(Pageable pageable);
+    
+    @Query("SELECT u FROM User u LEFT JOIN Snippet s ON s.owner.id = u.id GROUP BY u.id ORDER BY SUM(COALESCE(s.viewCount, 0)) DESC")
+    List<User> findTopUsersByTotalContributions(Pageable pageable);
+    
+    @Query("SELECT u FROM User u LEFT JOIN Snippet s ON s.owner.id = u.id GROUP BY u.id ORDER BY (COUNT(s) * 10 + SUM(COALESCE(s.likeCount, 0)) * 5 + SUM(COALESCE(s.viewCount, 0)) * 0.1) DESC")
+    List<User> findTopUsersByOverallScore(Pageable pageable);
 }

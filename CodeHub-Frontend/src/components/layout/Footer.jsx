@@ -3,13 +3,12 @@ import { Link } from "react-router-dom";
 import { Code2, Github, Twitter, Mail, Heart, Facebook } from "lucide-react";
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-  const footerLinks = {
+  const currentYear = new Date().getFullYear();  const footerLinks = {
     product: {
       title: "Product",
       links: [
         { label: "Code Snippets", href: "/snippets" },
-        { label: "Developers", href: "/users" },
+        { label: "Developers", href: "/developers" },
         { label: "Trending", href: "/trending" },
         { label: "API", href: "/api" },
       ],

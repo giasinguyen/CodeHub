@@ -37,11 +37,10 @@ const Navbar = () => {
     setIsUserMenuOpen(false);
     navigate('/');
   };
-
   const navItems = [
     { path: '/', label: 'Home' },
     { path: '/snippets', label: 'Code Snippets' },
-    { path: '/users', label: 'Developers' },
+    { path: '/developers', label: 'Developers' },
     { path: '/trending', label: 'Trending' },
   ];
 

@@ -49,7 +49,10 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
     
     @Query("SELECT COALESCE(SUM(s.likeCount), 0) FROM Snippet s WHERE s.owner = :user")
     Long sumLikesByOwner(@Param("user") User user);
-    
-    @Query("SELECT COALESCE(SUM(s.viewCount), 0) FROM Snippet s WHERE s.owner = :user")
+      @Query("SELECT COALESCE(SUM(s.viewCount), 0) FROM Snippet s WHERE s.owner = :user")
     Long sumViewsByOwner(@Param("user") User user);
+    
+    // Community statistics queries
+    @Query("SELECT COALESCE(SUM(s.likeCount), 0) FROM Snippet s")
+    Long sumAllLikes();
 }

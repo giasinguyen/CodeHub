@@ -11,6 +11,3 @@ export { default as ReputationBadge } from './ReputationBadge';
 // Complete components
 export { default as DeveloperList } from './DeveloperList';
 export { default as DeveloperModal } from './DeveloperModal';
-export { default as LeaderboardSection } from './LeaderboardSection';
-export { default as TrendingSkills } from './TrendingSkills';
-export { default as DeveloperStats } from './DeveloperStats';

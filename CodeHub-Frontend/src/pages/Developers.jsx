@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  MapPin, 
-  Code, 
-  GitBranch, 
-  Star, 
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Users,
+  Search,
+  Filter,
+  MapPin,
+  Code,
+  GitBranch,
+  Star,
   Trophy,
   TrendingUp,
   Calendar,
@@ -30,49 +30,42 @@ import {
   Grid,
   List,
   SortAsc,
-  SortDesc
-} from 'lucide-react';
-import { 
+  SortDesc,
+} from "lucide-react";
+import {
   DeveloperCard,
   DeveloperGrid,
   DeveloperList,
   DeveloperFilters,
-  DeveloperStats,
   DeveloperSearch,
   FeaturedDevelopers,
-  DeveloperModal,
-  LeaderboardSection,
-  TrendingSkills,
-  CommunityStats
-} from '../components/developers';
-import { Button, Card, Loading, Input } from '../components/ui';
-import { developersAPI } from '../services/api';
-import toast from 'react-hot-toast';
+  CommunityStats,
+} from "../components/developers";
+import { Button, Card, Loading, Input } from "../components/ui";
+import { developersAPI } from "../services/api";
+import toast from "react-hot-toast";
 
 const Developers = () => {
   const [developers, setDevelopers] = useState([]);
   const [filteredDevelopers, setFilteredDevelopers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
     skills: [],
-    location: '',
-    experience: '',
-    availability: '',
-    sortBy: 'reputation'
+    location: "",
+    experience: "",
+    availability: "",
+    sortBy: "reputation",
   });
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
   const [selectedDeveloper, setSelectedDeveloper] = useState(null);
-  const [showDeveloperModal, setShowDeveloperModal] = useState(false);
   const [communityStats, setCommunityStats] = useState(null);
   const [featuredDevelopers, setFeaturedDevelopers] = useState([]);
-  const [trendingSkills, setTrendingSkills] = useState([]);
-  const [leaderboard, setLeaderboard] = useState([]);
   const [pagination, setPagination] = useState({
     page: 0,
     size: 12,
     totalElements: 0,
-    totalPages: 0
+    totalPages: 0,
   });
   // Load initial data
   useEffect(() => {
@@ -83,17 +76,15 @@ const Developers = () => {
           loadDevelopers(),
           loadCommunityStats(),
           loadFeaturedDevelopers(),
-          loadTrendingSkills(),
-          loadLeaderboard()
         ]);
       } catch (error) {
-        console.error('Failed to load initial data:', error);
-        toast.error('Failed to load data');
+        console.error("Failed to load initial data:", error);
+        toast.error("Failed to load data");
       } finally {
         setLoading(false);
       }
     };
-    
+
     loadInitialData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -108,24 +99,24 @@ const Developers = () => {
       const response = await developersAPI.getDevelopers({
         page,
         size: pagination.size,
-        ...filters
+        ...filters,
       });
-      
+
       if (page === 0) {
         setDevelopers(response.data.content || []);
       } else {
-        setDevelopers(prev => [...prev, ...(response.data.content || [])]);
+        setDevelopers((prev) => [...prev, ...(response.data.content || [])]);
       }
-      
-      setPagination(prev => ({
+
+      setPagination((prev) => ({
         ...prev,
         page: response.data.number || 0,
         totalElements: response.data.totalElements || 0,
-        totalPages: response.data.totalPages || 0
+        totalPages: response.data.totalPages || 0,
       }));
     } catch (error) {
-      console.error('Failed to load developers:', error);
-      toast.error('Failed to load developers');
+      console.error("Failed to load developers:", error);
+      toast.error("Failed to load developers");
     } finally {
       setLoading(false);
     }
@@ -136,7 +127,7 @@ const Developers = () => {
       const response = await developersAPI.getCommunityStats();
       setCommunityStats(response.data);
     } catch (error) {
-      console.error('Failed to load community stats:', error);
+      console.error("Failed to load community stats:", error);
     }
   };
 
@@ -145,25 +136,7 @@ const Developers = () => {
       const response = await developersAPI.getFeaturedDevelopers();
       setFeaturedDevelopers(response.data || []);
     } catch (error) {
-      console.error('Failed to load featured developers:', error);
-    }
-  };
-
-  const loadTrendingSkills = async () => {
-    try {
-      const response = await developersAPI.getTrendingSkills();
-      setTrendingSkills(response.data || []);
-    } catch (error) {
-      console.error('Failed to load trending skills:', error);
-    }
-  };
-
-  const loadLeaderboard = async () => {
-    try {
-      const response = await developersAPI.getLeaderboard();
-      setLeaderboard(response.data || []);
-    } catch (error) {
-      console.error('Failed to load leaderboard:', error);
+      console.error("Failed to load featured developers:", error);
     }
   };
 
@@ -173,19 +146,20 @@ const Developers = () => {
     // Search filter
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase();
-      filtered = filtered.filter(dev => 
-        dev.username?.toLowerCase().includes(search) ||
-        dev.fullName?.toLowerCase().includes(search) ||
-        dev.bio?.toLowerCase().includes(search) ||
-        dev.skills?.some(skill => skill.toLowerCase().includes(search))
+      filtered = filtered.filter(
+        (dev) =>
+          dev.username?.toLowerCase().includes(search) ||
+          dev.fullName?.toLowerCase().includes(search) ||
+          dev.bio?.toLowerCase().includes(search) ||
+          dev.skills?.some((skill) => skill.toLowerCase().includes(search))
       );
     }
 
     // Skills filter
     if (filters.skills.length > 0) {
-      filtered = filtered.filter(dev => 
-        filters.skills.some(skill => 
-          dev.skills?.some(devSkill => 
+      filtered = filtered.filter((dev) =>
+        filters.skills.some((skill) =>
+          dev.skills?.some((devSkill) =>
             devSkill.toLowerCase().includes(skill.toLowerCase())
           )
         )
@@ -194,20 +168,24 @@ const Developers = () => {
 
     // Location filter
     if (filters.location) {
-      filtered = filtered.filter(dev => 
+      filtered = filtered.filter((dev) =>
         dev.location?.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
 
     // Experience filter
     if (filters.experience) {
-      filtered = filtered.filter(dev => {
+      filtered = filtered.filter((dev) => {
         const exp = dev.experience || 0;
         switch (filters.experience) {
-          case 'junior': return exp <= 2;
-          case 'mid': return exp > 2 && exp <= 5;
-          case 'senior': return exp > 5;
-          default: return true;
+          case "junior":
+            return exp <= 2;
+          case "mid":
+            return exp > 2 && exp <= 5;
+          case "senior":
+            return exp > 5;
+          default:
+            return true;
         }
       });
     }
@@ -215,15 +193,17 @@ const Developers = () => {
     // Sort
     filtered.sort((a, b) => {
       switch (filters.sortBy) {
-        case 'reputation':
+        case "reputation":
           return (b.reputation || 0) - (a.reputation || 0);
-        case 'contributions':
+        case "contributions":
           return (b.contributions || 0) - (a.contributions || 0);
-        case 'followers':
+        case "followers":
           return (b.followers || 0) - (a.followers || 0);
-        case 'name':
-          return (a.fullName || a.username || '').localeCompare(b.fullName || b.username || '');
-        case 'newest':
+        case "name":
+          return (a.fullName || a.username || "").localeCompare(
+            b.fullName || b.username || ""
+          );
+        case "newest":
           return new Date(b.joinedAt || 0) - new Date(a.joinedAt || 0);
         default:
           return 0;
@@ -234,13 +214,12 @@ const Developers = () => {
   };
 
   const handleFilterChange = (newFilters) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-    setPagination(prev => ({ ...prev, page: 0 }));
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+    setPagination((prev) => ({ ...prev, page: 0 }));
   };
 
   const handleDeveloperClick = (developer) => {
     setSelectedDeveloper(developer);
-    setShowDeveloperModal(true);
   };
 
   const handleLoadMore = () => {
@@ -280,7 +259,8 @@ const Developers = () => {
                 </h1>
               </div>
               <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-                Discover talented developers, connect with peers, and build amazing things together
+                Discover talented developers, connect with peers, and build
+                amazing things together
               </p>
             </div>
 
@@ -296,7 +276,7 @@ const Developers = () => {
               transition={{ delay: 0.1 }}
               className="mb-8"
             >
-              <FeaturedDevelopers 
+              <FeaturedDevelopers
                 developers={featuredDevelopers}
                 onDeveloperClick={handleDeveloperClick}
               />
@@ -312,7 +292,7 @@ const Developers = () => {
           >
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-3">
-                <DeveloperSearch 
+                <DeveloperSearch
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
                   filters={filters}
@@ -339,8 +319,8 @@ const Developers = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                {viewMode === 'grid' ? (
-                  <DeveloperGrid 
+                {viewMode === "grid" ? (
+                  <DeveloperGrid
                     developers={filteredDevelopers}
                     onDeveloperClick={handleDeveloperClick}
                     onLoadMore={handleLoadMore}
@@ -348,7 +328,7 @@ const Developers = () => {
                     loading={loading}
                   />
                 ) : (
-                  <DeveloperList 
+                  <DeveloperList
                     developers={filteredDevelopers}
                     onDeveloperClick={handleDeveloperClick}
                     onLoadMore={handleLoadMore}
@@ -358,50 +338,8 @@ const Developers = () => {
                 )}
               </motion.div>
             </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Leaderboard */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <LeaderboardSection 
-                  leaderboard={leaderboard}
-                  onDeveloperClick={handleDeveloperClick}
-                />
-              </motion.div>
-
-              {/* Trending Skills */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <TrendingSkills 
-                  skills={trendingSkills}
-                  onSkillClick={(skill) => handleFilterChange({ skills: [skill] })}
-                />
-              </motion.div>
-
-              {/* Developer Stats */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                <DeveloperStats developers={filteredDevelopers} />
-              </motion.div>
-            </div>
           </div>
 
-          {/* Developer Detail Modal */}
-          <DeveloperModal
-            isOpen={showDeveloperModal}
-            onClose={() => setShowDeveloperModal(false)}
-            developer={selectedDeveloper}
-          />
         </div>
       </div>
     </div>

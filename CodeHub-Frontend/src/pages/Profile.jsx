@@ -9,8 +9,7 @@ import {
   ProfileStats,
   ProfileTabs,
   ProfileSnippets,
-  ProfileActivity,
-  ProfileSettings
+  ProfileActivity
 } from '../components/profile';
 
 const Profile = () => {
@@ -131,16 +130,11 @@ const Profile = () => {
         />
 
         {/* Profile Stats */}
-        <ProfileStats user={user} />
-
-        {/* Profile Tabs */}
+        <ProfileStats user={user} />        {/* Profile Tabs */}
         <ProfileTabs 
           activeTab={activeTab} 
           setActiveTab={setActiveTab}
-          isOwnProfile={isOwnProfile}
-        />
-
-        {/* Tab Content */}
+        />        {/* Tab Content */}
         <div className="mt-6">
           {activeTab === 'snippets' && (
             <ProfileSnippets 
@@ -153,13 +147,6 @@ const Profile = () => {
             <ProfileActivity 
               userId={user.id}
               isOwnProfile={isOwnProfile}
-            />
-          )}
-          
-          {activeTab === 'settings' && isOwnProfile && (
-            <ProfileSettings 
-              user={user}
-              onUserUpdate={handleUserUpdate}
             />
           )}
         </div>

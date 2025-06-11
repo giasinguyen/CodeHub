@@ -46,8 +46,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findTopUsersByTotalLikes(Pageable pageable);
     
     @Query("SELECT u FROM User u LEFT JOIN Snippet s ON s.owner.id = u.id GROUP BY u.id ORDER BY SUM(COALESCE(s.viewCount, 0)) DESC")
-    List<User> findTopUsersByTotalContributions(Pageable pageable);
-    
-    @Query("SELECT u FROM User u LEFT JOIN Snippet s ON s.owner.id = u.id GROUP BY u.id ORDER BY (COUNT(s) * 10 + SUM(COALESCE(s.likeCount, 0)) * 5 + SUM(COALESCE(s.viewCount, 0)) * 0.1) DESC")
+    List<User> findTopUsersByTotalContributions(Pageable pageable);    @Query("SELECT u FROM User u LEFT JOIN Snippet s ON s.owner.id = u.id GROUP BY u.id ORDER BY (COUNT(s) * 10 + SUM(COALESCE(s.likeCount, 0)) * 5 + SUM(COALESCE(s.viewCount, 0)) * 0.1) DESC")
     List<User> findTopUsersByOverallScore(Pageable pageable);
 }

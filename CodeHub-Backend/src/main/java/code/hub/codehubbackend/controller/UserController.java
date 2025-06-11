@@ -7,6 +7,7 @@ import code.hub.codehubbackend.dto.user.DeveloperResponse;
 import code.hub.codehubbackend.dto.user.CommunityStatsResponse;
 import code.hub.codehubbackend.dto.user.TrendingSkillResponse;
 import code.hub.codehubbackend.dto.user.LeaderboardUserResponse;
+import code.hub.codehubbackend.dto.user.UserStatsResponse;
 import code.hub.codehubbackend.dto.snippet.SnippetResponse;
 import code.hub.codehubbackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,7 +73,22 @@ public class UserController {
         Page<SnippetResponse> snippets = userService.getCurrentUserSnippets(page, size);
         return ResponseEntity.ok(snippets);
     }
-      @PutMapping("/profile/password")
+    @GetMapping("/profile/stats")
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Get current user statistics", description = "Get statistics for the currently authenticated user")
+    public ResponseEntity<UserStatsResponse> getCurrentUserStats() {
+        UserStatsResponse stats = userService.getCurrentUserStats();
+        return ResponseEntity.ok(stats);
+    }
+    
+    @GetMapping("/{id}/stats")
+    @Operation(summary = "Get user statistics by ID", description = "Get statistics for a specific user")
+    public ResponseEntity<UserStatsResponse> getUserStats(@PathVariable Long id) {
+        UserStatsResponse stats = userService.getUserStats(id);
+        return ResponseEntity.ok(stats);
+    }
+    
+    @PutMapping("/profile/password")
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Change password", description = "Change the current user's password")
     public ResponseEntity<Void> changePassword(@Valid @RequestBody PasswordChangeRequest request) {

@@ -1,15 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, MapPin, Calendar, Mail, Github, Twitter, Linkedin, Edit3, UserCheck, UserPlus } from 'lucide-react';
 import { Button, Card } from '../ui';
 import { formatDate } from '../../utils/dateUtils';
-import { uploadAPI, authAPI } from '../../services/api';
+import { uploadAPI, authAPI, usersAPI } from '../../services/api';
 import { toast } from 'react-hot-toast';
+import EditProfileModal from './EditProfileModal';
 
 const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser }) => {
   const [isFollowing, setIsFollowing] = useState(user?.isFollowing || false);
   const [followersCount, setFollowersCount] = useState(user?.followersCount || 0);
+  const [followingCount, setFollowingCount] = useState(user?.followingCount || 0);
+  const [snippetsCount, setSnippetsCount] = useState(user?.snippetsCount || 0);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  // Load user statistics
+  useEffect(() => {
+    const loadUserStats = async () => {
+      try {
+        setStatsLoading(true);
+        let response;
+        
+        if (isOwnProfile) {
+          response = await usersAPI.getCurrentUserStats();
+        } else {
+          response = await usersAPI.getUserStats(user.id);
+        }
+        
+        const stats = response.data;
+        setFollowersCount(stats.followersCount || 0);
+        setFollowingCount(stats.followingCount || 0);
+        setSnippetsCount(stats.snippetsCount || 0);
+      } catch (error) {
+        console.error('Failed to load user stats:', error);
+        // Use fallback values from user object
+        setFollowersCount(user?.followersCount || 0);
+        setFollowingCount(user?.followingCount || 0);
+        setSnippetsCount(user?.snippetsCount || 0);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    if (user?.id) {
+      loadUserStats();    }
+  }, [user?.id, isOwnProfile]);
+
+  const handleEditProfile = () => {
+    setShowEditModal(true);
+  };
+
+  const handleProfileUpdate = (updatedUser) => {
+    setUser(updatedUser);
+    if (onUserUpdate) {
+      onUserUpdate(updatedUser);
+    }
+  };
 
   const handleFollowToggle = async () => {
     if (isOwnProfile) return;
@@ -248,9 +296,12 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center space-x-3 mt-4 sm:mt-0">
-            {isOwnProfile ? (
-              <Button variant="outline" className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3 mt-4 sm:mt-0">            {isOwnProfile ? (
+              <Button 
+                variant="outline" 
+                className="flex items-center space-x-2"
+                onClick={handleEditProfile}
+              >
                 <Edit3 className="w-4 h-4" />
                 <span>Edit Profile</span>
               </Button>
@@ -272,26 +323,37 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser }) => {
               </>
             )}
           </div>
-        </div>
-
-        {/* Followers/Following */}
+        </div>        {/* Followers/Following */}
         <div className="flex items-center space-x-6 mt-6 pt-6 border-t border-slate-700">
           <div className="text-center">
-            <div className="text-2xl font-bold text-white">{followersCount}</div>
+            <div className="text-2xl font-bold text-white">
+              {statsLoading ? '...' : followersCount}
+            </div>
             <div className="text-sm text-slate-400">Followers</div>
           </div>
           
           <div className="text-center">
-            <div className="text-2xl font-bold text-white">{user.followingCount || 0}</div>
+            <div className="text-2xl font-bold text-white">
+              {statsLoading ? '...' : followingCount}
+            </div>
             <div className="text-sm text-slate-400">Following</div>
           </div>
           
           <div className="text-center">
-            <div className="text-2xl font-bold text-white">{user.snippetsCount || 0}</div>
+            <div className="text-2xl font-bold text-white">
+              {statsLoading ? '...' : snippetsCount}
+            </div>
             <div className="text-sm text-slate-400">Snippets</div>
-          </div>
-        </div>
+          </div>        </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        user={user}
+        onUpdate={handleProfileUpdate}
+      />
     </Card>
   );
 };

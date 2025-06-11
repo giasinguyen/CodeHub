@@ -41,11 +41,18 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
     List<String> findDistinctLanguages();
     
     @Query("SELECT DISTINCT tag FROM Snippet s JOIN s.tags tag ORDER BY tag")
-    List<String> findDistinctTags();
-    
-    // User statistics queries
+    List<String> findDistinctTags();    // User statistics queries
     @Query("SELECT COUNT(s) FROM Snippet s WHERE s.owner = :user")
     Long countByOwner(@Param("user") User user);
+    
+    @Query("SELECT s FROM Snippet s WHERE s.owner = :user")
+    List<Snippet> findByOwner(@Param("user") User user);
+    
+    @Query("SELECT COUNT(s) FROM Snippet s WHERE s.owner.id = :authorId")
+    Long countByAuthorId(@Param("authorId") Long authorId);
+    
+    @Query("SELECT s FROM Snippet s WHERE s.owner.id = :authorId")
+    List<Snippet> findByAuthorId(@Param("authorId") Long authorId);
     
     @Query("SELECT COALESCE(SUM(s.likeCount), 0) FROM Snippet s WHERE s.owner = :user")
     Long sumLikesByOwner(@Param("user") User user);

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Code2, Activity, Settings } from 'lucide-react';
+import { Code2, Activity } from 'lucide-react';
 
-const ProfileTabs = ({ activeTab, setActiveTab, isOwnProfile }) => {
+const ProfileTabs = ({ activeTab, setActiveTab }) => {
   const tabs = [
     {
       id: 'snippets',
@@ -15,15 +15,6 @@ const ProfileTabs = ({ activeTab, setActiveTab, isOwnProfile }) => {
       icon: Activity
     }
   ];
-
-  // Add settings tab only for own profile
-  if (isOwnProfile) {
-    tabs.push({
-      id: 'settings',
-      label: 'Settings',
-      icon: Settings
-    });
-  }
 
   return (
     <div className="border-b border-slate-700">

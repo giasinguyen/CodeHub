@@ -11,6 +11,7 @@ import {
   CreateSnippet,
   Profile,
   Developers,
+  Settings,
   Login, 
   Register 
 } from './pages';
@@ -125,6 +126,15 @@ const AppRoutes = () => {
         path="/profile/:userId" 
         element={
           <Layout><Profile /></Layout>
+        } 
+      />
+      
+      <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <Layout><Settings /></Layout>
+          </ProtectedRoute>
         } 
       />
       

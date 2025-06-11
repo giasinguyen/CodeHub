@@ -244,10 +244,15 @@ export const usersAPI = {
   
   // Get user snippets
   getUserSnippets: (id, page = 0, size = 10) => 
-    api.get(`/users/${id}/snippets?page=${page}&size=${size}`),
-    // Get current user snippets
+    api.get(`/users/${id}/snippets?page=${page}&size=${size}`),  // Get current user snippets
   getCurrentUserSnippets: (page = 0, size = 10) => 
     api.get(`/users/profile/snippets?page=${page}&size=${size}`),
+  
+  // Get user statistics
+  getUserStats: (id) => api.get(`/users/${id}/stats`),
+  
+  // Get current user statistics
+  getCurrentUserStats: () => api.get('/users/profile/stats'),
 };
 
 // Activity API methods

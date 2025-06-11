@@ -177,11 +177,17 @@ export const snippetsAPI = {
     console.log('🌐 [API] Search Snippets:', url);
     return api.get(url);
   },
-  
-  // Get trending snippets
+    // Get trending snippets
   getTrendingSnippets: (type = 'most-liked', page = 0, size = 10) => {
     const url = `/snippets/trending/${type}?page=${page}&size=${size}`;
     console.log('🌐 [API] GET Trending Snippets:', url);
+    return api.get(url);
+  },
+
+  // Get available languages
+  getLanguages: () => {
+    const url = '/snippets/languages';
+    console.log('🌐 [API] GET Languages:', url);
     return api.get(url);
   },
   
@@ -345,11 +351,62 @@ export const developersAPI = {
     console.log('🌐 [API] GET Followers:', url);
     return api.get(url);
   },
-
   // Get following
   getFollowing: (userId, page = 0, size = 20) => {
     const url = `/users/${userId}/following?page=${page}&size=${size}`;
     console.log('🌐 [API] GET Following:', url);
+    return api.get(url);
+  }
+};
+
+// Trending API methods
+export const trendingAPI = {
+  // Get trending overview
+  getTrendingOverview: (period = 'week') => {
+    const url = `/trending/overview?period=${period}`;
+    console.log('🌐 [API] GET Trending Overview:', url);
+    return api.get(url);
+  },
+
+  // Get trending snippets
+  getTrendingSnippets: (type = 'most-liked', period = 'week', page = 0, size = 20) => {
+    const url = `/trending/snippets?type=${type}&period=${period}&page=${page}&size=${size}`;
+    console.log('🌐 [API] GET Trending Snippets:', url);
+    return api.get(url);
+  },
+
+  // Get trending developers
+  getTrendingDevelopers: (period = 'week', limit = 15) => {
+    const url = `/trending/developers?period=${period}&limit=${limit}`;
+    console.log('🌐 [API] GET Trending Developers:', url);
+    return api.get(url);
+  },
+
+  // Get trending skills
+  getTrendingSkills: (period = 'week', limit = 15) => {
+    const url = `/trending/skills?period=${period}&limit=${limit}`;
+    console.log('🌐 [API] GET Trending Skills:', url);
+    return api.get(url);
+  },
+
+  // Get trending languages
+  getTrendingLanguages: (period = 'week', limit = 15) => {
+    const url = `/trending/languages?period=${period}&limit=${limit}`;
+    console.log('🌐 [API] GET Trending Languages:', url);
+    return api.get(url);
+  },
+
+  // Get trending stats
+  getTrendingStats: (period = 'week') => {
+    const url = `/trending/stats?period=${period}`;
+    console.log('🌐 [API] GET Trending Stats:', url);
+    return api.get(url);
+  },
+
+  // Get trending leaderboard
+  getTrendingLeaderboard: (category = 'overall', period = 'week', limit = 10) => {
+    const url = `/trending/leaderboard?category=${category}&period=${period}&limit=${limit}`;
+    console.log('🌐 [API] GET Trending Leaderboard:', url);
     return api.get(url);
   }
 };

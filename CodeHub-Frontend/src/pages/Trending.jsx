@@ -1,0 +1,761 @@
+import React, { useState, useEffect, useCallback } from 'react';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { 
+  TrendingUp, 
+  Clock, 
+  Star, 
+  Eye, 
+  Flame, 
+  ArrowUp, 
+  ArrowDown,
+  Code2,
+  GitFork,
+  Calendar,
+  Filter,
+  ChevronDown,
+  Trophy,
+  Zap,
+  Users,
+  BarChart3,
+  Tag
+} from 'lucide-react';
+import { Button, Card, Loading } from '../components/ui';
+import { SkillBadge, ReputationBadge } from '../components/developers';
+import { snippetsAPI, developersAPI } from '../services/api';
+import toast from 'react-hot-toast';
+
+const Trending = () => {
+  const [activeTab, setActiveTab] = useState('snippets');
+  const [timeRange, setTimeRange] = useState('week');
+  const [loading, setLoading] = useState(true);
+  const [trendingData, setTrendingData] = useState({
+    snippets: [],
+    developers: [],
+    skills: [],
+    languages: []
+  });
+  const [filters, setFilters] = useState({
+    category: 'all',
+    language: 'all',
+    sortBy: 'most-liked'
+  });
+
+  const tabs = [
+    { 
+      id: 'snippets', 
+      label: 'Code Snippets', 
+      icon: Code2,
+      description: 'Trending code snippets'
+    },
+    { 
+      id: 'developers', 
+      label: 'Developers', 
+      icon: Users,
+      description: 'Rising stars in the community'
+    },
+    { 
+      id: 'skills', 
+      label: 'Skills', 
+      icon: Trophy,
+      description: 'Hot technologies and frameworks'
+    },
+    { 
+      id: 'languages', 
+      label: 'Languages', 
+      icon: BarChart3,
+      description: 'Popular programming languages'
+    }
+  ];
+  const timeRanges = [
+    { value: 'day', label: 'Today', icon: Clock },
+    { value: 'week', label: 'This Week', icon: Calendar },
+    { value: 'month', label: 'This Month', icon: TrendingUp },
+    { value: 'year', label: 'This Year', icon: Flame }
+  ];
+
+  // Define callback functions first
+  const loadTrendingSnippets = useCallback(async () => {
+    try {
+      const sortType = filters.sortBy === 'most-liked' ? 'most-liked' : 'most-viewed';
+      const response = await snippetsAPI.getTrendingSnippets(sortType, 0, 20);
+      
+      if (response.data && response.data.content) {
+        setTrendingData(prev => ({
+          ...prev,
+          snippets: response.data.content
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load trending snippets:', error);
+    }
+  }, [filters.sortBy]);
+
+  const loadTrendingDevelopers = useCallback(async () => {
+    try {
+      const [featuredResponse, leaderboardResponse] = await Promise.all([
+        developersAPI.getFeaturedDevelopers(),
+        developersAPI.getLeaderboard('reputation', 15)
+      ]);
+
+      const featured = featuredResponse.data || [];
+      const leaderboard = leaderboardResponse.data || [];
+      
+      // Combine and deduplicate
+      const allDevelopers = [...featured, ...leaderboard];
+      const uniqueDevelopers = allDevelopers.filter((dev, index, self) => 
+        index === self.findIndex(d => d.id === dev.id)
+      );
+
+      setTrendingData(prev => ({
+        ...prev,
+        developers: uniqueDevelopers.slice(0, 15)
+      }));
+    } catch (error) {
+      console.error('Failed to load trending developers:', error);
+    }
+  }, []);
+
+  const loadTrendingSkills = useCallback(async () => {
+    try {
+      const response = await developersAPI.getTrendingSkills();
+      
+      if (response.data) {
+        setTrendingData(prev => ({
+          ...prev,
+          skills: response.data
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load trending skills:', error);
+    }
+  }, []);
+
+  const loadTrendingLanguages = useCallback(async () => {
+    try {
+      const response = await snippetsAPI.getLanguages();
+      
+      if (response.data) {
+        // Mock trending data with growth rates
+        const languagesWithTrends = response.data.map((lang, index) => ({
+          ...lang,
+          growthRate: Math.random() * 30 - 10, // Random growth rate between -10% and 20%
+          rank: index + 1,
+          previousRank: index + Math.floor(Math.random() * 3) - 1,
+          snippetCount: lang.count || Math.floor(Math.random() * 1000),
+          weeklyGrowth: Math.floor(Math.random() * 100)
+        }));
+
+        setTrendingData(prev => ({
+          ...prev,
+          languages: languagesWithTrends.slice(0, 15)
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load trending languages:', error);
+    }
+  }, []);
+
+  const loadTrendingData = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      switch (activeTab) {
+        case 'snippets':
+          await loadTrendingSnippets();
+          break;
+        case 'developers':
+          await loadTrendingDevelopers();
+          break;
+        case 'skills':
+          await loadTrendingSkills();
+          break;
+        case 'languages':
+          await loadTrendingLanguages();
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error('Failed to load trending data:', error);
+      toast.error('Failed to load trending data');
+    } finally {
+      setLoading(false);    }
+  }, [activeTab, loadTrendingSnippets, loadTrendingDevelopers, loadTrendingSkills, loadTrendingLanguages]);
+
+  // useEffect to load data when component mounts or activeTab changes
+  useEffect(() => {
+    loadTrendingData();
+  }, [loadTrendingData]);
+
+  const renderTrendingSnippets = () => (
+    <div className="space-y-6">
+      {/* Filter Controls */}
+      <Card>
+        <Card.Content className="p-4">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+            <div className="flex items-center space-x-4">
+              <label className="text-sm font-medium text-slate-300">Sort by:</label>
+              <select 
+                value={filters.sortBy}
+                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                className="bg-slate-700 border border-slate-600 text-white px-3 py-2 rounded-lg text-sm"
+              >
+                <option value="most-liked">Most Liked</option>
+                <option value="most-viewed">Most Viewed</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <label className="text-sm font-medium text-slate-300">Language:</label>
+              <select 
+                value={filters.language}
+                onChange={(e) => setFilters(prev => ({ ...prev, language: e.target.value }))}
+                className="bg-slate-700 border border-slate-600 text-white px-3 py-2 rounded-lg text-sm"
+              >
+                <option value="all">All Languages</option>
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="typescript">TypeScript</option>
+                <option value="java">Java</option>
+                <option value="cpp">C++</option>
+                <option value="go">Go</option>
+                <option value="rust">Rust</option>
+              </select>
+            </div>
+          </div>
+        </Card.Content>
+      </Card>
+
+      {/* Trending Snippets List */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {trendingData.snippets.map((snippet, index) => (
+          <motion.div
+            key={snippet.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <Card className="h-full hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <Card.Header>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 text-sm">
+                      <span className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                        #{index + 1}
+                      </span>
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: getLanguageColor(snippet.language) }}
+                      />
+                      <span className="text-slate-400">{snippet.language}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 text-sm text-slate-400">
+                    <div className="flex items-center space-x-1">
+                      <Eye className="w-4 h-4" />
+                      <span>{snippet.viewCount || 0}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Star className="w-4 h-4" />
+                      <span>{snippet.likeCount || 0}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <Link 
+                  to={`/snippets/${snippet.id}`}
+                  className="block hover:text-cyan-400 transition-colors"
+                >
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    {snippet.title}
+                  </h3>
+                </Link>
+                
+                <p className="text-slate-400 text-sm line-clamp-2 mb-3">
+                  {snippet.description}
+                </p>
+
+                {/* Tags */}
+                {snippet.tags && snippet.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {snippet.tags.slice(0, 3).map((tag, tagIndex) => (
+                      <span 
+                        key={tagIndex}
+                        className="px-2 py-1 bg-slate-700 text-slate-300 rounded-md text-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {snippet.tags.length > 3 && (
+                      <span className="text-slate-400 text-xs">
+                        +{snippet.tags.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                )}
+              </Card.Header>
+
+              <Card.Footer>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <img
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${snippet.owner?.username || 'anonymous'}`}
+                      alt={snippet.owner?.username || 'Anonymous'}
+                      className="w-6 h-6 rounded-full"
+                    />
+                    <Link 
+                      to={`/profile/${snippet.owner?.id}`}
+                      className="text-sm text-slate-300 hover:text-white transition-colors"
+                    >
+                      {snippet.owner?.username || 'Anonymous'}
+                    </Link>
+                  </div>
+                  
+                  <div className="flex items-center space-x-1 text-xs text-slate-400">
+                    <Clock className="w-3 h-3" />
+                    <span>{formatTimeAgo(snippet.createdAt)}</span>
+                  </div>
+                </div>
+              </Card.Footer>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderTrendingDevelopers = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {trendingData.developers.map((developer, index) => (
+          <motion.div
+            key={developer.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <Card className="h-full hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <Card.Header>
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <img
+                      src={developer.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.username}`}
+                      alt={developer.username}
+                      className="w-16 h-16 rounded-full border-4 border-slate-700"
+                    />
+                    <div className="absolute -top-1 -right-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                      #{index + 1}
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <Link 
+                      to={`/profile/${developer.id}`}
+                      className="block hover:text-cyan-400 transition-colors"
+                    >
+                      <h3 className="text-lg font-semibold text-white">
+                        {developer.fullName || developer.username}
+                      </h3>
+                    </Link>
+                    <p className="text-slate-400 text-sm">@{developer.username}</p>
+                    {developer.location && (
+                      <p className="text-slate-500 text-xs">{developer.location}</p>
+                    )}
+                  </div>
+                </div>
+
+                {developer.bio && (
+                  <p className="text-slate-400 text-sm mt-3 line-clamp-2">
+                    {developer.bio}
+                  </p>
+                )}
+              </Card.Header>
+
+              <Card.Content>
+                <div className="space-y-3">
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div>
+                      <div className="text-white font-semibold">{developer.followers || 0}</div>
+                      <div className="text-slate-400 text-xs">Followers</div>
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold">{developer.snippetsCount || 0}</div>
+                      <div className="text-slate-400 text-xs">Snippets</div>
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold">{developer.reputation || 0}</div>
+                      <div className="text-slate-400 text-xs">Reputation</div>
+                    </div>
+                  </div>
+
+                  {/* Skills */}
+                  {developer.skills && developer.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {developer.skills.slice(0, 3).map((skill, skillIndex) => (
+                        <SkillBadge key={skillIndex} skill={skill} size="sm" />
+                      ))}
+                      {developer.skills.length > 3 && (
+                        <span className="text-slate-400 text-xs px-2 py-1">
+                          +{developer.skills.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card.Content>
+
+              <Card.Footer>
+                <div className="flex items-center justify-between">
+                  <ReputationBadge reputation={developer.reputation || 0} />
+                  
+                  <div className="flex items-center space-x-1">
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                    <span className="text-green-500 text-sm font-medium">
+                      +{Math.floor(Math.random() * 50)}%
+                    </span>
+                  </div>
+                </div>
+              </Card.Footer>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderTrendingSkills = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {trendingData.skills.map((skill, index) => (
+          <motion.div
+            key={skill.name}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <Card className="hover:shadow-lg transition-all duration-300">
+              <Card.Content className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        #{index + 1}
+                      </span>
+                      <h3 className="text-xl font-bold text-white">{skill.name}</h3>
+                    </div>
+                  </div>
+                    <div className="flex items-center space-x-2">
+                    {Array.from({ length: skill.hotness || 3 }, (_, i) => (
+                      <Flame key={i} className="w-4 h-4 text-orange-500" />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Usage Count</span>
+                    <span className="text-white font-semibold">{skill.count || 0}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Growth Rate</span>
+                    <div className="flex items-center space-x-1">
+                      {(skill.growthRate || 0) >= 0 ? (
+                        <ArrowUp className="w-3 h-3 text-green-500" />
+                      ) : (
+                        <ArrowDown className="w-3 h-3 text-red-500" />
+                      )}
+                      <span className={`font-semibold ${(skill.growthRate || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {Math.abs(skill.growthRate || 0).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Category</span>
+                    <span className="text-cyan-400 font-medium">{skill.category || 'General'}</span>
+                  </div>
+
+                  {/* Progress bar for popularity */}
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                      <span>Popularity</span>
+                      <span>{((skill.count || 0) / 1000 * 100).toFixed(0)}%</span>
+                    </div>
+                    <div className="w-full bg-slate-700 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min((skill.count || 0) / 1000 * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card.Content>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderTrendingLanguages = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {trendingData.languages.map((language, index) => (
+          <motion.div
+            key={language.name}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <Card className="hover:shadow-lg transition-all duration-300">
+              <Card.Content className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div 
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: getLanguageColor(language.name) }}
+                    />
+                    <h3 className="text-lg font-bold text-white">{language.name}</h3>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <span className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-2 py-1 rounded-full text-sm font-medium">
+                      #{language.rank}
+                    </span>
+                    {language.rank < language.previousRank && (
+                      <ArrowUp className="w-4 h-4 text-green-500" />
+                    )}
+                    {language.rank > language.previousRank && (
+                      <ArrowDown className="w-4 h-4 text-red-500" />
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{language.snippetCount}</div>
+                    <div className="text-slate-400 text-sm">Snippets</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-cyan-400">+{language.weeklyGrowth}</div>
+                    <div className="text-slate-400 text-sm">This Week</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Growth Rate</span>
+                    <div className="flex items-center space-x-1">
+                      {language.growthRate >= 0 ? (
+                        <ArrowUp className="w-3 h-3 text-green-500" />
+                      ) : (
+                        <ArrowDown className="w-3 h-3 text-red-500" />
+                      )}
+                      <span className={`font-semibold ${language.growthRate >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {Math.abs(language.growthRate).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Market share visualization */}
+                  <div>
+                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                      <span>Market Share</span>
+                      <span>{((language.snippetCount / 5000) * 100).toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-slate-700 rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full transition-all duration-500"
+                        style={{ 
+                          width: `${Math.min((language.snippetCount / 5000) * 100, 100)}%`,
+                          backgroundColor: getLanguageColor(language.name)
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card.Content>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loading size="lg" text={`Loading trending ${activeTab}...`} />
+        </div>
+      );
+    }
+
+    switch (activeTab) {
+      case 'snippets':
+        return renderTrendingSnippets();
+      case 'developers':
+        return renderTrendingDevelopers();
+      case 'skills':
+        return renderTrendingSkills();
+      case 'languages':
+        return renderTrendingLanguages();
+      default:
+        return null;
+    }
+  };
+
+  const getLanguageColor = (language) => {
+    const colors = {
+      'JavaScript': '#f7df1e',
+      'TypeScript': '#3178c6',
+      'Python': '#3776ab',
+      'Java': '#ed8b00',
+      'C++': '#00599c',
+      'Go': '#00add8',
+      'Rust': '#000000',
+      'PHP': '#777bb4',
+      'Ruby': '#cc342d',
+      'Swift': '#fa7343',
+      'Kotlin': '#7f52ff',
+      'C#': '#239120',
+      'HTML': '#e34f26',
+      'CSS': '#1572b6',
+      'React': '#61dafb',
+      'Vue': '#4fc08d',
+      'Angular': '#dd0031'
+    };
+    return colors[language] || '#64748b';
+  };
+
+  const formatTimeAgo = (dateString) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
+    return `${Math.floor(diffInHours / 168)}w ago`;
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500 rounded-full opacity-10 blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500 rounded-full opacity-10 blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-blue-500 rounded-full opacity-5 blur-3xl animate-pulse delay-500"></div>
+      </div>
+
+      <div className="relative z-10 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-8"
+          >
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="p-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl">
+                <TrendingUp className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                Trending
+              </h1>
+            </div>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Discover what's hot in the CodeHub community right now
+            </p>
+          </motion.div>
+
+          {/* Time Range Selector */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex justify-center mb-8"
+          >
+            <div className="flex items-center space-x-2 bg-slate-800/50 rounded-lg p-1">
+              {timeRanges.map((range) => {
+                const Icon = range.icon;
+                return (
+                  <button
+                    key={range.value}
+                    onClick={() => setTimeRange(range.value)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all ${
+                      timeRange === range.value
+                        ? 'bg-cyan-500 text-white'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{range.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* Tab Navigation */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-8"
+          >
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative p-6 rounded-xl transition-all duration-300 ${
+                      activeTab === tab.id
+                        ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-2 border-cyan-500/50'
+                        : 'bg-slate-800/50 border-2 border-slate-700 hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <Icon className={`w-8 h-8 mx-auto mb-3 ${
+                        activeTab === tab.id ? 'text-cyan-400' : 'text-slate-400'
+                      }`} />
+                      <h3 className={`font-semibold mb-1 ${
+                        activeTab === tab.id ? 'text-white' : 'text-slate-300'
+                      }`}>
+                        {tab.label}
+                      </h3>
+                      <p className="text-xs text-slate-400">{tab.description}</p>
+                    </div>
+                    {activeTab === tab.id && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            {renderContent()}
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Trending;

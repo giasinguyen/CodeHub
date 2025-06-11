@@ -11,6 +11,7 @@ import {
   CreateSnippet,
   Profile,
   Developers,
+  Trending,
   Settings,
   Login, 
   Register 
@@ -55,6 +56,7 @@ const AppRoutes = () => {
       <Route path="/snippets" element={<Layout><Snippets /></Layout>} />
       <Route path="/snippets/:id" element={<Layout><SnippetDetail /></Layout>} />
       <Route path="/developers" element={<Layout><Developers /></Layout>} />
+      <Route path="/trending" element={<Layout><Trending /></Layout>} />
       
       {/* Auth Routes - Only accessible when not logged in */}
       <Route 

@@ -183,11 +183,16 @@ export const snippetsAPI = {
     console.log('🌐 [API] GET Trending Snippets:', url);
     return api.get(url);
   },
-
   // Get available languages
   getLanguages: () => {
     const url = '/snippets/languages';
     console.log('🌐 [API] GET Languages:', url);
+    return api.get(url);
+  },
+  // Get snippets by tag
+  getSnippetsByTag: (tagName, page = 0, size = 20) => {
+    const url = `/snippets?tag=${tagName}&page=${page}&size=${size}`;
+    console.log('🌐 [API] GET Snippets by Tag:', url);
     return api.get(url);
   },
   
@@ -221,13 +226,9 @@ export const snippetsAPI = {
   
   // Add comment
   addComment: (id, commentData) => api.post(`/snippets/${id}/comments`, commentData),
-  
-  // Delete comment
+    // Delete comment
   deleteComment: (snippetId, commentId) => 
     api.delete(`/snippets/${snippetId}/comments/${commentId}`),
-  
-  // Get available languages
-  getLanguages: () => api.get('/snippets/languages'),
   
   // Get available tags
   getTags: () => api.get('/snippets/tags'),

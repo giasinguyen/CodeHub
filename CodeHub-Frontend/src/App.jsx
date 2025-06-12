@@ -12,6 +12,7 @@ import {
   Profile,
   Developers,
   Trending,
+  TagPage,
   Settings,
   Login, 
   Register 
@@ -53,10 +54,10 @@ const AppRoutes = () => {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Layout><Home /></Layout>} />
-      <Route path="/snippets" element={<Layout><Snippets /></Layout>} />
-      <Route path="/snippets/:id" element={<Layout><SnippetDetail /></Layout>} />
+      <Route path="/snippets" element={<Layout><Snippets /></Layout>} />      <Route path="/snippets/:id" element={<Layout><SnippetDetail /></Layout>} />
       <Route path="/developers" element={<Layout><Developers /></Layout>} />
       <Route path="/trending" element={<Layout><Trending /></Layout>} />
+      <Route path="/tags/:tagName" element={<Layout><TagPage /></Layout>} />
       
       {/* Auth Routes - Only accessible when not logged in */}
       <Route 

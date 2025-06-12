@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Button, Card, Loading } from "../components/ui";
 import { SkillBadge, ReputationBadge } from "../components/developers";
-import { snippetsAPI, developersAPI } from "../services/api";
+import { snippetsAPI, developersAPI, trendingAPI } from "../services/api";
 import toast from "react-hot-toast";
 
 const Trending = () => {
@@ -137,98 +137,191 @@ const Trending = () => {
     try {
       const sortType =
         filters.sortBy === "most-liked" ? "most-liked" : "most-viewed";
-      const response = await snippetsAPI.getTrendingSnippets(sortType, 0, 50); // Get more to allow filtering
+      
+      // Try to get trending snippets from trending API first
+      let response;      try {
+        response = await trendingAPI.getTrendingSnippets(sortType, timeRange, 0, 50);
+      } catch (trendingError) {
+        console.log('Trending API failed, fallback to regular snippets:', trendingError);
+        // Fallback to regular snippets API if trending API fails
+        response = await snippetsAPI.getSnippets(0, 50, sortType === 'most-liked' ? 'likeCount,desc' : 'viewCount,desc');
+      }
 
-      if (response.data && response.data.content) {
-        const filteredSnippets = filterSnippets(response.data.content);
-        setTrendingData((prev) => ({
-          ...prev,
-          snippets: filteredSnippets.slice(0, 20), // Limit to 20 after filtering
-        }));
+      if (response.data) {
+        // Handle both paginated and non-paginated responses
+        const snippets = response.data.content || response.data;
+        if (Array.isArray(snippets)) {
+          const filteredSnippets = filterSnippets(snippets);
+          setTrendingData((prev) => ({
+            ...prev,
+            snippets: filteredSnippets.slice(0, 20), // Limit to 20 after filtering
+          }));
+        }
       }
     } catch (error) {
       console.error("Failed to load trending snippets:", error);
+      toast.error("Failed to load trending snippets");
     }
-  }, [filters.sortBy, filterSnippets]);
-
+  }, [filters.sortBy, filterSnippets, timeRange]);
   const loadTrendingDevelopers = useCallback(async () => {
     try {
-      const [featuredResponse, leaderboardResponse] = await Promise.all([
-        developersAPI.getFeaturedDevelopers(),
-        developersAPI.getLeaderboard("reputation", 15),
-      ]);
-
-      const featured = featuredResponse.data || [];
-      const leaderboard = leaderboardResponse.data || [];
-
-      // Combine and deduplicate
-      const allDevelopers = [...featured, ...leaderboard];
-      const uniqueDevelopers = allDevelopers.filter(
-        (dev, index, self) => index === self.findIndex((d) => d.id === dev.id)
-      );
-
-      setTrendingData((prev) => ({
-        ...prev,
-        developers: uniqueDevelopers.slice(0, 15),
-      }));
-    } catch (error) {
-      console.error("Failed to load trending developers:", error);
-    }
-  }, []);
-
-  const loadTrendingSkills = useCallback(async () => {
-    try {
-      const response = await developersAPI.getTrendingSkills();
+      // Try trending developers API first
+      let response;
+      try {
+        response = await trendingAPI.getTrendingDevelopers(timeRange, 15);
+      } catch (trendingError) {
+        console.log("Trending developers API failed, fallback to regular users:", trendingError);
+        // Fallback to regular users API
+        response = await developersAPI.getDevelopers({ 
+          page: 0, 
+          size: 15, 
+          sortBy: 'reputation,desc' 
+        });
+      }
 
       if (response.data) {
+        // Handle both direct array and paginated responses
+        const developers = response.data.content || response.data;
+        if (Array.isArray(developers)) {
+          setTrendingData((prev) => ({
+            ...prev,
+            developers: developers.slice(0, 15),
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load trending developers:", error);
+      toast.error("Failed to load trending developers");
+    }
+  }, [timeRange]);
+  const loadTrendingSkills = useCallback(async () => {
+    try {
+      // Try trending skills API first
+      let response;
+      try {
+        response = await trendingAPI.getTrendingSkills(timeRange, 15);
+      } catch (trendingError) {
+        console.log("Trending skills API failed, fallback to developers API:", trendingError);
+        // Fallback to developers trending skills API
+        response = await developersAPI.getTrendingSkills();
+      }
+
+      if (response.data) {
+        const skills = Array.isArray(response.data) ? response.data : response.data.content || [];
         setTrendingData((prev) => ({
           ...prev,
-          skills: response.data,
+          skills: skills.slice(0, 15),
         }));
       }
     } catch (error) {
       console.error("Failed to load trending skills:", error);
-    }
-  }, []);  const loadTrendingLanguages = useCallback(async () => {
+      // Create fallback skills data
+      const fallbackSkills = [
+        { name: "JavaScript", count: 145, growthRate: 12.5, category: "Frontend" },
+        { name: "React", count: 98, growthRate: 18.3, category: "Frontend" },
+        { name: "Python", count: 87, growthRate: 15.7, category: "Backend" },
+        { name: "Node.js", count: 76, growthRate: 9.2, category: "Backend" },
+        { name: "TypeScript", count: 65, growthRate: 22.1, category: "Frontend" },
+        { name: "Java", count: 54, growthRate: 5.8, category: "Backend" },
+        { name: "CSS", count: 43, growthRate: 8.4, category: "Frontend" },
+        { name: "Docker", count: 38, growthRate: 14.6, category: "DevOps" },
+        { name: "MongoDB", count: 32, growthRate: 11.3, category: "Database" },
+        { name: "Vue.js", count: 28, growthRate: 16.9, category: "Frontend" }
+      ];
+      
+      setTrendingData((prev) => ({
+        ...prev,
+        skills: fallbackSkills,
+      }));
+      toast.error("Failed to load trending skills, showing fallback data");
+    }  }, [timeRange]);
+
+  const loadTrendingLanguages = useCallback(async () => {
     try {
-      const response = await snippetsAPI.getLanguages();
+      // Try trending languages API first
+      let response;
+      try {
+        response = await trendingAPI.getTrendingLanguages(timeRange, 15);
+        console.log('📊 [Trending] Trending languages API response:', response);
+      } catch (trendingError) {
+        console.log("Trending languages API failed, fallback to regular languages:", trendingError);
+        // Fallback to regular languages API
+        response = await snippetsAPI.getLanguages();
+      }
 
       if (response.data) {
-        // Handle different response formats and update available languages
-        let languages = [];
-        if (Array.isArray(response.data)) {
-          if (response.data.length > 0 && typeof response.data[0] === 'object') {
-            languages = response.data.map((lang) => lang.name).filter(Boolean);
-          } else if (response.data.length > 0 && typeof response.data[0] === 'string') {
-            languages = response.data.filter(Boolean);
-          }
-        }
+        let languagesData = [];
         
-        // Update available languages for filter dropdown
-        if (languages.length > 0) {
-          setAvailableLanguages(languages);
-        }
+        // Check if it's trending API response (with full language objects)
+        if (Array.isArray(response.data) && response.data.length > 0 && response.data[0].rank) {
+          // Trending API response with full language objects
+          languagesData = response.data.map(lang => ({
+            name: lang.name || lang.displayName,
+            snippetCount: lang.snippetCount || 0,
+            growthRate: lang.growthRate || 0,
+            rank: lang.rank || 1,
+            previousRank: lang.previousRank || 1,
+            weeklyGrowth: lang.weeklyGrowth || 0,
+            marketShare: lang.marketShare || 0,
+            category: lang.category || 'General',
+            isRising: lang.isRising || false,
+            color: lang.color || getLanguageColor(lang.name)
+          }));
+        } else {
+          // Fallback: Regular languages API response
+          let languages = [];
+          if (Array.isArray(response.data)) {
+            if (response.data.length > 0 && typeof response.data[0] === 'object') {
+              languages = response.data.map((lang) => lang.name).filter(Boolean);
+            } else if (response.data.length > 0 && typeof response.data[0] === 'string') {
+              languages = response.data.filter(Boolean);
+            }
+          }
+          
+          // Update available languages for filter dropdown
+          if (languages.length > 0) {
+            setAvailableLanguages(languages);
+          }
 
-        // Create mock trending data with growth rates
-        const languagesWithTrends = (response.data || []).map((lang, index) => ({
-          name: typeof lang === 'string' ? lang : lang.name,
-          count: typeof lang === 'object' ? lang.count : Math.floor(Math.random() * 1000),
-          growthRate: Math.random() * 30 - 10, // Random growth rate between -10% and 20%
-          rank: index + 1,
-          previousRank: index + Math.floor(Math.random() * 3) - 1,
-          snippetCount: typeof lang === 'object' ? (lang.count || Math.floor(Math.random() * 1000)) : Math.floor(Math.random() * 1000),
-          weeklyGrowth: Math.floor(Math.random() * 100),
-        }));
+          // Create trending data from regular languages
+          languagesData = (response.data || []).map((lang, index) => ({
+            name: typeof lang === 'string' ? lang : lang.name,
+            snippetCount: typeof lang === 'object' ? (lang.count || Math.floor(Math.random() * 500 + 100)) : Math.floor(Math.random() * 500 + 100),
+            growthRate: Math.random() * 30 - 10, // Random growth rate between -10% and 20%
+            rank: index + 1,
+            previousRank: index + Math.floor(Math.random() * 3) - 1,
+            weeklyGrowth: Math.floor(Math.random() * 100),
+            marketShare: Math.random() * 20,
+            category: 'General',
+            isRising: Math.random() > 0.5,
+            color: getLanguageColor(typeof lang === 'string' ? lang : lang.name)
+          }));
+        }
 
         setTrendingData((prev) => ({
           ...prev,
-          languages: languagesWithTrends.slice(0, 15),
+          languages: languagesData.slice(0, 15),
         }));
       }
     } catch (error) {
       console.error("Failed to load trending languages:", error);
+      toast.error("Failed to load trending languages");
+      
+      // Fallback data if all APIs fail
+      const fallbackLanguages = [
+        { name: "JavaScript", snippetCount: 2340, growthRate: 15.5, rank: 1, previousRank: 1, weeklyGrowth: 156, marketShare: 23.4, category: "Frontend", isRising: true },
+        { name: "Python", snippetCount: 1890, growthRate: 12.3, rank: 2, previousRank: 3, weeklyGrowth: 123, marketShare: 18.9, category: "Backend", isRising: true },
+        { name: "TypeScript", snippetCount: 1456, growthRate: 22.1, rank: 3, previousRank: 4, weeklyGrowth: 98, marketShare: 14.6, category: "Frontend", isRising: true },
+        { name: "Java", snippetCount: 1234, growthRate: 8.7, rank: 4, previousRank: 2, weeklyGrowth: 67, marketShare: 12.3, category: "Backend", isRising: false },
+        { name: "Go", snippetCount: 892, growthRate: 18.9, rank: 5, previousRank: 7, weeklyGrowth: 89, marketShare: 8.9, category: "Backend", isRising: true }
+      ].map(lang => ({ ...lang, color: getLanguageColor(lang.name), isRising: lang.growthRate > 0 }));
+      
+      setTrendingData((prev) => ({
+        ...prev,
+        languages: fallbackLanguages,
+      }));
     }
-  }, []);
+  }, [timeRange]);
 
   const loadTrendingData = useCallback(async () => {
     try {

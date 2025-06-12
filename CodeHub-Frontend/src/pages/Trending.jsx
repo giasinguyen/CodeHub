@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 // eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { 
-  TrendingUp, 
-  Clock, 
-  Star, 
-  Eye, 
-  Flame, 
-  ArrowUp, 
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import {
+  TrendingUp,
+  Clock,
+  Star,
+  Eye,
+  Flame,
+  ArrowUp,
   ArrowDown,
   Code2,
   GitFork,
@@ -19,175 +19,313 @@ import {
   Zap,
   Users,
   BarChart3,
-  Tag
-} from 'lucide-react';
-import { Button, Card, Loading } from '../components/ui';
-import { SkillBadge, ReputationBadge } from '../components/developers';
-import { snippetsAPI, developersAPI } from '../services/api';
-import toast from 'react-hot-toast';
+  Tag,
+} from "lucide-react";
+import { Button, Card, Loading } from "../components/ui";
+import { SkillBadge, ReputationBadge } from "../components/developers";
+import { snippetsAPI, developersAPI } from "../services/api";
+import toast from "react-hot-toast";
 
 const Trending = () => {
-  const [activeTab, setActiveTab] = useState('snippets');
-  const [timeRange, setTimeRange] = useState('week');
+  const [activeTab, setActiveTab] = useState("snippets");
+  const [timeRange, setTimeRange] = useState("week");
   const [loading, setLoading] = useState(true);
   const [trendingData, setTrendingData] = useState({
     snippets: [],
     developers: [],
     skills: [],
-    languages: []
+    languages: [],
   });
+  const [availableLanguages, setAvailableLanguages] = useState([]);
   const [filters, setFilters] = useState({
-    category: 'all',
-    language: 'all',
-    sortBy: 'most-liked'
+    category: "all",
+    language: "all",
+    sortBy: "most-liked",
   });
 
   const tabs = [
-    { 
-      id: 'snippets', 
-      label: 'Code Snippets', 
+    {
+      id: "snippets",
+      label: "Code Snippets",
       icon: Code2,
-      description: 'Trending code snippets'
+      description: "Trending code snippets",
     },
-    { 
-      id: 'developers', 
-      label: 'Developers', 
+    {
+      id: "developers",
+      label: "Developers",
       icon: Users,
-      description: 'Rising stars in the community'
+      description: "Rising stars in the community",
     },
-    { 
-      id: 'skills', 
-      label: 'Skills', 
+    {
+      id: "skills",
+      label: "Skills",
       icon: Trophy,
-      description: 'Hot technologies and frameworks'
+      description: "Hot technologies and frameworks",
     },
-    { 
-      id: 'languages', 
-      label: 'Languages', 
+    {
+      id: "languages",
+      label: "Languages",
       icon: BarChart3,
-      description: 'Popular programming languages'
-    }
+      description: "Popular programming languages",
+    },
   ];
   const timeRanges = [
-    { value: 'day', label: 'Today', icon: Clock },
-    { value: 'week', label: 'This Week', icon: Calendar },
-    { value: 'month', label: 'This Month', icon: TrendingUp },
-    { value: 'year', label: 'This Year', icon: Flame }
+    { value: "day", label: "Today", icon: Clock },
+    { value: "week", label: "This Week", icon: Calendar },
+    { value: "month", label: "This Month", icon: TrendingUp },
+    { value: "year", label: "This Year", icon: Flame },
   ];
+  // Helper function to get date range for filtering
+  const getDateRange = useCallback(() => {
+    const now = new Date();
+    let startDate = new Date();
+
+    switch (timeRange) {
+      case "day":
+        startDate.setDate(now.getDate() - 1);
+        break;
+      case "week":
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case "month":
+        startDate.setMonth(now.getMonth() - 1);
+        break;
+      case "year":
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        startDate.setDate(now.getDate() - 7); // Default to week
+    }
+
+    return {
+      start: startDate.toISOString(),
+      end: now.toISOString(),
+    };
+  }, [timeRange]);
+
+  // Filter function for snippets based on timeRange and language
+  const filterSnippets = useCallback(
+    (snippets) => {
+      if (!snippets || !Array.isArray(snippets)) return [];
+
+      let filtered = [...snippets];      // Filter by language if not 'all'
+      if (filters.language && filters.language !== "all") {
+        filtered = filtered.filter(
+          (snippet) =>
+            snippet.language &&
+            snippet.language.toLowerCase() === filters.language.toLowerCase()
+        );
+      }
+
+      // Filter by time range
+      const { start } = getDateRange();
+      const startTime = new Date(start).getTime();
+
+      filtered = filtered.filter((snippet) => {
+        if (!snippet.createdAt) return true; // Keep snippets without date
+        const snippetTime = new Date(snippet.createdAt).getTime();
+        return snippetTime >= startTime;
+      });
+
+      return filtered;
+    },
+    [filters.language, getDateRange]
+  );
 
   // Define callback functions first
   const loadTrendingSnippets = useCallback(async () => {
     try {
-      const sortType = filters.sortBy === 'most-liked' ? 'most-liked' : 'most-viewed';
-      const response = await snippetsAPI.getTrendingSnippets(sortType, 0, 20);
-      
+      const sortType =
+        filters.sortBy === "most-liked" ? "most-liked" : "most-viewed";
+      const response = await snippetsAPI.getTrendingSnippets(sortType, 0, 50); // Get more to allow filtering
+
       if (response.data && response.data.content) {
-        setTrendingData(prev => ({
+        const filteredSnippets = filterSnippets(response.data.content);
+        setTrendingData((prev) => ({
           ...prev,
-          snippets: response.data.content
+          snippets: filteredSnippets.slice(0, 20), // Limit to 20 after filtering
         }));
       }
     } catch (error) {
-      console.error('Failed to load trending snippets:', error);
+      console.error("Failed to load trending snippets:", error);
     }
-  }, [filters.sortBy]);
+  }, [filters.sortBy, filterSnippets]);
 
   const loadTrendingDevelopers = useCallback(async () => {
     try {
       const [featuredResponse, leaderboardResponse] = await Promise.all([
         developersAPI.getFeaturedDevelopers(),
-        developersAPI.getLeaderboard('reputation', 15)
+        developersAPI.getLeaderboard("reputation", 15),
       ]);
 
       const featured = featuredResponse.data || [];
       const leaderboard = leaderboardResponse.data || [];
-      
+
       // Combine and deduplicate
       const allDevelopers = [...featured, ...leaderboard];
-      const uniqueDevelopers = allDevelopers.filter((dev, index, self) => 
-        index === self.findIndex(d => d.id === dev.id)
+      const uniqueDevelopers = allDevelopers.filter(
+        (dev, index, self) => index === self.findIndex((d) => d.id === dev.id)
       );
 
-      setTrendingData(prev => ({
+      setTrendingData((prev) => ({
         ...prev,
-        developers: uniqueDevelopers.slice(0, 15)
+        developers: uniqueDevelopers.slice(0, 15),
       }));
     } catch (error) {
-      console.error('Failed to load trending developers:', error);
+      console.error("Failed to load trending developers:", error);
     }
   }, []);
 
   const loadTrendingSkills = useCallback(async () => {
     try {
       const response = await developersAPI.getTrendingSkills();
-      
+
       if (response.data) {
-        setTrendingData(prev => ({
+        setTrendingData((prev) => ({
           ...prev,
-          skills: response.data
+          skills: response.data,
         }));
       }
     } catch (error) {
-      console.error('Failed to load trending skills:', error);
+      console.error("Failed to load trending skills:", error);
     }
-  }, []);
-
-  const loadTrendingLanguages = useCallback(async () => {
+  }, []);  const loadTrendingLanguages = useCallback(async () => {
     try {
       const response = await snippetsAPI.getLanguages();
-      
+
       if (response.data) {
-        // Mock trending data with growth rates
-        const languagesWithTrends = response.data.map((lang, index) => ({
-          ...lang,
+        // Handle different response formats and update available languages
+        let languages = [];
+        if (Array.isArray(response.data)) {
+          if (response.data.length > 0 && typeof response.data[0] === 'object') {
+            languages = response.data.map((lang) => lang.name).filter(Boolean);
+          } else if (response.data.length > 0 && typeof response.data[0] === 'string') {
+            languages = response.data.filter(Boolean);
+          }
+        }
+        
+        // Update available languages for filter dropdown
+        if (languages.length > 0) {
+          setAvailableLanguages(languages);
+        }
+
+        // Create mock trending data with growth rates
+        const languagesWithTrends = (response.data || []).map((lang, index) => ({
+          name: typeof lang === 'string' ? lang : lang.name,
+          count: typeof lang === 'object' ? lang.count : Math.floor(Math.random() * 1000),
           growthRate: Math.random() * 30 - 10, // Random growth rate between -10% and 20%
           rank: index + 1,
           previousRank: index + Math.floor(Math.random() * 3) - 1,
-          snippetCount: lang.count || Math.floor(Math.random() * 1000),
-          weeklyGrowth: Math.floor(Math.random() * 100)
+          snippetCount: typeof lang === 'object' ? (lang.count || Math.floor(Math.random() * 1000)) : Math.floor(Math.random() * 1000),
+          weeklyGrowth: Math.floor(Math.random() * 100),
         }));
 
-        setTrendingData(prev => ({
+        setTrendingData((prev) => ({
           ...prev,
-          languages: languagesWithTrends.slice(0, 15)
+          languages: languagesWithTrends.slice(0, 15),
         }));
       }
     } catch (error) {
-      console.error('Failed to load trending languages:', error);
+      console.error("Failed to load trending languages:", error);
     }
   }, []);
 
   const loadTrendingData = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       switch (activeTab) {
-        case 'snippets':
+        case "snippets":
           await loadTrendingSnippets();
           break;
-        case 'developers':
+        case "developers":
           await loadTrendingDevelopers();
           break;
-        case 'skills':
+        case "skills":
           await loadTrendingSkills();
           break;
-        case 'languages':
+        case "languages":
           await loadTrendingLanguages();
           break;
         default:
           break;
       }
     } catch (error) {
-      console.error('Failed to load trending data:', error);
-      toast.error('Failed to load trending data');
+      console.error("Failed to load trending data:", error);
+      toast.error("Failed to load trending data");
     } finally {
-      setLoading(false);    }
-  }, [activeTab, loadTrendingSnippets, loadTrendingDevelopers, loadTrendingSkills, loadTrendingLanguages]);
-
-  // useEffect to load data when component mounts or activeTab changes
+      setLoading(false);
+    }
+  }, [
+    activeTab,
+    loadTrendingSnippets,
+    loadTrendingDevelopers,
+    loadTrendingSkills,
+    loadTrendingLanguages,
+  ]);
+  // useEffect to load data when component mounts or filters change
   useEffect(() => {
     loadTrendingData();
   }, [loadTrendingData]);
+  // useEffect to reload data when timeRange or filters change
+  useEffect(() => {
+    loadTrendingData();
+  }, [timeRange, filters, loadTrendingData]);
+  // useEffect to load available languages for filter dropdown
+  useEffect(() => {
+    const loadLanguages = async () => {
+      try {
+        console.log('Loading languages for filter dropdown...');
+        const response = await snippetsAPI.getLanguages();
+        console.log('Languages API response:', response);
+        
+        if (response.data) {
+          console.log('Response data:', response.data);
+          
+          // Handle different response formats
+          let languages = [];
+          if (Array.isArray(response.data)) {
+            // If response.data is array of objects with 'name' property
+            if (response.data.length > 0 && typeof response.data[0] === 'object') {
+              languages = response.data.map((lang) => lang.name).filter(Boolean);
+            } 
+            // If response.data is array of strings
+            else if (response.data.length > 0 && typeof response.data[0] === 'string') {
+              languages = response.data.filter(Boolean);
+            }
+          }
+          
+          console.log('Processed languages:', languages);
+          
+          // If no languages from API, use some default ones
+          if (languages.length === 0) {
+            console.log('No languages from API, using defaults');
+            languages = [
+              'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 
+              'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'Dart', 'Scala', 'HTML', 
+              'CSS', 'SQL', 'Shell', 'PowerShell', 'R', 'MATLAB', 'Perl'
+            ];
+          }
+          
+          setAvailableLanguages(languages);
+          console.log('Set available languages:', languages);
+        }
+      } catch (error) {
+        console.error("Failed to load languages for filter:", error);
+        
+        // Fallback to default languages if API fails
+        const defaultLanguages = [
+          'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 
+          'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'Dart', 'Scala', 'HTML', 
+          'CSS', 'SQL', 'Shell', 'PowerShell', 'R', 'MATLAB', 'Perl'
+        ];
+        setAvailableLanguages(defaultLanguages);
+        console.log('Using fallback languages:', defaultLanguages);
+      }
+    };
+
+    loadLanguages();
+  }, []);
 
   const renderTrendingSnippets = () => (
     <div className="space-y-6">
@@ -196,33 +334,68 @@ const Trending = () => {
         <Card.Content className="p-4">
           <div className="flex flex-col lg:flex-row lg:items-center gap-4">
             <div className="flex items-center space-x-4">
-              <label className="text-sm font-medium text-slate-300">Sort by:</label>
-              <select 
+              <label className="text-sm font-medium text-slate-300">
+                Sort by:
+              </label>
+              <select
                 value={filters.sortBy}
-                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, sortBy: e.target.value }))
+                }
                 className="bg-slate-700 border border-slate-600 text-white px-3 py-2 rounded-lg text-sm"
               >
                 <option value="most-liked">Most Liked</option>
                 <option value="most-viewed">Most Viewed</option>
               </select>
-            </div>
-            
+            </div>{" "}
             <div className="flex items-center space-x-4">
-              <label className="text-sm font-medium text-slate-300">Language:</label>
-              <select 
+              <label className="text-sm font-medium text-slate-300">
+                Language:
+              </label>
+              <select
                 value={filters.language}
-                onChange={(e) => setFilters(prev => ({ ...prev, language: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, language: e.target.value }))
+                }
                 className="bg-slate-700 border border-slate-600 text-white px-3 py-2 rounded-lg text-sm"
               >
-                <option value="all">All Languages</option>
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="typescript">TypeScript</option>
-                <option value="java">Java</option>
-                <option value="cpp">C++</option>
-                <option value="go">Go</option>
-                <option value="rust">Rust</option>
+                <option value="all">All Languages</option>                {availableLanguages.filter(Boolean).map((language) => (
+                  <option key={language} value={language.toLowerCase()}>
+                    {language}
+                  </option>
+                ))}
               </select>
+            </div>
+            {/* Active Filters Display */}
+            <div className="flex items-center space-x-2">
+              {timeRange !== "week" && (
+                <span className="px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded-md text-xs">
+                  {timeRanges.find((r) => r.value === timeRange)?.label}
+                </span>
+              )}
+              {filters.language !== "all" && (
+                <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-md text-xs">                  {availableLanguages.find(
+                    (lang) => lang && lang.toLowerCase() === filters.language
+                  ) || filters.language}
+                </span>
+              )}
+              {(timeRange !== "week" ||
+                filters.language !== "all" ||
+                filters.sortBy !== "most-liked") && (
+                <button
+                  onClick={() => {
+                    setTimeRange("week");
+                    setFilters({
+                      category: "all",
+                      language: "all",
+                      sortBy: "most-liked",
+                    });
+                  }}
+                  className="px-2 py-1 bg-slate-600 hover:bg-slate-500 text-slate-300 rounded-md text-xs transition-colors"
+                >
+                  Reset
+                </button>
+              )}
             </div>
           </div>
         </Card.Content>
@@ -245,9 +418,11 @@ const Trending = () => {
                       <span className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
                         #{index + 1}
                       </span>
-                      <div 
+                      <div
                         className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: getLanguageColor(snippet.language) }}
+                        style={{
+                          backgroundColor: getLanguageColor(snippet.language),
+                        }}
                       />
                       <span className="text-slate-400">{snippet.language}</span>
                     </div>
@@ -263,8 +438,8 @@ const Trending = () => {
                     </div>
                   </div>
                 </div>
-                
-                <Link 
+
+                <Link
                   to={`/snippets/${snippet.id}`}
                   className="block hover:text-cyan-400 transition-colors"
                 >
@@ -272,7 +447,7 @@ const Trending = () => {
                     {snippet.title}
                   </h3>
                 </Link>
-                
+
                 <p className="text-slate-400 text-sm line-clamp-2 mb-3">
                   {snippet.description}
                 </p>
@@ -281,7 +456,7 @@ const Trending = () => {
                 {snippet.tags && snippet.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-3">
                     {snippet.tags.slice(0, 3).map((tag, tagIndex) => (
-                      <span 
+                      <span
                         key={tagIndex}
                         className="px-2 py-1 bg-slate-700 text-slate-300 rounded-md text-xs"
                       >
@@ -301,18 +476,20 @@ const Trending = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <img
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${snippet.owner?.username || 'anonymous'}`}
-                      alt={snippet.owner?.username || 'Anonymous'}
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${
+                        snippet.owner?.username || "anonymous"
+                      }`}
+                      alt={snippet.owner?.username || "Anonymous"}
                       className="w-6 h-6 rounded-full"
                     />
-                    <Link 
+                    <Link
                       to={`/profile/${snippet.owner?.id}`}
                       className="text-sm text-slate-300 hover:text-white transition-colors"
                     >
-                      {snippet.owner?.username || 'Anonymous'}
+                      {snippet.owner?.username || "Anonymous"}
                     </Link>
                   </div>
-                  
+
                   <div className="flex items-center space-x-1 text-xs text-slate-400">
                     <Clock className="w-3 h-3" />
                     <span>{formatTimeAgo(snippet.createdAt)}</span>
@@ -341,7 +518,10 @@ const Trending = () => {
                 <div className="flex items-center space-x-4">
                   <div className="relative">
                     <img
-                      src={developer.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.username}`}
+                      src={
+                        developer.avatarUrl ||
+                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.username}`
+                      }
                       alt={developer.username}
                       className="w-16 h-16 rounded-full border-4 border-slate-700"
                     />
@@ -349,9 +529,9 @@ const Trending = () => {
                       #{index + 1}
                     </div>
                   </div>
-                  
+
                   <div className="flex-1">
-                    <Link 
+                    <Link
                       to={`/profile/${developer.id}`}
                       className="block hover:text-cyan-400 transition-colors"
                     >
@@ -359,9 +539,13 @@ const Trending = () => {
                         {developer.fullName || developer.username}
                       </h3>
                     </Link>
-                    <p className="text-slate-400 text-sm">@{developer.username}</p>
+                    <p className="text-slate-400 text-sm">
+                      @{developer.username}
+                    </p>
                     {developer.location && (
-                      <p className="text-slate-500 text-xs">{developer.location}</p>
+                      <p className="text-slate-500 text-xs">
+                        {developer.location}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -378,15 +562,20 @@ const Trending = () => {
                   {/* Stats */}
                   <div className="grid grid-cols-3 gap-3 text-center">
                     <div>
-                      <div className="text-white font-semibold">{developer.followers || 0}</div>
+                      <div className="text-white font-semibold">
+                        {developer.followers || 0}
+                      </div>
                       <div className="text-slate-400 text-xs">Followers</div>
                     </div>
                     <div>
-                      <div className="text-white font-semibold">{developer.snippetsCount || 0}</div>
+                      <div className="text-white font-semibold">
+                        {developer.snippetsCount || 0}
+                      </div>
                       <div className="text-slate-400 text-xs">Snippets</div>
-                    </div>
-                    <div>
-                      <div className="text-white font-semibold">{developer.reputation || 0}</div>
+                    </div>                    <div>
+                      <div className="text-white font-semibold">
+                        {(developer.reputation || 0).toFixed(2)}
+                      </div>
                       <div className="text-slate-400 text-xs">Reputation</div>
                     </div>
                   </div>
@@ -410,7 +599,7 @@ const Trending = () => {
               <Card.Footer>
                 <div className="flex items-center justify-between">
                   <ReputationBadge reputation={developer.reputation || 0} />
-                  
+
                   <div className="flex items-center space-x-1">
                     <TrendingUp className="w-4 h-4 text-green-500" />
                     <span className="text-green-500 text-sm font-medium">
@@ -444,10 +633,12 @@ const Trending = () => {
                       <span className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                         #{index + 1}
                       </span>
-                      <h3 className="text-xl font-bold text-white">{skill.name}</h3>
+                      <h3 className="text-xl font-bold text-white">
+                        {skill.name}
+                      </h3>
                     </div>
                   </div>
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">
                     {Array.from({ length: skill.hotness || 3 }, (_, i) => (
                       <Flame key={i} className="w-4 h-4 text-orange-500" />
                     ))}
@@ -457,9 +648,11 @@ const Trending = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-400">Usage Count</span>
-                    <span className="text-white font-semibold">{skill.count || 0}</span>
+                    <span className="text-white font-semibold">
+                      {skill.count || 0}
+                    </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-400">Growth Rate</span>
                     <div className="flex items-center space-x-1">
@@ -468,27 +661,42 @@ const Trending = () => {
                       ) : (
                         <ArrowDown className="w-3 h-3 text-red-500" />
                       )}
-                      <span className={`font-semibold ${(skill.growthRate || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      <span
+                        className={`font-semibold ${
+                          (skill.growthRate || 0) >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
+                      >
                         {Math.abs(skill.growthRate || 0).toFixed(1)}%
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-400">Category</span>
-                    <span className="text-cyan-400 font-medium">{skill.category || 'General'}</span>
+                    <span className="text-cyan-400 font-medium">
+                      {skill.category || "General"}
+                    </span>
                   </div>
 
                   {/* Progress bar for popularity */}
                   <div className="mt-4">
                     <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                       <span>Popularity</span>
-                      <span>{((skill.count || 0) / 1000 * 100).toFixed(0)}%</span>
+                      <span>
+                        {(((skill.count || 0) / 1000) * 100).toFixed(0)}%
+                      </span>
                     </div>
                     <div className="w-full bg-slate-700 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min((skill.count || 0) / 1000 * 100, 100)}%` }}
+                        style={{
+                          width: `${Math.min(
+                            ((skill.count || 0) / 1000) * 100,
+                            100
+                          )}%`,
+                        }}
                       />
                     </div>
                   </div>
@@ -515,13 +723,17 @@ const Trending = () => {
               <Card.Content className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div 
+                    <div
                       className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: getLanguageColor(language.name) }}
+                      style={{
+                        backgroundColor: getLanguageColor(language.name),
+                      }}
                     />
-                    <h3 className="text-lg font-bold text-white">{language.name}</h3>
+                    <h3 className="text-lg font-bold text-white">
+                      {language.name}
+                    </h3>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <span className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-2 py-1 rounded-full text-sm font-medium">
                       #{language.rank}
@@ -537,11 +749,15 @@ const Trending = () => {
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">{language.snippetCount}</div>
+                    <div className="text-2xl font-bold text-white">
+                      {language.snippetCount}
+                    </div>
                     <div className="text-slate-400 text-sm">Snippets</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-cyan-400">+{language.weeklyGrowth}</div>
+                    <div className="text-2xl font-bold text-cyan-400">
+                      +{language.weeklyGrowth}
+                    </div>
                     <div className="text-slate-400 text-sm">This Week</div>
                   </div>
                 </div>
@@ -555,7 +771,13 @@ const Trending = () => {
                       ) : (
                         <ArrowDown className="w-3 h-3 text-red-500" />
                       )}
-                      <span className={`font-semibold ${language.growthRate >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      <span
+                        className={`font-semibold ${
+                          language.growthRate >= 0
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
+                      >
                         {Math.abs(language.growthRate).toFixed(1)}%
                       </span>
                     </div>
@@ -565,14 +787,19 @@ const Trending = () => {
                   <div>
                     <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                       <span>Market Share</span>
-                      <span>{((language.snippetCount / 5000) * 100).toFixed(1)}%</span>
+                      <span>
+                        {((language.snippetCount / 5000) * 100).toFixed(1)}%
+                      </span>
                     </div>
                     <div className="w-full bg-slate-700 rounded-full h-2">
-                      <div 
+                      <div
                         className="h-2 rounded-full transition-all duration-500"
-                        style={{ 
-                          width: `${Math.min((language.snippetCount / 5000) * 100, 100)}%`,
-                          backgroundColor: getLanguageColor(language.name)
+                        style={{
+                          width: `${Math.min(
+                            (language.snippetCount / 5000) * 100,
+                            100
+                          )}%`,
+                          backgroundColor: getLanguageColor(language.name),
                         }}
                       />
                     </div>
@@ -596,48 +823,188 @@ const Trending = () => {
     }
 
     switch (activeTab) {
-      case 'snippets':
+      case "snippets":
         return renderTrendingSnippets();
-      case 'developers':
+      case "developers":
         return renderTrendingDevelopers();
-      case 'skills':
+      case "skills":
         return renderTrendingSkills();
-      case 'languages':
+      case "languages":
         return renderTrendingLanguages();
       default:
         return null;
     }
   };
-
   const getLanguageColor = (language) => {
     const colors = {
-      'JavaScript': '#f7df1e',
-      'TypeScript': '#3178c6',
-      'Python': '#3776ab',
-      'Java': '#ed8b00',
-      'C++': '#00599c',
-      'Go': '#00add8',
-      'Rust': '#000000',
-      'PHP': '#777bb4',
-      'Ruby': '#cc342d',
-      'Swift': '#fa7343',
-      'Kotlin': '#7f52ff',
-      'C#': '#239120',
-      'HTML': '#e34f26',
-      'CSS': '#1572b6',
-      'React': '#61dafb',
-      'Vue': '#4fc08d',
-      'Angular': '#dd0031'
+      JavaScript: "#f7df1e",
+      TypeScript: "#3178c6",
+      Python: "#3776ab",
+      Java: "#ed8b00",
+      "C++": "#00599c",
+      Go: "#00add8",
+      Rust: "#000000",
+      PHP: "#777bb4",
+      Ruby: "#cc342d",
+      Swift: "#fa7343",
+      Kotlin: "#7f52ff",
+      "C#": "#239120",
+      HTML: "#e34f26",
+      CSS: "#1572b6",
+      React: "#61dafb",
+      Vue: "#4fc08d",
+      Angular: "#dd0031",
+      // Additional languages
+      C: "#555555",
+      Dart: "#0175c2",
+      Scala: "#dc322f",
+      Elixir: "#6e4a7e",
+      Haskell: "#5e5086",
+      Clojure: "#5881d8",
+      Erlang: "#b83998",
+      R: "#276dc3",
+      MATLAB: "#e16737",
+      Perl: "#39457e",
+      Shell: "#89e051",
+      Bash: "#89e051",
+      PowerShell: "#5391fe",
+      Assembly: "#6e4c13",
+      Objective_C: "#438eff",
+      "Objective-C": "#438eff",
+      Groovy: "#e69f56",
+      Lua: "#000080",
+      Julia: "#9558b2",
+      F_Sharp: "#b845fc",
+      "F#": "#b845fc",
+      VB_NET: "#945db7",
+      "VB.NET": "#945db7",
+      Delphi: "#cc342d",
+      Pascal: "#e3f171",
+      COBOL: "#2c5aa0",
+      Fortran: "#734f96",
+      Ada: "#02f88c",
+      Prolog: "#74283c",
+      Lisp: "#3fb68b",
+      Scheme: "#1e4aec",
+      ML: "#dc566d",
+      OCaml: "#3be133",
+      Nim: "#ffc200",
+      Crystal: "#000100",
+      Zig: "#ec915c",
+      Solidity: "#aa6746",
+      VHDL: "#adb2cb",
+      Verilog: "#b2b7f8",
+      ActionScript: "#882b0f",
+      CoffeeScript: "#244776",
+      LiveScript: "#499886",
+      PureScript: "#1d222d",
+      Elm: "#60b5cc",
+      ReScript: "#ed5051",
+      Reason: "#ff5847",
+      Racket: "#3c5caa",
+      Common_Lisp: "#3fb68b",
+      "Common Lisp": "#3fb68b",
+      D: "#ba595e",
+      Haxe: "#df7900",
+      Nix: "#7e7eff",
+      Tcl: "#e4cc98",
+      XSLT: "#eb8ceb",
+      PostScript: "#da291c",
+      APL: "#5a8164",
+      J: "#9eedff",
+      Q: "#0040cd",
+      SQL: "#336791",
+      MySQL: "#00618a",
+      PostgreSQL: "#336791",
+      SQLite: "#003b57",
+      MongoDB: "#4db33d",
+      Redis: "#d82c20",
+      JSON: "#292929",
+      XML: "#0060ac",
+      YAML: "#cb171e",
+      TOML: "#9c4221",
+      INI: "#d1dae3",
+      CSV: "#0d7377",
+      Markdown: "#083fa1",
+      LaTeX: "#3d6117",
+      Dockerfile: "#384d54",
+      Makefile: "#427819",
+      CMake: "#064f8c",
+      Gradle: "#02303a",
+      Maven: "#c71a36",
+      Ant: "#a9157e",
+      Bazel: "#76d275",
+      // Web Technologies
+      SCSS: "#c6538c",
+      Sass: "#a53b70",
+      Less: "#1d365d",
+      Stylus: "#ff6347",
+      JSX: "#f7df1e",
+      TSX: "#3178c6",
+      Svelte: "#ff3e00",
+      Astro: "#ff5d01",
+      Remix: "#000000",
+      Next_js: "#000000",
+      "Next.js": "#000000",
+      Nuxt_js: "#00dc82",
+      "Nuxt.js": "#00dc82",
+      Gatsby: "#663399",
+      Express: "#000000",
+      Koa: "#33333d",
+      Fastify: "#000000",
+      NestJS: "#e0234e",
+      Django: "#092e20",
+      Flask: "#000000",
+      FastAPI: "#009688",
+      Rails: "#cc0000",
+      Sinatra: "#000000",
+      Spring: "#6db33f",
+      Laravel: "#ff2d20",
+      Symfony: "#000000",
+      CodeIgniter: "#ee4323",
+      CakePHP: "#d33c43",
+      Yii: "#0073bb",
+      Zend: "#68b604",
+      // Mobile Development
+      Android: "#3ddc84",
+      iOS: "#000000",
+      Flutter: "#02569b",
+      "React Native": "#61dafb",
+      Ionic: "#3880ff",
+      Xamarin: "#3498db",
+      Cordova: "#35434f",
+      PhoneGap: "#00adef",
+      // Game Development
+      Unity: "#000000",
+      "Unreal Engine": "#313131",
+      Godot: "#478cbf",
+      // Data Science & AI
+      Jupyter: "#f37626",
+      TensorFlow: "#ff6f00",
+      PyTorch: "#ee4c2c",
+      Keras: "#d00000",
+      Scikit_learn: "#f7931e",
+      "Scikit-learn": "#f7931e",
+      Pandas: "#150458",
+      NumPy: "#013243",
+      Matplotlib: "#11557c",
+      Seaborn: "#3776ab",
+      Plotly: "#3f4f75",
+      Tableau: "#e97627",
+      "Power BI": "#f2c811",
+      Apache_Spark: "#e25a1c",
+      "Apache Spark": "#e25a1c",
+      Hadoop: "#66ccff",
     };
-    return colors[language] || '#64748b';
+    return colors[language] || "#64748b";
   };
 
   const formatTimeAgo = (dateString) => {
     const now = new Date();
     const date = new Date(dateString);
     const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return 'Just now';
+
+    if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
     return `${Math.floor(diffInHours / 168)}w ago`;
@@ -689,8 +1056,8 @@ const Trending = () => {
                     onClick={() => setTimeRange(range.value)}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all ${
                       timeRange === range.value
-                        ? 'bg-cyan-500 text-white'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                        ? "bg-cyan-500 text-white"
+                        : "text-slate-400 hover:text-white hover:bg-slate-700"
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -717,20 +1084,28 @@ const Trending = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`relative p-6 rounded-xl transition-all duration-300 ${
                       activeTab === tab.id
-                        ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-2 border-cyan-500/50'
-                        : 'bg-slate-800/50 border-2 border-slate-700 hover:border-slate-600'
+                        ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-2 border-cyan-500/50"
+                        : "bg-slate-800/50 border-2 border-slate-700 hover:border-slate-600"
                     }`}
                   >
                     <div className="text-center">
-                      <Icon className={`w-8 h-8 mx-auto mb-3 ${
-                        activeTab === tab.id ? 'text-cyan-400' : 'text-slate-400'
-                      }`} />
-                      <h3 className={`font-semibold mb-1 ${
-                        activeTab === tab.id ? 'text-white' : 'text-slate-300'
-                      }`}>
+                      <Icon
+                        className={`w-8 h-8 mx-auto mb-3 ${
+                          activeTab === tab.id
+                            ? "text-cyan-400"
+                            : "text-slate-400"
+                        }`}
+                      />
+                      <h3
+                        className={`font-semibold mb-1 ${
+                          activeTab === tab.id ? "text-white" : "text-slate-300"
+                        }`}
+                      >
                         {tab.label}
                       </h3>
-                      <p className="text-xs text-slate-400">{tab.description}</p>
+                      <p className="text-xs text-slate-400">
+                        {tab.description}
+                      </p>
                     </div>
                     {activeTab === tab.id && (
                       <motion.div

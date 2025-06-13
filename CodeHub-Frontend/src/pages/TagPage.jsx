@@ -587,33 +587,68 @@ const TagPage = () => {
       loadingRef.current = true;
       setLoading(true);
       console.log(`Loading snippets for tag: ${tagName}`);
-      
-      const response = await snippetsAPI.getSnippetsByTag(tagName, 0, 50);
+        // Since backend tag filtering is not working, we'll get all snippets and filter client-side
+      const response = await snippetsAPI.getSnippets(0, 100); // Get more snippets to have data to filter
       console.log('TagPage API Response:', response.data);
       
       if (response.data) {
         // Handle paginated response - extract content array
-        const snippetsData = response.data.content || response.data;
+        const allSnippetsData = response.data.content || response.data;
         
-        if (Array.isArray(snippetsData)) {
-          setSnippets(snippetsData);
-          setFilteredSnippets(snippetsData);
+        if (Array.isArray(allSnippetsData)) {
+          // Filter snippets based on tag name (match with language or tags array)
+          const filteredSnippetsData = allSnippetsData.filter(snippet => {
+            // Check if language matches the tag (case insensitive)
+            const languageMatch = snippet.language?.toLowerCase() === tagName.toLowerCase();
+            
+            // Check if tag exists in tags array
+            const tagMatch = snippet.tags && Array.isArray(snippet.tags) && 
+              snippet.tags.some(tag => tag.toLowerCase() === tagName.toLowerCase());
+            
+            // Also check common tag mappings
+            const tagMappings = {
+              'javascript': ['javascript', 'js', 'node', 'nodejs', 'react', 'vue', 'angular'],
+              'python': ['python', 'py', 'django', 'flask', 'fastapi'],
+              'java': ['java', 'spring', 'springboot'],
+              'csharp': ['c#', 'csharp', 'dotnet', '.net'],
+              'cpp': ['c++', 'cpp', 'cplusplus'],
+              'typescript': ['typescript', 'ts'],
+              'php': ['php', 'laravel', 'symfony'],
+              'go': ['go', 'golang'],
+              'rust': ['rust', 'rs'],
+              'ruby': ['ruby', 'rails'],
+              'swift': ['swift', 'ios'],
+              'kotlin': ['kotlin', 'android']
+            };
+            
+            const mappedTags = tagMappings[tagName.toLowerCase()] || [tagName.toLowerCase()];
+            const mappingMatch = mappedTags.some(mappedTag => 
+              snippet.language?.toLowerCase().includes(mappedTag) ||
+              (snippet.tags && Array.isArray(snippet.tags) && 
+               snippet.tags.some(tag => tag.toLowerCase().includes(mappedTag)))
+            );
+            
+            return languageMatch || tagMatch || mappingMatch;
+          });
           
-          // Calculate stats from real data
+          console.log(`Filtered ${filteredSnippetsData.length} snippets for tag: ${tagName}`, filteredSnippetsData);
+          
+          setSnippets(filteredSnippetsData);
+          setFilteredSnippets(filteredSnippetsData);
+            // Calculate stats from filtered data
           const stats = {
-            totalSnippets: response.data.totalElements || snippetsData.length,
-            totalViews: snippetsData.reduce((sum, snippet) => sum + (snippet.viewCount || 0), 0),
-            totalLikes: snippetsData.reduce((sum, snippet) => sum + (snippet.likeCount || 0), 0),
-            activeUsers: new Set(snippetsData.map(snippet => snippet.owner?.username).filter(Boolean)).size,
+            totalSnippets: filteredSnippetsData.length,
+            totalViews: filteredSnippetsData.reduce((sum, snippet) => sum + (snippet.viewCount || 0), 0),
+            totalLikes: filteredSnippetsData.reduce((sum, snippet) => sum + (snippet.likeCount || 0), 0),
+            activeUsers: new Set(filteredSnippetsData.map(snippet => snippet.owner?.username).filter(Boolean)).size,
             weeklyGrowth: Math.floor(Math.random() * 20 + 5), // Mock growth percentage
           };
           setTagStats(stats);
-          console.log('TagPage Stats:', stats);
+          console.log('TagPage Stats for', tagName, ':', stats);
           
           // Mark this tag as loaded
-          loadedTagRef.current = tagName;
-        } else {
-          console.warn('Invalid snippets data format:', snippetsData);
+          loadedTagRef.current = tagName;        } else {
+          console.warn('Invalid snippets data format:', allSnippetsData);
           throw new Error('Invalid data format');
         }
       } else {

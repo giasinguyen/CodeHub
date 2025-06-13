@@ -412,4 +412,38 @@ export const trendingAPI = {
   }
 };
 
+// Favorites API methods
+export const favoritesAPI = {
+  // Get user's favorites
+  getUserFavorites: (page = 0, size = 20) => 
+    api.get(`/favorites?page=${page}&size=${size}`),
+  
+  // Add snippet to favorites
+  addFavorite: (snippetId, notes = null) => 
+    api.post(`/snippets/${snippetId}/favorite`, { notes }),
+  
+  // Remove snippet from favorites
+  removeFavorite: (snippetId) => 
+    api.delete(`/snippets/${snippetId}/favorite`),
+  
+  // Update favorite notes
+  updateFavoriteNotes: (snippetId, notes) => 
+    api.put(`/snippets/${snippetId}/favorite/notes`, { notes }),
+  
+  // Get favorite status
+  getFavoriteStatus: (snippetId) => 
+    api.get(`/snippets/${snippetId}/favorite/status`),
+  
+  // Get favorites statistics
+  getFavoriteStats: () => 
+    api.get('/favorites/stats'),
+  
+  // Bulk operations
+  bulkAddFavorites: (snippetIds) =>
+    api.post('/favorites/bulk/add', { snippetIds }),
+  
+  bulkRemoveFavorites: (snippetIds) =>
+    api.post('/favorites/bulk/remove', { snippetIds })
+};
+
 export default apiClient;

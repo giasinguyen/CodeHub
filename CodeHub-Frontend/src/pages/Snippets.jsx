@@ -10,15 +10,18 @@ import {
   Code2,
   TrendingUp,
   Calendar,
-  ChevronDown
+  ChevronDown,
+  Heart
 } from 'lucide-react';
 import { Button, Input, Card, Loading } from '../components/ui';
-import { snippetsAPI } from '../services/api';
+import { snippetsAPI, favoritesAPI } from '../services/api';
 import { useSnippet } from '../contexts/SnippetContext';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const Snippets = () => {
   const { refreshTrigger, lastCreatedSnippet, clearCreatedSnippet } = useSnippet();
+  const { user } = useAuth();
   const [snippets, setSnippets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,14 +29,49 @@ const Snippets = () => {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [sortBy, setSortBy] = useState('trending');
-  const [showFilters, setShowFilters] = useState(false);  const [pagination, setPagination] = useState({
+  const [showFilters, setShowFilters] = useState(false);
+  const [favoritingIds, setFavoritingIds] = useState(new Set());const [pagination, setPagination] = useState({
     page: 0,
     size: 20, // Increased to show more snippets
     totalElements: 0,
     totalPages: 0
   });
 
-  const searchTimeoutRef = useRef(null);
+  const searchTimeoutRef = useRef(null);  // Handle favorite toggle
+  const handleFavorite = async (snippetId, currentFavoriteStatus) => {
+    if (!user) {
+      toast.error('Please login to favorite snippets');
+      return;
+    }
+
+    try {
+      setFavoritingIds(prev => new Set([...prev, snippetId]));
+      
+      if (currentFavoriteStatus) {
+        await favoritesAPI.removeFavorite(snippetId);
+        toast.success('Removed from favorites');
+      } else {
+        await favoritesAPI.addFavorite(snippetId);
+        toast.success('Added to favorites');
+      }
+      
+      // Update local state
+      setSnippets(prev => prev.map(snippet => 
+        snippet.id === snippetId 
+          ? { ...snippet, isFavorited: !currentFavoriteStatus }
+          : snippet
+      ));
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      toast.error('Failed to update favorite status');
+    } finally {
+      setFavoritingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(snippetId);
+        return newSet;
+      });
+    }
+  };
 
   // Debounce search term
   useEffect(() => {
@@ -382,12 +420,11 @@ const Snippets = () => {
                 className={`hover:-translate-y-1 transition-transform duration-300 ${
                   isNewlyCreated ? 'animate-pulse' : ''
                 }`}
-              >
-                <Card className={`h-full hover:shadow-xl transition-all duration-300 ${
+              >                <Card className={`h-full hover:shadow-xl transition-all duration-300 flex flex-col ${
                   isNewlyCreated 
                     ? 'border-cyan-500 bg-cyan-500/5 shadow-lg shadow-cyan-500/20' 
                     : 'border-slate-700'
-                }`}>
+                } min-h-[450px]`}>
                   {isNewlyCreated && (
                     <div className="bg-cyan-500 text-white text-xs font-medium px-3 py-1 text-center">
                       ✨ Just Created!
@@ -412,30 +449,27 @@ const Snippets = () => {
                         <span>{snippet.likesCount || snippet.stars || 0}</span>
                       </div>
                     </div>
-                  </div>
-                  <Link 
+                  </div>                  <Link 
                     to={`/snippets/${snippet.id}`}
                     className="block hover:text-cyan-400 transition-colors"
                   >
-                    <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
+                    <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2 min-h-[3.5rem] leading-relaxed">
                       {snippet.title}
                     </h3>
                   </Link>
-                  <p className="text-slate-400 text-sm line-clamp-3">
+                  <p className="text-slate-400 text-sm line-clamp-3 min-h-[4.5rem] flex-grow">
                     {snippet.description}
                   </p>
-                </Card.Header>
-
-                <Card.Content>
+                </Card.Header>                <Card.Content className="flex-grow">
                   {/* Code Preview */}
-                  <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 mb-4 overflow-hidden">
+                  <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 mb-4 overflow-hidden min-h-[100px]">
                     <pre className="text-xs text-slate-300 line-clamp-4 overflow-hidden">
                       <code>{snippet.code}</code>
                     </pre>
                   </div>
 
                   {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-2 mb-4 min-h-[2rem]">
                     {snippet.tags && snippet.tags.slice(0, 4).map((tag, tagIndex) => (
                       <span
                         key={tagIndex}
@@ -450,9 +484,7 @@ const Snippets = () => {
                       </span>
                     )}
                   </div>
-                </Card.Content>
-
-                <Card.Footer>
+                </Card.Content>                <Card.Footer className="mt-auto">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <img
@@ -472,8 +504,20 @@ const Snippets = () => {
                           <span>{formatDate(snippet.createdAt)}</span>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
+                    </div><div className="flex items-center space-x-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="p-2"
+                        onClick={() => handleFavorite(snippet.id, snippet.isFavorited)}
+                        disabled={favoritingIds.has(snippet.id)}
+                      >
+                        <Heart className={`w-4 h-4 ${
+                          snippet.isFavorited 
+                            ? 'fill-red-500 text-red-500' 
+                            : 'text-slate-400 hover:text-red-400'
+                        } ${favoritingIds.has(snippet.id) ? 'animate-pulse' : ''}`} />
+                      </Button>
                       <Button variant="ghost" size="sm" className="p-2">
                         <GitFork className="w-4 h-4" />
                       </Button>

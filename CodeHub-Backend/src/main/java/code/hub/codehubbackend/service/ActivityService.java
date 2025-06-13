@@ -142,9 +142,38 @@ public class ActivityService {
                     .build();
             
             activityRepository.save(activity);
-            log.info("Created comment activity for snippet: {}", snippet.getId());
-        } catch (JsonProcessingException e) {
+            log.info("Created comment activity for snippet: {}", snippet.getId());        } catch (JsonProcessingException e) {
             log.error("Error creating comment activity", e);
+        }
+    }
+    
+    /**
+     * Create activity for favorite
+     */
+    @Transactional
+    public void createFavoriteActivity(Snippet snippet, boolean isFavorite) {
+        try {
+            User currentUser = getCurrentUser();
+            
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("snippet", Map.of(
+                "id", snippet.getId(),
+                "title", snippet.getTitle(),
+                "author", snippet.getOwner().getUsername()
+            ));
+            
+            Activity activity = Activity.builder()
+                    .user(currentUser)
+                    .type(isFavorite ? Activity.ActivityType.SNIPPET_FAVED : Activity.ActivityType.SNIPPET_UNFAVED)
+                    .targetId(snippet.getId())
+                    .targetType("snippet")
+                    .metadata(objectMapper.writeValueAsString(metadata))
+                    .build();
+            
+            activityRepository.save(activity);
+            log.info("Created {} activity for snippet: {}", isFavorite ? "FAVORITE" : "UNFAVORITE", snippet.getId());
+        } catch (JsonProcessingException e) {
+            log.error("Error creating favorite activity", e);
         }
     }
       /**

@@ -11,6 +11,7 @@ import {
   SnippetDetail,
   CreateSnippet,
   MySnippets,
+  Favorites,
   Profile,
   Developers,
   Trending,
@@ -116,12 +117,20 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } 
       />
-      
-      <Route 
+        <Route 
         path="/my-snippets" 
         element={
           <ProtectedRoute>
             <Layout><MySnippets /></Layout>
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/favorites" 
+        element={
+          <ProtectedRoute>
+            <Layout><Favorites /></Layout>
           </ProtectedRoute>
         } 
       />

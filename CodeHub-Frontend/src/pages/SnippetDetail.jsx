@@ -22,16 +22,18 @@ import {
 } from 'lucide-react';
 import { Button, Card, Loading } from '../components/ui';
 import { useAuth } from '../contexts/AuthContext';
-import { snippetsAPI } from '../services/api';
+import { snippetsAPI, favoritesAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 const SnippetDetail = () => {
   const { id } = useParams();
-  const { user } = useAuth();
-  const [snippet, setSnippet] = useState(null);
-  const [loading, setLoading] = useState(true);  const [isStarred, setIsStarred] = useState(false);
+  const { user } = useAuth();  const [snippet, setSnippet] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isStarred, setIsStarred] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   // Helper function to get language color
   const getLanguageColor = (language) => {
@@ -55,8 +57,7 @@ const SnippetDetail = () => {
       'Shell': '#89e051'
     };
     return colors[language] || '#6b7280';
-  };
-  useEffect(() => {
+  };  useEffect(() => {
     const loadSnippet = async () => {
       try {
         console.log('🔄 [SnippetDetail] Loading snippet with ID:', id);
@@ -86,9 +87,18 @@ const SnippetDetail = () => {
             languageColor: getLanguageColor(response.data.language),
             comments: [], // TODO: Load comments separately
             relatedSnippets: [] // TODO: Load related snippets
-          };
+          };          setSnippet(snippetData);
           
-          setSnippet(snippetData);
+          // Check favorite status
+          if (user) {
+            try {
+              const favoriteResponse = await favoritesAPI.getFavoriteStatus(id);
+              setIsFavorited(favoriteResponse.data?.isFavorited || false);
+            } catch {
+              // If API call fails, assume not favorited
+              setIsFavorited(false);
+            }
+          }
         }
       } catch (error) {
         console.error('❌ [SnippetDetail] Error loading snippet:', error);
@@ -102,26 +112,67 @@ const SnippetDetail = () => {
     if (id) {
       loadSnippet();
     }
-  }, [id]);
-
+  }, [id, user]);
   const handleCopyCode = async () => {
     try {
       await navigator.clipboard.writeText(snippet.code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      toast.success('Code copied to clipboard!');
     } catch (err) {
       console.error('Failed to copy code:', err);
+      toast.error('Failed to copy code');
     }
   };
 
-  const handleStar = () => {
-    setIsStarred(!isStarred);
-    // API call to star/unstar snippet
+  const handleStar = async () => {
+    if (!user) {
+      toast.error('Please login to star snippets');
+      return;
+    }
+    
+    try {
+      await snippetsAPI.toggleLike(id);
+      setIsStarred(!isStarred);
+      toast.success(isStarred ? 'Unstarred snippet' : 'Starred snippet');
+    } catch (error) {
+      console.error('Failed to toggle star:', error);
+      toast.error('Failed to update star status');
+    }
   };
 
   const handleBookmark = () => {
+    if (!user) {
+      toast.error('Please login to bookmark snippets');
+      return;
+    }
+    
     setIsBookmarked(!isBookmarked);
-    // API call to bookmark/unbookmark snippet
+    toast.success(isBookmarked ? 'Removed bookmark' : 'Bookmarked snippet');
+  };  const handleFavorite = async () => {
+    if (!user) {
+      toast.error('Please login to favorite snippets');
+      return;
+    }
+    
+    try {
+      setFavoriteLoading(true);
+      
+      if (isFavorited) {
+        await favoritesAPI.removeFavorite(id);
+        setIsFavorited(false);
+        toast.success('Removed from favorites');
+      } else {
+        await favoritesAPI.addFavorite(id);
+        setIsFavorited(true);
+        toast.success('Added to favorites');
+      }
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      toast.error('Failed to update favorite status');
+    } finally {
+      setFavoriteLoading(false);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -196,9 +247,7 @@ const SnippetDetail = () => {
                     {snippet.description}
                   </p>
                 </div>
-              </div>
-
-              {/* Action Buttons */}
+              </div>              {/* Action Buttons */}
               <div className="flex flex-wrap gap-3">
                 <Button
                   onClick={handleStar}
@@ -208,6 +257,20 @@ const SnippetDetail = () => {
                   <Star className={`w-4 h-4 ${isStarred ? 'fill-current' : ''}`} />
                   <span>{isStarred ? 'Starred' : 'Star'}</span>
                   <span className="text-xs">({snippet.stats.stars})</span>
+                </Button>
+
+                <Button
+                  onClick={handleFavorite}
+                  variant={isFavorited ? "primary" : "outline"}
+                  disabled={favoriteLoading}
+                  className={`flex items-center space-x-2 ${
+                    isFavorited 
+                      ? 'bg-red-500 border-red-500 text-white hover:bg-red-600' 
+                      : 'border-red-500 text-red-400 hover:bg-red-500 hover:text-white'
+                  }`}
+                >
+                  <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
+                  <span>{favoriteLoading ? 'Loading...' : isFavorited ? 'Favorited' : 'Favorite'}</span>
                 </Button>
 
                 <Button variant="outline" className="flex items-center space-x-2">

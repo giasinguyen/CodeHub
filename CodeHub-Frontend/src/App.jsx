@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SnippetProvider } from './contexts/SnippetContext';
 import { Layout } from './components/layout';
 import ErrorBoundary from './components/ErrorBoundary';
+import ScrollToTop from './components/ScrollToTop';
 import { 
   Home, 
   Snippets, 
@@ -178,6 +179,7 @@ const App = () => {
       <AuthProvider>
         <SnippetProvider>
           <Router>
+            <ScrollToTop />
             <AppRoutes />
           </Router>
         </SnippetProvider>

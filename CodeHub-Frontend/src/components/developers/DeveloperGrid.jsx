@@ -54,14 +54,12 @@ const DeveloperGrid = ({
             {developers.length} developer{developers.length !== 1 ? 's' : ''} found
           </p>
         </div>
-      </div>
-
-      {/* Developer Grid */}
+      </div>      {/* Developer Grid */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 developer-cards-grid"
       >
         {developers.map((developer, index) => (
           <motion.div
@@ -69,11 +67,11 @@ const DeveloperGrid = ({
             variants={itemVariants}
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          >
-            <DeveloperCard
+          >            <DeveloperCard
               developer={developer}
               onClick={onDeveloperClick}
               showActions={true}
+              className="developer-card-equal-height"
             />
           </motion.div>
         ))}

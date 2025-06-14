@@ -924,3 +924,184 @@ html.light .hover\:bg-slate-700:hover,
 .light .hover\:bg-slate-700:hover {
   background-color: #e2e8f0 !important;
 }
+
+/* Featured developers cards equal height */
+.featured-developers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.featured-developers-grid > * {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.featured-developers-grid .developer-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.featured-developers-grid .developer-card .card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure consistent heights for card sections */
+.developer-card-bio {
+  flex: 1;
+  min-height: 3rem;
+}
+
+.developer-card-skills {
+  height: 2rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+.developer-card-badges {
+  height: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+.developer-card-social {
+  margin-top: auto;
+  min-height: 1.5rem;
+}
+
+/* Equal height grid system for cards */
+.equal-height-grid {
+  display: grid;
+  align-items: stretch;
+}
+
+.equal-height-grid > * {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Developer card specific layouts */
+.developer-card-header {
+  flex-shrink: 0;
+}
+
+.developer-card-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.developer-card-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+/* Bio section with consistent height */
+.developer-bio-section {
+  min-height: 2.5rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Skills section that pushes to bottom */
+.developer-skills-section {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 2rem;
+}
+
+/* Fix line clamp for consistent text display */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+  max-height: 2.8em;
+}
+
+/* Developer Grid Equal Heights */
+.developer-cards-grid {
+  display: grid !important;
+  gap: 1.5rem !important;
+  align-items: stretch !important;
+}
+
+/* Responsive grid columns */
+@media (min-width: 768px) {
+  .developer-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .developer-cards-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+.developer-card-equal-height {
+  height: 100% !important;
+  min-height: 400px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.developer-card-equal-height .card-content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.developer-card-equal-height .developer-card-header {
+  flex-shrink: 0 !important;
+}
+
+.developer-card-equal-height .developer-card-body {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.developer-card-equal-height .developer-card-footer {
+  flex-shrink: 0 !important;
+  margin-top: auto !important;
+}
+
+/* Bio section with fixed height */
+.developer-card-equal-height .developer-bio {
+  min-height: 3rem !important;
+  max-height: 4.5rem !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+}
+
+/* Skills section with consistent height */
+.developer-card-equal-height .developer-skills {
+  min-height: 2.5rem !important;
+  max-height: 5rem !important;
+  overflow: hidden !important;
+}
+
+/* Stats section with fixed height */
+.developer-card-equal-height .developer-stats {
+  min-height: 4rem !important;
+}
+
+/* Actions section with fixed height */
+.developer-card-equal-height .developer-actions {
+  min-height: 3rem !important;
+}

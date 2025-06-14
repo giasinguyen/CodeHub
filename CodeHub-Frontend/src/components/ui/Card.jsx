@@ -85,7 +85,7 @@ const CardContent = ({ children, className = '' }) => (
 
 // Card Footer Component
 const CardFooter = ({ children, className = '' }) => (
-  <div className={`mt-4 pt-4 border-t border-slate-700 ${className}`}>
+  <div className={`mt-4 pt-4 border-t border-slate-700 dark:border-slate-700 light:border-gray-200 ${className}`}>
     {children}
   </div>
 );

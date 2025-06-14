@@ -21,7 +21,7 @@ import { Button, Card } from '../ui';
 import SkillBadge from './SkillBadge';
 import ReputationBadge from './ReputationBadge';
 
-const DeveloperCard = ({ developer, onClick, variant = 'default', showActions = true }) => {
+const DeveloperCard = ({ developer, onClick, variant = 'default', showActions = true, className = '' }) => {
   const {
     id,
     username,
@@ -65,21 +65,20 @@ const DeveloperCard = ({ developer, onClick, variant = 'default', showActions = 
     { icon: Globe, url: websiteUrl, color: 'text-green-400 hover:text-green-300' }
   ].filter(link => link.url);
 
-  return (
-    <motion.div
+  return (    <motion.div
       whileHover={{ y: -4, scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className={className}
     >
       <Card 
-        className={`cursor-pointer group transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 border-slate-700 hover:border-cyan-500/50 bg-slate-800/50 backdrop-blur-sm ${
+        className={`cursor-pointer group transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 border-slate-700 hover:border-cyan-500/50 bg-slate-800/50 backdrop-blur-sm h-full flex flex-col ${
           variant === 'featured' ? 'border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 to-purple-500/10' : ''
         }`}
         onClick={handleCardClick}
-      >
-        <Card.Content className="p-6">
+      >        <Card.Content className="p-6 flex-1 flex flex-col card-content">
           {/* Header with Avatar and Online Status */}
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-4 developer-card-header">
             <div className="flex items-center space-x-3">
               <div className="relative">
                 <img
@@ -104,10 +103,9 @@ const DeveloperCard = ({ developer, onClick, variant = 'default', showActions = 
                 <ReputationBadge reputation={reputation} />
               </div>
             </div>
-            
-            {/* Action Buttons */}
+              {/* Action Buttons */}
             {showActions && (
-              <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity developer-actions">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -132,14 +130,18 @@ const DeveloperCard = ({ developer, onClick, variant = 'default', showActions = 
                 </Button>
               </div>
             )}
+          </div>          {/* Bio - flexible height */}
+          <div className="flex-1 mb-4 developer-card-body">
+            {bio ? (
+              <p className="text-sm text-slate-300 line-clamp-3 leading-relaxed developer-bio">
+                {bio}
+              </p>
+            ) : (
+              <p className="text-sm text-slate-400 italic developer-bio">
+                No bio available
+              </p>
+            )}
           </div>
-
-          {/* Bio */}
-          {bio && (
-            <p className="text-sm text-slate-300 mb-4 line-clamp-2 leading-relaxed">
-              {bio}
-            </p>
-          )}
 
           {/* Location and Join Date */}
           <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
@@ -155,26 +157,24 @@ const DeveloperCard = ({ developer, onClick, variant = 'default', showActions = 
                 <span>Joined {formatDate(joinedAt)}</span>
               </div>
             )}
-          </div>
-
-          {/* Skills */}
-          {skills.length > 0 && (
-            <div className="mb-4">
+          </div>          {/* Skills - fixed height */}
+          <div className="mb-4 h-8 flex items-start developer-skills">
+            {skills.length > 0 ? (
               <div className="flex flex-wrap gap-1">
-                {skills.slice(0, 4).map((skill, index) => (
+                {skills.slice(0, 3).map((skill, index) => (
                   <SkillBadge key={index} skill={skill} size="sm" />
                 ))}
-                {skills.length > 4 && (
+                {skills.length > 3 && (
                   <span className="px-2 py-1 bg-slate-700 text-slate-400 rounded text-xs">
-                    +{skills.length - 4}
+                    +{skills.length - 3}
                   </span>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mb-4 text-center">
+            ) : (
+              <span className="text-xs text-slate-500 italic">No skills listed</span>
+            )}
+          </div>          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4 mb-4 text-center developer-stats">
             <div>
               <p className="text-lg font-semibold text-white">{contributions}</p>
               <p className="text-xs text-slate-400">Contributions</p>
@@ -187,50 +187,61 @@ const DeveloperCard = ({ developer, onClick, variant = 'default', showActions = 
               <p className="text-lg font-semibold text-white">{following}</p>
               <p className="text-xs text-slate-400">Following</p>
             </div>
-          </div>
-
-          {/* Badges */}
-          {badges.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-4">
-              {badges.slice(0, 3).map((badge, index) => (
-                <div
-                  key={index}
-                  className="px-2 py-1 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 rounded text-xs border border-yellow-500/30"
-                >
-                  {badge}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Social Links */}
-          {socialLinks.length > 0 && (
-            <div className="flex items-center justify-between">
-              <div className="flex space-x-3">
-                {socialLinks.map((link, index) => {
-                  const Icon = link.icon;
-                  return (
-                    <a
-                      key={index}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`${link.color} transition-colors`}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </a>
-                  );
-                })}
+          </div>          {/* Badges - fixed height */}
+          <div className="mb-4 h-6 flex items-start developer-card-badges">
+            {badges.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {badges.slice(0, 2).map((badge, index) => (
+                  <div
+                    key={index}
+                    className="px-2 py-1 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 rounded text-xs border border-yellow-500/30"
+                  >
+                    {badge}
+                  </div>
+                ))}
+                {badges.length > 2 && (
+                  <span className="px-2 py-1 bg-slate-700 text-slate-400 rounded text-xs">
+                    +{badges.length - 2}
+                  </span>
+                )}
               </div>
-              
-              {lastActive && !isOnline && (
-                <span className="text-xs text-slate-500">
-                  Active {formatDate(lastActive)}
-                </span>
-              )}
-            </div>
-          )}
+            ) : (
+              <span className="text-xs text-slate-500 italic">No badges</span>
+            )}
+          </div>          {/* Social Links - fixed at bottom */}
+          <div className="mt-auto developer-card-social">
+            {socialLinks.length > 0 ? (
+              <div className="flex items-center justify-between">
+                <div className="flex space-x-3">
+                  {socialLinks.map((link, index) => {
+                    const Icon = link.icon;
+                    return (
+                      <a
+                        key={index}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`${link.color} transition-colors`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Icon className="w-4 h-4" />
+                      </a>
+                    );
+                  })}
+                </div>
+                
+                {lastActive && !isOnline && (
+                  <span className="text-xs text-slate-500">
+                    Active {formatDate(lastActive)}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="h-6 flex items-center">
+                <span className="text-xs text-slate-500 italic">No social links</span>
+              </div>
+            )}
+          </div>
 
           {/* Featured Badge */}
           {variant === 'featured' && (

@@ -19,21 +19,22 @@ const FeaturedDevelopers = ({ developers, onDeveloperClick }) => {
             <p className="text-slate-400 text-sm">Top contributors and active community members</p>
           </div>
         </div>
-      </Card.Header>
-      <Card.Content>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      </Card.Header>      <Card.Content>
+        <div className="featured-developers-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {developers.slice(0, 3).map((developer, index) => (
             <motion.div
               key={developer.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
+              className="flex h-full"
             >
               <DeveloperCard
                 developer={developer}
                 onClick={onDeveloperClick}
                 variant="featured"
                 showActions={false}
+                className="w-full developer-card"
               />
             </motion.div>
           ))}

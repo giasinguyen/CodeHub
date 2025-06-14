@@ -595,19 +595,18 @@ const Trending = () => {
       </div>
     </div>
   );
-
   const renderTrendingDevelopers = () => (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 equal-height-grid">
         {trendingData.developers.map((developer, index) => (
           <motion.div
             key={developer.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <Card className="h-full hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <Card.Header>
+            className="h-full"
+          >            <Card className="h-full hover:shadow-xl transition-all duration-300 hover:scale-105 flex flex-col">
+              <Card.Header className="developer-card-header">
                 <div className="flex items-center space-x-4">
                   <div className="relative">
                     <img
@@ -616,7 +615,7 @@ const Trending = () => {
                         `https://api.dicebear.com/7.x/avataaars/svg?seed=${developer.username}`
                       }
                       alt={developer.username}
-                      className="w-16 h-16 rounded-full border-4 border-slate-700"
+                      className="w-16 h-16 rounded-full border-4 border-slate-700 dark:border-slate-700 light:border-gray-300"
                     />
                     <div className="absolute -top-1 -right-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium">
                       #{index + 1}
@@ -628,68 +627,83 @@ const Trending = () => {
                       to={`/profile/${developer.id}`}
                       className="block hover:text-cyan-400 transition-colors"
                     >
-                      <h3 className="text-lg font-semibold text-white">
+                      <h3 className="text-lg font-semibold text-white dark:text-white light:text-gray-900">
                         {developer.fullName || developer.username}
                       </h3>
                     </Link>
-                    <p className="text-slate-400 text-sm">
+                    <p className="text-slate-400 dark:text-slate-400 light:text-gray-600 text-sm">
                       @{developer.username}
                     </p>
                     {developer.location && (
-                      <p className="text-slate-500 text-xs">
+                      <p className="text-slate-500 dark:text-slate-500 light:text-gray-500 text-xs">
                         {developer.location}
                       </p>
                     )}
                   </div>
                 </div>
 
-                {developer.bio && (
-                  <p className="text-slate-400 text-sm mt-3 line-clamp-2">
-                    {developer.bio}
-                  </p>
-                )}
+                <div className="developer-bio-section mt-3">
+                  {developer.bio ? (
+                    <p className="text-slate-400 dark:text-slate-400 light:text-gray-600 text-sm line-clamp-2">
+                      {developer.bio}
+                    </p>
+                  ) : (
+                    <p className="text-slate-500 dark:text-slate-500 light:text-gray-500 text-sm italic">
+                      No bio available
+                    </p>
+                  )}
+                </div>
               </Card.Header>
 
-              <Card.Content>
-                <div className="space-y-3">
+              <Card.Content className="developer-card-content">
+                <div className="space-y-3 h-full flex flex-col">
                   {/* Stats */}
                   <div className="grid grid-cols-3 gap-3 text-center">
                     <div>
-                      <div className="text-white font-semibold">
+                      <div className="text-white dark:text-white light:text-gray-900 font-semibold">
                         {developer.followers || 0}
                       </div>
-                      <div className="text-slate-400 text-xs">Followers</div>
+                      <div className="text-slate-400 dark:text-slate-400 light:text-gray-600 text-xs">Followers</div>
                     </div>
                     <div>
-                      <div className="text-white font-semibold">
+                      <div className="text-white dark:text-white light:text-gray-900 font-semibold">
                         {developer.snippetsCount || 0}
                       </div>
-                      <div className="text-slate-400 text-xs">Snippets</div>
-                    </div>                    <div>
-                      <div className="text-white font-semibold">
+                      <div className="text-slate-400 dark:text-slate-400 light:text-gray-600 text-xs">Snippets</div>
+                    </div>
+                    <div>
+                      <div className="text-white dark:text-white light:text-gray-900 font-semibold">
                         {(developer.reputation || 0).toFixed(2)}
                       </div>
-                      <div className="text-slate-400 text-xs">Reputation</div>
+                      <div className="text-slate-400 dark:text-slate-400 light:text-gray-600 text-xs">Reputation</div>
                     </div>
                   </div>
 
                   {/* Skills */}
-                  {developer.skills && developer.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {developer.skills.slice(0, 3).map((skill, skillIndex) => (
-                        <SkillBadge key={skillIndex} skill={skill} size="sm" />
-                      ))}
-                      {developer.skills.length > 3 && (
-                        <span className="text-slate-400 text-xs px-2 py-1">
-                          +{developer.skills.length - 3}
+                  <div className="developer-skills-section">
+                    <div className="min-h-[2rem] flex items-center">
+                      {developer.skills && developer.skills.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {developer.skills.slice(0, 3).map((skill, skillIndex) => (
+                            <SkillBadge key={skillIndex} skill={skill} size="sm" />
+                          ))}
+                          {developer.skills.length > 3 && (
+                            <span className="text-slate-400 dark:text-slate-400 light:text-gray-600 text-xs px-2 py-1">
+                              +{developer.skills.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-slate-500 dark:text-slate-500 light:text-gray-500 text-xs italic">
+                          No skills listed
                         </span>
                       )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </Card.Content>
 
-              <Card.Footer>
+              <Card.Footer className="developer-card-footer">
                 <div className="flex items-center justify-between">
                   <ReputationBadge reputation={developer.reputation || 0} />
 

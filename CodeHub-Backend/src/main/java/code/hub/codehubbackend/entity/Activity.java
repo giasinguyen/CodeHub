@@ -24,8 +24,9 @@ public class Activity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-      @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ActivityType type;
     
     @Column(name = "target_id")
@@ -40,14 +41,14 @@ public class Activity {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-      public enum ActivityType {
+    
+    public enum ActivityType {
         SNIPPET_CREATED,
         SNIPPET_UPDATED, 
         SNIPPET_DELETED,
-        SNIPPET_LIKED,        
-        SNIPPET_UNLIKED,
-        SNIPPET_FAVED,      // Shortened from SNIPPET_FAVORITED
-        SNIPPET_UNFAVED,    // Shortened from SNIPPET_UNFAVORITED
+        SNIPPET_LIKED,        SNIPPET_UNLIKED,
+        SNIPPET_FAVORITED,
+        SNIPPET_UNFAVORITED,
         SNIPPET_VIEWED,
         COMMENT_ADDED,
         COMMENT_DELETED,

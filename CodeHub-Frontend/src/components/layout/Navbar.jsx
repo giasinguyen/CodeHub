@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import {
   Search,
   Plus,
@@ -37,6 +37,7 @@ const Navbar = () => {
     setIsUserMenuOpen(false);
     navigate('/');
   };
+
   const navItems = [
     { path: '/', label: 'Home' },
     { path: '/snippets', label: 'Code Snippets' },
@@ -50,7 +51,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-40">
+    <nav className="bg-slate-900/95 dark:bg-slate-900/95 light:bg-white/95 backdrop-blur-sm border-b border-slate-700 dark:border-slate-700 light:border-gray-200 sticky top-0 z-40 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -58,7 +59,7 @@ const Navbar = () => {
             <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-2 rounded-lg">
               <Code2 className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-white pr-4">CodeHub</span>
+            <span className="text-xl font-bold text-white dark:text-white light:text-gray-900 pr-4">CodeHub</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -70,15 +71,12 @@ const Navbar = () => {
                 className={`relative px-3 py-2 rounded-lg transition-colors ${
                   isActivePath(item.path)
                     ? 'text-cyan-400'
-                    : 'text-slate-300 hover:text-white'
+                    : 'text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900'
                 }`}
               >
                 {item.label}
                 {isActivePath(item.path) && (
-                  <motion.div
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400"
-                    layoutId="navbar-indicator"
-                  />
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400" />
                 )}
               </Link>
             ))}
@@ -94,119 +92,106 @@ const Navbar = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 icon={Search}
                 iconPosition="left"
-                className="bg-slate-800/80 border-slate-600 focus:border-cyan-500"
+                className="bg-slate-800/80 dark:bg-slate-800/80 light:bg-gray-100 border-slate-600 dark:border-slate-600 light:border-gray-300 focus:border-cyan-500"
               />
             </form>
           </div>
 
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Right Section */}
+          <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
                 {/* Notifications */}
-                <button className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
+                <button className="p-2 text-slate-400 dark:text-slate-400 light:text-gray-600 hover:text-white dark:hover:text-white light:hover:text-gray-900 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 transition-colors">
                   <Bell className="w-5 h-5" />
                 </button>
 
-                {/* Bookmarks */}
-                <button className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
-                  <Bookmark className="w-5 h-5" />
-                </button>
-
                 {/* Create Button */}
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={Plus}
-                  onClick={() => navigate('/create')}
-                >
-                  Create
-                </Button>
+                <button className="p-2 text-slate-400 dark:text-slate-400 light:text-gray-600 hover:text-white dark:hover:text-white light:hover:text-gray-900 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 transition-colors">
+                  <Plus className="w-5 h-5" />
+                </button>
 
                 {/* User Menu */}
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-800 transition-colors"
+                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 transition-colors"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">
-                        {user?.username?.[0]?.toUpperCase() || 'U'}
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.username}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <User className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                    <div className="hidden sm:block text-left">
+                      <span className="text-white dark:text-white light:text-gray-900 text-sm font-medium">
+                        {user?.username}
                       </span>
                     </div>
-                    <span className="text-slate-300 text-sm">{user?.username}</span>
                   </button>
 
                   {/* User Dropdown */}
                   <AnimatePresence>
                     {isUserMenuOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                        className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl"
-                      >
-                        <div className="py-2">                          <Link
-                            to="/profile"
-                            className="flex items-center space-x-2 px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white"
-                            onClick={() => setIsUserMenuOpen(false)}
-                          >
-                            <User className="w-4 h-4" />
-                            <span>Profile</span>
-                          </Link>
-                          <Link
-                            to="/settings"
-                            className="flex items-center space-x-2 px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white"
-                            onClick={() => setIsUserMenuOpen(false)}
-                          >
-                            <Settings className="w-4 h-4" />
-                            <span>Settings</span>
-                          </Link>
-                          <hr className="my-2 border-slate-700" />
-                          <button
-                            onClick={handleLogout}
-                            className="flex items-center space-x-2 w-full px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white"
-                          >
-                            <LogOut className="w-4 h-4" />
-                            <span>Logout</span>
-                          </button>
-                        </div>
-                      </motion.div>
+                      <div className="absolute right-0 mt-2 w-48 bg-slate-800 dark:bg-slate-800 light:bg-white rounded-lg shadow-lg border border-slate-700 dark:border-slate-700 light:border-gray-200 py-1 z-50">
+                        <Link
+                          to="/profile"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center space-x-2 px-4 py-2 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:bg-slate-700 dark:hover:bg-slate-700 light:hover:bg-gray-100 hover:text-white dark:hover:text-white light:hover:text-gray-900"
+                        >
+                          <User className="w-4 h-4" />
+                          <span>Profile</span>
+                        </Link>
+                        <Link
+                          to="/settings"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center space-x-2 px-4 py-2 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:bg-slate-700 dark:hover:bg-slate-700 light:hover:bg-gray-100 hover:text-white dark:hover:text-white light:hover:text-gray-900"
+                        >
+                          <Settings className="w-4 h-4" />
+                          <span>Settings</span>
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center space-x-2 w-full px-4 py-2 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:bg-slate-700 dark:hover:bg-slate-700 light:hover:bg-gray-100 hover:text-white dark:hover:text-white light:hover:text-gray-900"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
                     )}
                   </AnimatePresence>
                 </div>
               </>
             ) : (
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/login')}
+              <>
+                <Link
+                  to="/auth/login"
+                  className="px-4 py-2 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900 font-medium"
                 >
-                  Login
-                </Button>
+                  Sign In
+                </Link>
                 <Button
+                  as={Link}
+                  to="/auth/register"
                   variant="primary"
                   size="sm"
-                  onClick={() => navigate('/register')}
                 >
-                  Sign Up
+                  Get Started
                 </Button>
-              </div>
+              </>
             )}
-          </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-slate-400 hover:text-white"
+              className="p-2 text-slate-400 dark:text-slate-400 light:text-gray-600 hover:text-white dark:hover:text-white light:hover:text-gray-900 md:hidden"
             >
-              {isMobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
@@ -214,96 +199,71 @@ const Navbar = () => {
         {/* Mobile Menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-slate-700 py-4"
-            >
+            <div className="md:hidden border-t border-slate-700 dark:border-slate-700 light:border-gray-200 py-4">
               {/* Mobile Search */}
-              <form onSubmit={handleSearch} className="mb-4">
-                <Input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  icon={Search}
-                  iconPosition="left"
-                />
-              </form>
+              <div className="px-4 pb-4">
+                <form onSubmit={handleSearch}>
+                  <Input
+                    type="text"
+                    placeholder="Search code snippets..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    icon={Search}
+                    iconPosition="left"
+                    className="bg-slate-800/80 dark:bg-slate-800/80 light:bg-gray-100 border-slate-600 dark:border-slate-600 light:border-gray-300 focus:border-cyan-500"
+                  />
+                </form>
+              </div>
 
               {/* Mobile Navigation */}
-              <div className="space-y-2 mb-4">
+              <div className="space-y-1 px-4">
                 {navItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`block px-3 py-2 rounded-lg ${
-                      isActivePath(item.path)
-                        ? 'text-cyan-400 bg-slate-800'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                    }`}
                     onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block px-3 py-2 rounded-lg transition-colors ${
+                      isActivePath(item.path)
+                        ? 'text-cyan-400 bg-cyan-500/10'
+                        : 'text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900 hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100'
+                    }`}
                   >
                     {item.label}
                   </Link>
                 ))}
-              </div>
 
-              {/* Mobile Actions */}
-              {isAuthenticated ? (
-                <div className="space-y-2 border-t border-slate-700 pt-4">
-                  <Link
-                    to="/create"
-                    className="flex items-center space-x-2 px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Create</span>
-                  </Link>                  <Link
-                    to="/profile"
-                    className="flex items-center space-x-2 px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <User className="w-4 h-4" />
-                    <span>Profile</span>
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="flex items-center space-x-2 w-full px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Logout</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2 border-t border-slate-700 pt-4">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      navigate('/login');
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    Login
-                  </Button>
-                  <Button
-                    variant="primary"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      navigate('/register');
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    Sign Up
-                  </Button>
-                </div>
-              )}
-            </motion.div>
+                {isAuthenticated && (
+                  <>
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900 hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 rounded-lg"
+                    >
+                      <User className="w-4 h-4" />
+                      <span>Profile</span>
+                    </Link>
+                    <Link
+                      to="/settings"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900 hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 rounded-lg"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Settings</span>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center space-x-2 w-full px-3 py-2 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900 hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 rounded-lg"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Logout</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           )}
         </AnimatePresence>
       </div>

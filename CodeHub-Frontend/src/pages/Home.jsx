@@ -138,9 +138,8 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900">
+    <div className="min-h-screen bg-slate-900 dark:bg-slate-900 light:bg-white transition-colors duration-200">      {/* Hero Section */}
+      <section className="hero-section relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900 light:from-blue-50 light:via-white light:to-blue-100">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <motion.div
@@ -155,14 +154,14 @@ const Home = () => {
               </div>
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            <h1 className="text-5xl md:text-6xl font-bold text-white dark:text-white light:text-gray-900 mb-6">
               Share Your{' '}
               <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                 Code Snippets
               </span>
             </h1>
             
-            <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-300 dark:text-slate-300 light:text-gray-600 mb-8 max-w-3xl mx-auto">
               Discover, share, and collaborate on code snippets with developers worldwide. 
               Build something amazing together.
             </p>
@@ -201,7 +200,7 @@ const Home = () => {
       </section>
 
       {/* Featured Snippets */}
-      <section className="py-20 bg-slate-900">
+      <section className="py-20 bg-slate-900 dark:bg-slate-900 light:bg-white transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

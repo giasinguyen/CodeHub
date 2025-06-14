@@ -257,9 +257,17 @@ export const usersAPI = {
   
   // Get user statistics
   getUserStats: (id) => api.get(`/users/${id}/stats`),
-  
-  // Get current user statistics
+    // Get current user statistics
   getCurrentUserStats: () => api.get('/users/profile/stats'),
+  
+  // Update user profile
+  updateProfile: (profileData) => api.put('/users/profile', profileData),
+  
+  // Change password
+  changePassword: (passwordData) => api.put('/users/profile/password', passwordData),
+  
+  // Upload avatar
+  uploadAvatar: (formData) => api.postFormData('/users/profile/avatar', formData),
 };
 
 // Activity API methods

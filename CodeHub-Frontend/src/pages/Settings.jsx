@@ -36,12 +36,19 @@ import {
 } from 'lucide-react';
 import { Card, Button, Input, Loading } from '../components/ui';
 import { useAuth } from '../contexts/AuthContext';
+import { usersAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 const Settings = () => {
   const { user, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('account');
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
   const [settings, setSettings] = useState({
     // Account Settings
     profile: {
@@ -118,37 +125,188 @@ const Settings = () => {
     { id: 'security', label: 'Security', icon: Lock, description: 'Password and security settings' },
     { id: 'data', label: 'Data & Storage', icon: Database, description: 'Manage your data and exports' }
   ];
-
   useEffect(() => {
-    // Load settings from localStorage or API
-    const savedSettings = localStorage.getItem('userSettings');
-    if (savedSettings) {
+    // Load settings from user profile and localStorage
+    if (user) {
       setSettings(prevSettings => ({
         ...prevSettings,
-        ...JSON.parse(savedSettings)
+        profile: {
+          username: user.username || '',
+          email: user.email || '',
+          fullName: user.fullName || '',
+          bio: user.bio || '',
+          location: user.location || '',
+          website: user.websiteUrl || '',
+          githubUsername: user.githubUrl ? user.githubUrl.replace('https://github.com/', '') : '',
+          linkedinProfile: user.linkedinUrl || '',
+          twitterHandle: user.twitterUrl ? user.twitterUrl.replace('https://twitter.com/', '') : ''
+        }
       }));
     }
-  }, []);
 
-  const handleSettingChange = (section, key, value) => {
-    setSettings(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [key]: value
+    // Load other settings from localStorage
+    const savedSettings = localStorage.getItem('userSettings');
+    if (savedSettings) {
+      const parsed = JSON.parse(savedSettings);
+      setSettings(prevSettings => ({
+        ...prevSettings,
+        privacy: parsed.privacy || prevSettings.privacy,
+        notifications: parsed.notifications || prevSettings.notifications,
+        appearance: parsed.appearance || prevSettings.appearance,
+        developer: parsed.developer || prevSettings.developer,
+        security: parsed.security || prevSettings.security
+      }));
+    }
+  }, [user]);
+  // Apply appearance changes in real-time
+  useEffect(() => {
+    const applyAppearanceChanges = () => {
+      const root = document.documentElement;
+      const body = document.body;
+      
+      // Add transition class for smooth theme switching
+      root.classList.add('theme-transition');
+      body.classList.add('theme-transition');
+      
+      // Remove transition after animation completes
+      setTimeout(() => {
+        root.classList.remove('theme-transition');
+        body.classList.remove('theme-transition');
+      }, 300);
+      
+      // Apply theme
+      if (settings.appearance.theme === 'light') {
+        root.classList.remove('dark', 'auto');
+        root.classList.add('light');
+        body.classList.remove('dark', 'auto');
+        body.classList.add('light');
+        // Update meta theme-color for mobile browsers
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute('content', '#ffffff');
+        }
+      } else if (settings.appearance.theme === 'dark') {
+        root.classList.remove('light', 'auto');
+        root.classList.add('dark');
+        body.classList.remove('light', 'auto');
+        body.classList.add('dark');
+        // Update meta theme-color for mobile browsers
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute('content', '#0f172a');
+        }
+      } else { // auto
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        root.classList.remove('light', 'dark');
+        root.classList.add('auto', prefersDark ? 'dark' : 'light');
+        body.classList.remove('light', 'dark');
+        body.classList.add('auto', prefersDark ? 'dark' : 'light');
+        // Update meta theme-color for mobile browsers
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute('content', prefersDark ? '#0f172a' : '#ffffff');
+        }
       }
-    }));
-  };
 
-  const saveSettings = async () => {
+      // Apply font size
+      const fontSizeMap = {
+        small: '14px',
+        medium: '16px',
+        large: '18px'
+      };
+      root.style.fontSize = fontSizeMap[settings.appearance.fontSize];
+
+      // Apply compact mode
+      if (settings.appearance.compactMode) {
+        root.classList.add('compact-mode');
+      } else {
+        root.classList.remove('compact-mode');
+      }
+
+      // Apply high contrast
+      if (settings.appearance.highContrast) {
+        root.classList.add('high-contrast');
+      } else {
+        root.classList.remove('high-contrast');
+      }
+
+      // Apply animations
+      if (!settings.appearance.animationsEnabled) {
+        root.classList.add('reduce-motion');
+      } else {
+        root.classList.remove('reduce-motion');
+      }
+    };
+
+    applyAppearanceChanges();
+  }, [settings.appearance]);
+  const handleSettingChange = (section, key, value) => {
+    setSettings(prev => {
+      const newSettings = {
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [key]: value
+        }
+      };
+      
+      // Immediately save appearance settings to localStorage for instant persistence
+      if (section === 'appearance') {
+        const settingsToSave = {
+          privacy: newSettings.privacy,
+          notifications: newSettings.notifications,
+          appearance: newSettings.appearance,
+          developer: newSettings.developer,
+          security: newSettings.security
+        };
+        localStorage.setItem('userSettings', JSON.stringify(settingsToSave));
+        
+        // Show brief feedback for theme changes
+        if (key === 'theme') {
+          toast.success(`Switched to ${value} theme`, {
+            duration: 2000,
+            position: 'bottom-right'
+          });
+        }
+      }
+      
+      return newSettings;
+    });
+  };const saveSettings = async () => {
     setLoading(true);
     try {
-      // Save to localStorage (in real app, save to API)
-      localStorage.setItem('userSettings', JSON.stringify(settings));
-      
-      // Update profile if account settings changed
+      // Save settings based on active tab
       if (activeTab === 'account') {
-        await updateProfile(settings.profile);
+        // Update profile via API
+        const profileData = {
+          email: settings.profile.email,
+          fullName: settings.profile.fullName,
+          bio: settings.profile.bio,
+          location: settings.profile.location,
+          websiteUrl: settings.profile.website,
+          githubUrl: settings.profile.githubUsername ? `https://github.com/${settings.profile.githubUsername}` : '',
+          linkedinUrl: settings.profile.linkedinProfile,
+          twitterUrl: settings.profile.twitterHandle ? `https://twitter.com/${settings.profile.twitterHandle}` : ''
+        };
+        
+        const response = await usersAPI.updateProfile(profileData);
+        console.log('Profile updated:', response.data);
+        
+        // Update auth context with new profile data
+        if (updateProfile) {
+          await updateProfile(response.data);
+        }
+      } else {
+        // For other settings (privacy, notifications, etc.), save to localStorage
+        // These would need dedicated API endpoints in a full implementation
+        const settingsToSave = {
+          privacy: settings.privacy,
+          notifications: settings.notifications,
+          appearance: settings.appearance,
+          developer: settings.developer,
+          security: settings.security
+        };
+        localStorage.setItem('userSettings', JSON.stringify(settingsToSave));
       }
       
       toast.success('Settings saved successfully!');
@@ -157,6 +315,40 @@ const Settings = () => {
       console.error('Settings save error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const changePassword = async () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error('New password and confirmation do not match');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters long');
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await usersAPI.changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+        confirmPassword: passwordForm.confirmPassword
+      });
+
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+
+      toast.success('Password changed successfully!');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to change password');
+      console.error('Password change error:', error);
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -184,9 +376,51 @@ const Settings = () => {
     
     toast.success('Data exported successfully!');
   };
-
   const renderAccountSettings = () => (
     <div className="space-y-6">
+      {/* Avatar Section */}
+      <div>
+        <h3 className="text-lg font-semibold text-white mb-4">Profile Picture</h3>
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <img
+              src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'user'}`}
+              alt="Profile"
+              className="w-20 h-20 rounded-full border-2 border-slate-600"
+            />
+            <button className="absolute -bottom-1 -right-1 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition-colors">
+              <Camera className="w-4 h-4" />
+            </button>
+          </div>
+          <div>
+            <p className="text-white font-medium">Change your profile picture</p>
+            <p className="text-slate-400 text-sm">Upload a new avatar or update your existing one</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={() => document.getElementById('avatar-upload').click()}
+            >
+              Upload New Picture
+            </Button>
+            <input
+              id="avatar-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  // Handle file upload
+                  console.log('File selected:', file);
+                  toast.success('Avatar upload functionality will be implemented');
+                }
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
       <div>
         <h3 className="text-lg font-semibold text-white mb-4">Profile Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -328,11 +562,10 @@ const Settings = () => {
             { key: 'mentionNotifications', label: 'Mention Notifications', desc: 'Notify when someone mentions you', icon: Bell },
             { key: 'digestEmails', label: 'Weekly Digest', desc: 'Receive weekly summary emails', icon: Mail },
             { key: 'securityAlerts', label: 'Security Alerts', desc: 'Important security notifications', icon: Shield },
-            { key: 'newsletterSubscription', label: 'Newsletter', desc: 'Subscribe to our newsletter', icon: Mail }
-          ].map(({ key, label, desc, icon: Icon }) => (
+            { key: 'newsletterSubscription', label: 'Newsletter', desc: 'Subscribe to our newsletter', icon: Mail }          ].map(({ key, label, desc, icon: IconComponent }) => (
             <div key={key} className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <Icon className="w-5 h-5 text-slate-400" />
+                <IconComponent className="w-5 h-5 text-slate-400" />
                 <div>
                   <label className="text-sm font-medium text-white">{label}</label>
                   <p className="text-xs text-slate-400">{desc}</p>
@@ -371,8 +604,7 @@ const Settings = () => {
               {[
                 { value: 'light', icon: Sun, label: 'Light' },
                 { value: 'dark', icon: Moon, label: 'Dark' },
-                { value: 'auto', icon: Monitor, label: 'Auto' }
-              ].map(({ value, icon: Icon, label }) => (
+                { value: 'auto', icon: Monitor, label: 'Auto' }              ].map(({ value, icon: IconComponent, label }) => (
                 <button
                   key={value}
                   onClick={() => handleSettingChange('appearance', 'theme', value)}
@@ -382,7 +614,7 @@ const Settings = () => {
                       : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <IconComponent className="w-4 h-4" />
                   <span className="text-sm">{label}</span>
                 </button>
               ))}
@@ -583,10 +815,45 @@ const Settings = () => {
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     settings.security[key] ? 'translate-x-6' : 'translate-x-1'
                   }`}
-                />
-              </button>
+                />              </button>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Change Password Section */}
+      <div>
+        <h3 className="text-lg font-semibold text-white mb-4">Change Password</h3>
+        <div className="space-y-4">
+          <Input
+            label="Current Password"
+            type="password"
+            value={passwordForm.currentPassword}
+            onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+            placeholder="Enter current password"
+          />
+          <Input
+            label="New Password"
+            type="password"
+            value={passwordForm.newPassword}
+            onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+            placeholder="Enter new password (minimum 8 characters)"
+          />
+          <Input
+            label="Confirm New Password"
+            type="password"
+            value={passwordForm.confirmPassword}
+            onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+            placeholder="Confirm new password"
+          />
+          <Button
+            onClick={changePassword}
+            disabled={passwordLoading || !passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword}
+            className="flex items-center space-x-2"
+          >
+            <Key className="w-4 h-4" />
+            <span>{passwordLoading ? 'Changing...' : 'Change Password'}</span>
+          </Button>
         </div>
       </div>
     </div>
@@ -677,7 +944,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 light:from-gray-50 light:via-white light:to-gray-100 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">

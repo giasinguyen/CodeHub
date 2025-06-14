@@ -231,9 +231,8 @@ const Developers = () => {
   if (loading && developers.length === 0) {
     return <Loading type="spinner" size="lg" text="Loading developers..." />;
   }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 light:from-gray-50 light:via-white light:to-gray-100">
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500 rounded-full opacity-10 blur-3xl animate-pulse"></div>
@@ -258,7 +257,7 @@ const Developers = () => {
                   Developers
                 </h1>
               </div>
-              <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              <p className="text-xl text-slate-400 dark:text-slate-400 light:text-gray-600 max-w-2xl mx-auto">
                 Discover talented developers, connect with peers, and build
                 amazing things together
               </p>

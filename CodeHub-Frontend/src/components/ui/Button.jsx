@@ -20,7 +20,6 @@ const Button = React.forwardRef(({
     disabled:opacity-50 disabled:cursor-not-allowed
     active:scale-[0.98]
   `;
-
   const variants = {
     primary: `
       bg-gradient-to-r from-cyan-500 to-blue-500
@@ -29,18 +28,18 @@ const Button = React.forwardRef(({
       focus:ring-cyan-500
     `,
     secondary: `
-      bg-slate-700 hover:bg-slate-600
-      text-white border border-slate-600
+      bg-slate-700 dark:bg-slate-700 light:bg-gray-200 hover:bg-slate-600 dark:hover:bg-slate-600 light:hover:bg-gray-300
+      text-white dark:text-white light:text-gray-900 border border-slate-600 dark:border-slate-600 light:border-gray-300
       focus:ring-slate-500
     `,
     outline: `
       bg-transparent border-2 border-cyan-500
-      text-cyan-400 hover:bg-cyan-500 hover:text-white
+      text-cyan-400 dark:text-cyan-400 light:text-cyan-600 hover:bg-cyan-500 hover:text-white
       focus:ring-cyan-500
     `,
     ghost: `
-      bg-transparent hover:bg-slate-700
-      text-slate-300 hover:text-white
+      bg-transparent hover:bg-slate-700 dark:hover:bg-slate-700 light:hover:bg-gray-100
+      text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900
       focus:ring-slate-500
     `,
     danger: `

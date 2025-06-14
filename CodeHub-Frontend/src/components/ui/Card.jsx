@@ -9,19 +9,17 @@ const Card = ({
   hover = true,
   onClick,
   ...props 
-}) => {
-  const baseClasses = `
-    bg-slate-800/50 backdrop-blur-sm
-    border border-slate-700
+}) => {  const baseClasses = `
+    bg-slate-800/50 dark:bg-slate-800/50 light:bg-white/90 backdrop-blur-sm
+    border border-slate-700 dark:border-slate-700 light:border-gray-200
     rounded-xl
     transition-all duration-200
   `;
-
   const variants = {
-    default: 'shadow-lg',
-    elevated: 'shadow-xl shadow-black/20',
-    outline: 'border-2 border-slate-600',
-    glass: 'bg-slate-800/30 backdrop-blur-md',
+    default: 'shadow-lg dark:shadow-lg light:shadow-md',
+    elevated: 'shadow-xl shadow-black/20 dark:shadow-xl dark:shadow-black/20 light:shadow-lg light:shadow-gray-300/20',
+    outline: 'border-2 border-slate-600 dark:border-slate-600 light:border-gray-300',
+    glass: 'bg-slate-800/30 dark:bg-slate-800/30 light:bg-white/70 backdrop-blur-md',
   };
 
   const paddings = {
@@ -31,7 +29,7 @@ const Card = ({
     lg: 'p-8',
   };
 
-  const hoverClasses = hover ? 'hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1' : '';
+  const hoverClasses = hover ? 'hover:shadow-xl hover:shadow-black/20 dark:hover:shadow-black/20 light:hover:shadow-gray-300/30 hover:-translate-y-1' : '';
   const clickableClasses = onClick ? 'cursor-pointer' : '';
 
   const cardClasses = `

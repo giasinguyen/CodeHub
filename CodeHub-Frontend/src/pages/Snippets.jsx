@@ -241,7 +241,7 @@ const Snippets = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-900 py-8">
+      <div className="min-h-screen bg-slate-900 dark:bg-slate-900 light:bg-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-center min-h-[50vh]">
             <div className="text-center">
@@ -264,7 +264,7 @@ const Snippets = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 py-8">
+    <div className="min-h-screen bg-slate-900 dark:bg-slate-900 light:bg-white py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">

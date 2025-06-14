@@ -1,0 +1,75 @@
+/* Debug and force light theme - highest priority */
+.force-light-theme,
+html.light .force-light-theme,
+.light .force-light-theme {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+/* Force light theme for all major containers */
+html.light .min-h-screen,
+.light .min-h-screen {
+  background: #ffffff !important;
+  background-image: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%) !important;
+}
+
+/* Force navbar light theme */
+html.light nav,
+.light nav {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #e5e7eb !important;
+}
+
+html.light nav *,
+.light nav * {
+  color: #1e293b !important;
+}
+
+/* Force sidebar light theme */
+html.light aside,
+.light aside {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-right-color: #e5e7eb !important;
+}
+
+html.light aside *,
+.light aside * {
+  color: #1e293b !important;
+}
+
+/* Preserve blue gradient buttons and icons */
+html.light .bg-gradient-to-r,
+.light .bg-gradient-to-r,
+html.light [class*="bg-gradient"],
+.light [class*="bg-gradient"] {
+  background-image: linear-gradient(to right, #06b6d4, #3b82f6) !important;
+}
+
+html.light .bg-gradient-to-r *,
+.light .bg-gradient-to-r *,
+html.light [class*="bg-gradient"] *,
+.light [class*="bg-gradient"] * {
+  color: white !important;
+}
+
+/* Fix text in light theme */
+html.light .text-transparent,
+.light .text-transparent {
+  color: transparent !important;
+}
+
+/* Override all text colors except gradients */
+html.light :not([class*="bg-gradient"]) .text-white,
+.light :not([class*="bg-gradient"]) .text-white {
+  color: #1e293b !important;
+}
+
+html.light :not([class*="bg-gradient"]) .text-slate-300,
+.light :not([class*="bg-gradient"]) .text-slate-300 {
+  color: #64748b !important;
+}
+
+html.light :not([class*="bg-gradient"]) .text-slate-400,
+.light :not([class*="bg-gradient"]) .text-slate-400 {
+  color: #64748b !important;
+}

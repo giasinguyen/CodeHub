@@ -164,7 +164,7 @@ public class ActivityService {
             
             Activity activity = Activity.builder()
                     .user(currentUser)
-                    .type(isFavorite ? Activity.ActivityType.SNIPPET_FAVED : Activity.ActivityType.SNIPPET_UNFAVED)
+                    .type(isFavorite ? Activity.ActivityType.SNIPPET_FAVORITED : Activity.ActivityType.SNIPPET_UNFAVORITED)
                     .targetId(snippet.getId())
                     .targetType("snippet")
                     .metadata(objectMapper.writeValueAsString(metadata))

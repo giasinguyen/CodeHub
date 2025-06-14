@@ -1,0 +1,63 @@
+/* Home page light theme overrides */
+
+/* Global text color overrides for light theme */
+html.light .text-white,
+.light .text-white {
+  color: #1e293b !important;
+}
+
+html.light .text-slate-300,
+.light .text-slate-300 {
+  color: #64748b !important;
+}
+
+html.light .text-slate-400,
+.light .text-slate-400 {
+  color: #64748b !important;
+}
+
+/* Hero section specific */
+html.light .hero-section,
+.light .hero-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%) !important;
+}
+
+/* Card backgrounds */
+html.light .bg-slate-800,
+.light .bg-slate-800 {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+html.light .bg-slate-700,
+.light .bg-slate-700 {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Stats and featured sections */
+html.light .stats-section .text-white,
+.light .stats-section .text-white,
+html.light .featured-section .text-white,
+.light .featured-section .text-white {
+  color: #1e293b !important;
+}
+
+/* Button overrides for light theme */
+html.light .border-white,
+.light .border-white {
+  border-color: #3b82f6 !important;
+  color: #3b82f6 !important;
+}
+
+html.light .hover\:bg-white:hover,
+.light .hover\:bg-white:hover {
+  background-color: #3b82f6 !important;
+  color: white !important;
+}
+
+/* Ensure proper contrast for icons */
+html.light svg,
+.light svg {
+  color: inherit !important;
+}

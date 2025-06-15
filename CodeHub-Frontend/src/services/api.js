@@ -424,34 +424,86 @@ export const trendingAPI = {
 export const favoritesAPI = {
   // Get user's favorites
   getUserFavorites: (page = 0, size = 20) => 
-    api.get(`/favorites?page=${page}&size=${size}`),
+    api.get(`/user/favorites?page=${page}&size=${size}`),
   
   // Add snippet to favorites
   addFavorite: (snippetId, notes = null) => 
-    api.post(`/snippets/${snippetId}/favorite`, { notes }),
+    api.post(`/user/favorites/${snippetId}`, { notes }),
   
   // Remove snippet from favorites
   removeFavorite: (snippetId) => 
-    api.delete(`/snippets/${snippetId}/favorite`),
+    api.delete(`/user/favorites/${snippetId}`),
   
   // Update favorite notes
   updateFavoriteNotes: (snippetId, notes) => 
-    api.put(`/snippets/${snippetId}/favorite/notes`, { notes }),
+    api.put(`/user/favorites/${snippetId}/notes`, { notes }),
   
   // Get favorite status
   getFavoriteStatus: (snippetId) => 
-    api.get(`/snippets/${snippetId}/favorite/status`),
+    api.get(`/user/favorites/${snippetId}/status`),
   
   // Get favorites statistics
   getFavoriteStats: () => 
-    api.get('/favorites/stats'),
+    api.get('/user/favorites/stats'),
   
   // Bulk operations
   bulkAddFavorites: (snippetIds) =>
-    api.post('/favorites/bulk/add', { snippetIds }),
+    api.post('/user/favorites/bulk/add', { snippetIds }),
   
   bulkRemoveFavorites: (snippetIds) =>
-    api.post('/favorites/bulk/remove', { snippetIds })
+    api.post('/user/favorites/bulk/remove', { snippetIds })
+};
+
+// Notifications API methods
+export const notificationsAPI = {
+  // Get user's notifications
+  getNotifications: (page = 0, size = 20) => {
+    const url = `/user/notifications?page=${page}&size=${size}`;
+    console.log('🌐 [API] GET Notifications:', url);
+    return api.get(url);
+  },
+
+  // Get unread notifications count
+  getUnreadCount: () => {
+    const url = '/user/notifications/unread/count';
+    console.log('🌐 [API] GET Unread Count:', url);
+    return api.get(url);
+  },
+
+  // Mark notification as read
+  markAsRead: (notificationId) => {
+    const url = `/user/notifications/${notificationId}/read`;
+    console.log('🌐 [API] Mark as Read:', url);
+    return api.put(url);
+  },
+
+  // Mark all notifications as read
+  markAllAsRead: () => {
+    const url = '/user/notifications/mark-all-read';
+    console.log('🌐 [API] Mark All as Read:', url);
+    return api.put(url);
+  },
+
+  // Delete notification
+  deleteNotification: (notificationId) => {
+    const url = `/user/notifications/${notificationId}`;
+    console.log('🌐 [API] Delete Notification:', url);
+    return api.delete(url);
+  },
+
+  // Get notification settings
+  getSettings: () => {
+    const url = '/user/notifications/settings';
+    console.log('🌐 [API] GET Notification Settings:', url);
+    return api.get(url);
+  },
+
+  // Update notification settings
+  updateSettings: (settings) => {
+    const url = '/user/notifications/settings';
+    console.log('🌐 [API] Update Notification Settings:', url, settings);
+    return api.put(url, settings);
+  }
 };
 
 export default apiClient;

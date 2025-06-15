@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import {
   Search,
-  Plus,
   User,
   Settings,
   LogOut,
@@ -11,42 +10,69 @@ import {
   X,
   Code2,
   Bell,
-  Bookmark,
-} from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { Button, Input } from '../ui';
+  PlusCircle,
+} from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { Button, Input, NotificationDropdown } from "../ui";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Debug: Log user data to see what's available
+  useEffect(() => {
+    if (user) {
+      console.log('🔍 [Navbar] Current user data:', {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        avatar: user.avatar,
+        fullName: user.fullName,
+        allUserData: user
+      });
+    }
+  }, [user]);
+
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [unreadCount, setUnreadCount] = useState(0);
+    // Load unread notifications count - Mock data only since API not available
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Mock unread count since backend notifications API is not implemented
+      setUnreadCount(3);
+    } else {
+      setUnreadCount(0);
+    }
+  }, [isAuthenticated, user]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
+      setSearchQuery("");
     }
   };
 
   const handleLogout = () => {
     logout();
     setIsUserMenuOpen(false);
-    navigate('/');
+    navigate("/");
   };
 
   const navItems = [
-    { path: '/', label: 'Home' },
-    { path: '/snippets', label: 'Code Snippets' },
-    { path: '/developers', label: 'Developers' },
-    { path: '/trending', label: 'Trending' },
+    { path: "/", label: "Home" },
+    { path: "/snippets", label: "Code Snippets" },
+    { path: "/developers", label: "Developers" },
+    { path: "/trending", label: "Trending" },
   ];
 
   const isActivePath = (path) => {
-    if (path === '/') return location.pathname === '/';
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
@@ -59,7 +85,9 @@ const Navbar = () => {
             <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-2 rounded-lg">
               <Code2 className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-white dark:text-white light:text-gray-900 pr-4">CodeHub</span>
+            <span className="text-xl font-bold text-white dark:text-white light:text-gray-900 pr-4">
+              CodeHub
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -70,8 +98,8 @@ const Navbar = () => {
                 to={item.path}
                 className={`relative px-3 py-2 rounded-lg transition-colors ${
                   isActivePath(item.path)
-                    ? 'text-cyan-400'
-                    : 'text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900'
+                    ? "text-cyan-400"
+                    : "text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900"
                 }`}
               >
                 {item.label}
@@ -102,32 +130,65 @@ const Navbar = () => {
             {isAuthenticated ? (
               <>
                 {/* Notifications */}
-                <button className="p-2 text-slate-400 dark:text-slate-400 light:text-gray-600 hover:text-white dark:hover:text-white light:hover:text-gray-900 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 transition-colors">
-                  <Bell className="w-5 h-5" />
-                </button>
-
-                {/* Create Button */}
-                <button className="p-2 text-slate-400 dark:text-slate-400 light:text-gray-600 hover:text-white dark:hover:text-white light:hover:text-gray-900 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 transition-colors">
-                  <Plus className="w-5 h-5" />
-                </button>
-
+                <div className="relative">
+                  {" "}
+                  <button
+                    onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                    className="p-2 text-slate-400 dark:text-slate-400 light:text-gray-600 hover:text-white dark:hover:text-white light:hover:text-gray-900 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 transition-colors relative"
+                  >
+                    <Bell className="w-5 h-5" />
+                    {/* Notification badge */}
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-slate-900 dark:border-slate-900 light:border-white text-xs flex items-center justify-center text-white font-bold">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                  <NotificationDropdown
+                    isOpen={isNotificationOpen}
+                    onToggle={() => setIsNotificationOpen(!isNotificationOpen)}
+                    unreadCount={unreadCount}
+                  />
+                </div>{" "}
+                {/* Create Snippet Button */}
+                <Link
+                  to="/create"
+                  className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 active:scale-[0.98]"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">Create Snippet</span>
+                </Link>
                 {/* User Menu */}
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 transition-colors"
-                  >
-                    {user?.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.username}
-                        className="w-8 h-8 rounded-full"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
-                        <User className="w-4 h-4 text-white" />
+                  >                    {/* User Avatar */}
+                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-cyan-500/20">
+                      {user?.avatarUrl ? (
+                        <img
+                          src={user.avatarUrl}
+                          alt={user.username || user.email || "User"}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            console.warn("Failed to load user avatar:", user.avatarUrl);
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
+                          }}
+                        />
+                      ) : null}
+                      {/* Fallback Avatar */}
+                      <div
+                        className={`w-full h-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center ${
+                          user?.avatarUrl ? "hidden" : "flex"
+                        }`}
+                      >
+                        <span className="text-white text-sm font-bold">
+                          {user?.username?.charAt(0)?.toUpperCase() || 
+                           user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                        </span>
                       </div>
-                    )}
+                    </div>
                     <div className="hidden sm:block text-left">
                       <span className="text-white dark:text-white light:text-gray-900 text-sm font-medium">
                         {user?.username}
@@ -191,7 +252,11 @@ const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-slate-400 dark:text-slate-400 light:text-gray-600 hover:text-white dark:hover:text-white light:hover:text-gray-900 md:hidden"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -224,16 +289,37 @@ const Navbar = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`block px-3 py-2 rounded-lg transition-colors ${
                       isActivePath(item.path)
-                        ? 'text-cyan-400 bg-cyan-500/10'
-                        : 'text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900 hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100'
+                        ? "text-cyan-400 bg-cyan-500/10"
+                        : "text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900 hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100"
                     }`}
                   >
                     {item.label}
                   </Link>
-                ))}
-
+                ))}{" "}
                 {isAuthenticated && (
                   <>
+                    {/* Mobile Notifications */}
+                    <button
+                      onClick={() => {
+                        setIsNotificationOpen(!isNotificationOpen);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center space-x-2 px-3 py-2 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900 hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 rounded-lg"
+                    >
+                      <Bell className="w-4 h-4" />
+                      <span>Notifications</span>
+                    </button>
+
+                    {/* Mobile Create Snippet */}
+                    <Link
+                      to="/create"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all duration-200"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      <span>Create Snippet</span>
+                    </Link>
+
                     <Link
                       to="/profile"
                       onClick={() => setIsMobileMenuOpen(false)}

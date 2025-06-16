@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Button, Card, Loading } from "../components/ui";
 import { SkillBadge, ReputationBadge } from "../components/developers";
-import { snippetsAPI, developersAPI, trendingAPI } from "../services/api";
+import { snippetsAPI, developersAPI, trendingAPI, usersAPI } from "../services/api";
 import toast from "react-hot-toast";
 
 const Trending = () => {
@@ -162,8 +162,7 @@ const Trending = () => {
       console.error("Failed to load trending snippets:", error);
       toast.error("Failed to load trending snippets");
     }
-  }, [filters.sortBy, filterSnippets, timeRange]);
-  const loadTrendingDevelopers = useCallback(async () => {
+  }, [filters.sortBy, filterSnippets, timeRange]);  const loadTrendingDevelopers = useCallback(async () => {
     try {
       // Try trending developers API first
       let response;
@@ -182,10 +181,32 @@ const Trending = () => {
       if (response.data) {
         // Handle both direct array and paginated responses
         const developers = response.data.content || response.data;
-        if (Array.isArray(developers)) {
+        if (Array.isArray(developers)) {          // Load stats for each developer
+          const developersWithStats = await Promise.all(
+            developers.slice(0, 15).map(async (developer) => {
+              try {
+                const statsResponse = await usersAPI.getUserStats(developer.id);
+                return {
+                  ...developer,
+                  followersCount: statsResponse.data.followersCount || 0,
+                  followingCount: statsResponse.data.followingCount || 0,
+                  snippetsCount: statsResponse.data.snippetsCount || developer.snippetsCount || 0
+                };
+              } catch (error) {
+                console.error(`Failed to load stats for developer ${developer.id}:`, error);
+                return {
+                  ...developer,
+                  followersCount: 0,
+                  followingCount: 0,
+                  snippetsCount: developer.snippetsCount || 0
+                };
+              }
+            })
+          );
+
           setTrendingData((prev) => ({
             ...prev,
-            developers: developers.slice(0, 15),
+            developers: developersWithStats,
           }));
         }
       }
@@ -657,11 +678,10 @@ const Trending = () => {
 
               <Card.Content className="developer-card-content">
                 <div className="space-y-3 h-full flex flex-col">
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-3 text-center">
+                  {/* Stats */}                  <div className="grid grid-cols-3 gap-3 text-center">
                     <div>
                       <div className="text-white dark:text-white light:text-gray-900 font-semibold">
-                        {developer.followers || 0}
+                        {developer.followersCount || 0}
                       </div>
                       <div className="text-slate-400 dark:text-slate-400 light:text-gray-600 text-xs">Followers</div>
                     </div>

@@ -7,6 +7,7 @@ import code.hub.codehubbackend.entity.Snippet;
 import code.hub.codehubbackend.entity.User;
 import code.hub.codehubbackend.repository.FavoriteRepository;
 import code.hub.codehubbackend.repository.SnippetRepository;
+import code.hub.codehubbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -25,18 +26,22 @@ import java.util.stream.Collectors;
 
 @Service
 public class FavoriteService {
-    
-    @Autowired
+      @Autowired
     private FavoriteRepository favoriteRepository;
     
     @Autowired
     private SnippetRepository snippetRepository;
     
     @Autowired
-    private ActivityService activityService;
+    private UserRepository userRepository;
     
     @Autowired
+    private ActivityService activityService;
+      @Autowired
     private SnippetService snippetService;
+    
+    @Autowired
+    private NotificationService notificationService;
     
     @Transactional
     public boolean toggleFavorite(Long snippetId, String notes) {
@@ -68,9 +73,11 @@ public class FavoriteService {
                     .build();
             
             favoriteRepository.save(favorite);
-            
-            // Create favorite activity
+              // Create favorite activity
             activityService.createFavoriteActivity(snippet, true);
+            
+            // Create notification for snippet owner
+            notificationService.createSnippetStarNotification(snippet, currentUser);
             
             return true;
         }
@@ -242,13 +249,10 @@ public class FavoriteService {
             return "medium";
         }
         return "normal";
-    }
-    
-    private User getCurrentUser() {
+    }    private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof User) {
-            return (User) authentication.getPrincipal();
-        }
-        return null;
+        String username = authentication.getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

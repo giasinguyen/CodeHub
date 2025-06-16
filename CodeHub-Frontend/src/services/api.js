@@ -1,6 +1,10 @@
 import axios from 'axios';
-import { API_BASE_URL, STORAGE_KEYS, ERROR_MESSAGES } from '../constants';
+import { API_BASE_URL, API_ENDPOINTS, STORAGE_KEYS, ERROR_MESSAGES } from '../constants';
 import { toast } from 'react-hot-toast';
+
+// Request cache to prevent duplicate requests
+const requestCache = new Map();
+const CACHE_DURATION = 5000; // 5 seconds
 
 // Create axios instance
 const apiClient = axios.create({
@@ -8,6 +12,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout
 });
 
 // Request interceptor to add auth token
@@ -76,6 +81,11 @@ apiClient.interceptors.response.use(
       case 404:
         toast.error(ERROR_MESSAGES.NOT_FOUND);
         break;
+      case 429:
+        // Rate limit exceeded - show a less intrusive message
+        console.warn('Rate limit exceeded, please wait before making more requests');
+        toast.error('Too many requests. Please wait a moment before trying again.');
+        break;
       case 500:
         toast.error(ERROR_MESSAGES.SERVER_ERROR);
         break;
@@ -87,10 +97,52 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Helper function to create cache key
+const createCacheKey = (method, url, params) => {
+  return `${method.toUpperCase()}:${url}:${JSON.stringify(params || {})}`;
+};
+
+// Cached GET request to prevent duplicate calls
+const cachedGet = (url, config = {}) => {
+  const cacheKey = createCacheKey('GET', url, config.params);
+  const now = Date.now();
+  
+  // Check if we have a cached request
+  if (requestCache.has(cacheKey)) {
+    const cached = requestCache.get(cacheKey);
+    
+    // If the cached request is still valid, return it
+    if (now - cached.timestamp < CACHE_DURATION) {
+      console.log('🔄 [CACHE HIT]', cacheKey);
+      return cached.promise;
+    }
+    
+    // Remove expired cache
+    requestCache.delete(cacheKey);
+  }
+  
+  // Make new request and cache it
+  const promise = apiClient.get(url, config)
+    .finally(() => {
+      // Remove from cache after request completes
+      setTimeout(() => {
+        requestCache.delete(cacheKey);
+      }, CACHE_DURATION);
+    });
+  
+  requestCache.set(cacheKey, {
+    promise,
+    timestamp: now
+  });
+  
+  console.log('📦 [CACHE SET]', cacheKey);
+  return promise;
+};
+
 // API methods
 export const api = {
   // Generic methods
-  get: (url, config = {}) => apiClient.get(url, config),
+  get: cachedGet,
   post: (url, data = {}, config = {}) => apiClient.post(url, data, config),
   put: (url, data = {}, config = {}) => apiClient.put(url, data, config),
   delete: (url, config = {}) => apiClient.delete(url, config),
@@ -239,9 +291,11 @@ export const usersAPI = {
   // Get all users
   getUsers: (page = 0, size = 10) => 
     api.get(`/users?page=${page}&size=${size}`),
-  
-  // Get user by ID
+    // Get user by ID
   getUserById: (id) => api.get(`/users/${id}`),
+  
+  // Get user by username
+  getUserByUsername: (username) => api.get(`/users/username/${encodeURIComponent(username)}`),
   
   // Get current user profile
   getCurrentUser: () => api.get('/users/profile'),
@@ -265,9 +319,57 @@ export const usersAPI = {
   
   // Change password
   changePassword: (passwordData) => api.put('/users/profile/password', passwordData),
-  
-  // Upload avatar
+    // Upload avatar
   uploadAvatar: (formData) => api.postFormData('/users/profile/avatar', formData),
+};
+
+// User Follow API methods
+export const userFollowAPI = {
+  // Toggle follow user
+  toggleFollow: (userId) => {
+    console.log('🌐 [API] Toggle Follow User:', userId);
+    return api.post(API_ENDPOINTS.USER_FOLLOW(userId));
+  },
+  
+  // Unfollow user
+  unfollowUser: (userId) => {
+    console.log('🌐 [API] Unfollow User:', userId);
+    return api.delete(API_ENDPOINTS.USER_FOLLOW(userId));
+  },
+  
+  // Get follow status
+  getFollowStatus: (userId) => {
+    console.log('🌐 [API] Get Follow Status:', userId);
+    return api.get(API_ENDPOINTS.USER_FOLLOW_STATUS(userId));
+  },
+  
+  // Get user followers
+  getUserFollowers: (userId, page = 0, size = 20) => {
+    const url = `${API_ENDPOINTS.USER_FOLLOWERS(userId)}?page=${page}&size=${size}`;
+    console.log('🌐 [API] Get User Followers:', url);
+    return api.get(url);
+  },
+  
+  // Get user following
+  getUserFollowing: (userId, page = 0, size = 20) => {
+    const url = `${API_ENDPOINTS.USER_FOLLOWING(userId)}?page=${page}&size=${size}`;
+    console.log('🌐 [API] Get User Following:', url);
+    return api.get(url);
+  },
+  
+  // Get current user followers
+  getCurrentUserFollowers: (page = 0, size = 20) => {
+    const url = `${API_ENDPOINTS.CURRENT_USER_FOLLOWERS}?page=${page}&size=${size}`;
+    console.log('🌐 [API] Get Current User Followers:', url);
+    return api.get(url);
+  },
+  
+  // Get current user following
+  getCurrentUserFollowing: (page = 0, size = 20) => {
+    const url = `${API_ENDPOINTS.CURRENT_USER_FOLLOWING}?page=${page}&size=${size}`;
+    console.log('🌐 [API] Get Current User Following:', url);
+    return api.get(url);
+  }
 };
 
 // Activity API methods
@@ -424,85 +526,70 @@ export const trendingAPI = {
 export const favoritesAPI = {
   // Get user's favorites
   getUserFavorites: (page = 0, size = 20) => 
-    api.get(`/user/favorites?page=${page}&size=${size}`),
+    api.get(`${API_ENDPOINTS.FAVORITES}?page=${page}&size=${size}`),
   
   // Add snippet to favorites
   addFavorite: (snippetId, notes = null) => 
-    api.post(`/user/favorites/${snippetId}`, { notes }),
+    api.post(API_ENDPOINTS.FAVORITE_ADD(snippetId), { notes }),
   
   // Remove snippet from favorites
   removeFavorite: (snippetId) => 
-    api.delete(`/user/favorites/${snippetId}`),
+    api.delete(API_ENDPOINTS.FAVORITE_REMOVE(snippetId)),
   
-  // Update favorite notes
-  updateFavoriteNotes: (snippetId, notes) => 
-    api.put(`/user/favorites/${snippetId}/notes`, { notes }),
+  // Toggle favorite status
+  toggleFavorite: (snippetId, notes = null) =>
+    api.post(API_ENDPOINTS.FAVORITE_TOGGLE(snippetId), { notes }),
   
   // Get favorite status
   getFavoriteStatus: (snippetId) => 
-    api.get(`/user/favorites/${snippetId}/status`),
+    api.get(API_ENDPOINTS.FAVORITE_STATUS(snippetId)),
   
   // Get favorites statistics
   getFavoriteStats: () => 
-    api.get('/user/favorites/stats'),
+    api.get(API_ENDPOINTS.FAVORITE_STATS),
   
-  // Bulk operations
+  // Bulk operations (keeping these for compatibility)
   bulkAddFavorites: (snippetIds) =>
-    api.post('/user/favorites/bulk/add', { snippetIds }),
+    api.post('/favorites/bulk/add', { snippetIds }),
   
   bulkRemoveFavorites: (snippetIds) =>
-    api.post('/user/favorites/bulk/remove', { snippetIds })
+    api.post('/favorites/bulk/remove', { snippetIds })
 };
 
 // Notifications API methods
 export const notificationsAPI = {
-  // Get user's notifications
-  getNotifications: (page = 0, size = 20) => {
-    const url = `/user/notifications?page=${page}&size=${size}`;
+  // Get notifications with pagination and filter
+  getNotifications: (page = 0, size = 20, filter = 'all') => {
+    const url = `${API_ENDPOINTS.NOTIFICATIONS}?page=${page}&size=${size}&filter=${filter}`;
     console.log('🌐 [API] GET Notifications:', url);
     return api.get(url);
   },
 
-  // Get unread notifications count
-  getUnreadCount: () => {
-    const url = '/user/notifications/unread/count';
-    console.log('🌐 [API] GET Unread Count:', url);
+  // Get notification statistics
+  getStats: () => {
+    const url = API_ENDPOINTS.NOTIFICATION_STATS;
+    console.log('🌐 [API] GET Notification Stats:', url);
     return api.get(url);
   },
 
   // Mark notification as read
   markAsRead: (notificationId) => {
-    const url = `/user/notifications/${notificationId}/read`;
+    const url = API_ENDPOINTS.NOTIFICATION_MARK_READ(notificationId);
     console.log('🌐 [API] Mark as Read:', url);
     return api.put(url);
   },
 
   // Mark all notifications as read
   markAllAsRead: () => {
-    const url = '/user/notifications/mark-all-read';
+    const url = API_ENDPOINTS.NOTIFICATION_MARK_ALL_READ;
     console.log('🌐 [API] Mark All as Read:', url);
     return api.put(url);
   },
 
   // Delete notification
   deleteNotification: (notificationId) => {
-    const url = `/user/notifications/${notificationId}`;
-    console.log('🌐 [API] Delete Notification:', url);
+    const url = API_ENDPOINTS.NOTIFICATION_DELETE(notificationId);    console.log('🌐 [API] Delete Notification:', url);
     return api.delete(url);
-  },
-
-  // Get notification settings
-  getSettings: () => {
-    const url = '/user/notifications/settings';
-    console.log('🌐 [API] GET Notification Settings:', url);
-    return api.get(url);
-  },
-
-  // Update notification settings
-  updateSettings: (settings) => {
-    const url = '/user/notifications/settings';
-    console.log('🌐 [API] Update Notification Settings:', url, settings);
-    return api.put(url, settings);
   }
 };
 

@@ -5,6 +5,7 @@ import { Button, Input, Card, Loading } from '../ui';
 import { usersAPI } from '../../services/api';
 import { useSnippet } from '../../contexts/SnippetContext';
 import toast from 'react-hot-toast';
+import rateLimiter from '../../utils/rateLimiter';
 
 const ProfileSnippets = ({ userId, isOwnProfile }) => {
   const { refreshTrigger } = useSnippet();
@@ -18,12 +19,21 @@ const ProfileSnippets = ({ userId, isOwnProfile }) => {
     size: 12,
     totalElements: 0,
     totalPages: 0
-  });
-  useEffect(() => {
-    loadSnippets();
+  });  useEffect(() => {
+    // Add a delay to prevent rapid successive calls
+    const timeoutId = setTimeout(() => {
+      loadSnippets();
+    }, 300);
+    
+    return () => clearTimeout(timeoutId);
   }, [userId, filterBy, sortBy, pagination.page, refreshTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const loadSnippets = async () => {
+    // Check rate limit
+    if (!rateLimiter.isAllowed('user-snippets', userId)) {
+      console.warn('Rate limit exceeded for user snippets');
+      return;
+    }
+    
     try {
       setLoading(true);
       
@@ -46,7 +56,13 @@ const ProfileSnippets = ({ userId, isOwnProfile }) => {
       }
     } catch (error) {
       console.error('Failed to load snippets:', error);
-      toast.error('Failed to load snippets');
+      
+      // Don't show error toast for rate limiting
+      if (error.response?.status !== 429) {
+        toast.error('Failed to load snippets');
+      } else {
+        console.warn('Rate limit exceeded while loading snippets');
+      }
     } finally {
       setLoading(false);
     }

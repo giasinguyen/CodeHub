@@ -1,6 +1,9 @@
 package code.hub.codehubbackend.repository;
 
 import code.hub.codehubbackend.entity.UserFollow;
+import code.hub.codehubbackend.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,8 +23,12 @@ public interface UserFollowRepository extends JpaRepository<UserFollow, Long> {
     
     @Query("SELECT COUNT(f) FROM UserFollow f WHERE f.follower.id = :userId")
     Long countFollowingByUserId(@Param("userId") Long userId);
-    
-    boolean existsByFollowerIdAndFollowedUserId(Long followerId, Long followedUserId);
+      boolean existsByFollowerIdAndFollowedUserId(Long followerId, Long followedUserId);
     
     void deleteByFollowerIdAndFollowedUserId(Long followerId, Long followedUserId);
+    
+    // Get followers and following with pagination
+    Page<UserFollow> findByFollowedUserOrderByCreatedAtDesc(User followedUser, Pageable pageable);
+    
+    Page<UserFollow> findByFollowerOrderByCreatedAtDesc(User follower, Pageable pageable);
 }

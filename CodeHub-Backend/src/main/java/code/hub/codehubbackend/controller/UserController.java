@@ -45,6 +45,13 @@ public class UserController {
         return ResponseEntity.ok(profile);
     }
     
+    @GetMapping("/username/{username}")
+    @Operation(summary = "Get user profile by username", description = "Get a user's public profile information by username")
+    public ResponseEntity<UserProfileResponse> getUserProfileByUsername(@PathVariable String username) {
+        UserProfileResponse profile = userService.getUserProfileByUsername(username);
+        return ResponseEntity.ok(profile);
+    }
+    
     @PutMapping("/profile")
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Update user profile", description = "Update the current user's profile information")
@@ -148,20 +155,5 @@ public class UserController {
         List<LeaderboardUserResponse> leaderboard = userService.getLeaderboard(category, limit);
         return ResponseEntity.ok(leaderboard);
     }
-    
-    @PostMapping("/{id}/follow")
-    @PreAuthorize("hasRole('USER')")
-    @Operation(summary = "Follow a user", description = "Follow another developer")
-    public ResponseEntity<Void> followUser(@PathVariable Long id) {
-        userService.followUser(id);
-        return ResponseEntity.ok().build();
-    }
-    
-    @DeleteMapping("/{id}/follow")
-    @PreAuthorize("hasRole('USER')")
-    @Operation(summary = "Unfollow a user", description = "Unfollow a developer")
-    public ResponseEntity<Void> unfollowUser(@PathVariable Long id) {
-        userService.unfollowUser(id);
-        return ResponseEntity.ok().build();
-    }
+  
 }

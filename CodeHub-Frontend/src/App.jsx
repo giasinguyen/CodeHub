@@ -23,6 +23,7 @@ import {
   Trending,
   TagPage,
   Settings,
+  Notifications,
   Login,
   Register,
 } from "./pages";
@@ -258,8 +259,7 @@ const AppRoutes = () => {
             </Layout>
           </ProtectedRoute>
         }
-      />
-      <Route
+      />      <Route
         path="/profile"
         element={
           <ProtectedRoute>
@@ -267,6 +267,14 @@ const AppRoutes = () => {
               <Profile />
             </Layout>
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users/:username"
+        element={
+          <Layout>
+            <Profile />
+          </Layout>
         }
       />
       <Route
@@ -283,6 +291,16 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <Layout>
               <Settings />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Notifications />
             </Layout>
           </ProtectedRoute>
         }

@@ -25,9 +25,11 @@ public class CommentService {
     private CommentRepository commentRepository;
       @Autowired
     private SnippetRepository snippetRepository;
+      @Autowired
+    private ActivityService activityService;
     
     @Autowired
-    private ActivityService activityService;
+    private NotificationService notificationService;
     
     public Page<CommentResponse> getSnippetComments(Long snippetId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -50,9 +52,12 @@ public class CommentService {
                 .build();
         
         comment = commentRepository.save(comment);
-        
-        // Create comment activity
+          // Create comment activity
         activityService.createCommentActivity(snippet, request.getContent());
+        
+        // Create notification for snippet owner
+        notificationService.createSnippetCommentNotification(snippet, comment, currentUser);
+        
         return convertToResponse(comment);
     }
       @Transactional

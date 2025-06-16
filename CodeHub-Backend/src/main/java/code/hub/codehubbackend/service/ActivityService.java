@@ -58,8 +58,7 @@ public class ActivityService {
         User currentUser = getCurrentUser();
         return getUserActivities(currentUser.getId(), filterType, page, size);
     }
-    
-    /**
+      /**
      * Create activity for snippet creation
      */
     @Transactional
@@ -83,12 +82,12 @@ public class ActivityService {
             
             activityRepository.save(activity);
             log.info("Created activity: {} for snippet: {}", type, snippet.getId());
-        } catch (JsonProcessingException e) {
-            log.error("Error creating snippet activity", e);
+        } catch (Exception e) {
+            log.error("Error creating snippet activity: {}", e.getMessage());
+            // Don't throw the error to prevent breaking the main functionality
         }
     }
-    
-    /**
+      /**
      * Create activity for like/unlike
      */
     @Transactional
@@ -113,12 +112,12 @@ public class ActivityService {
             
             activityRepository.save(activity);
             log.info("Created {} activity for snippet: {}", isLike ? "LIKE" : "UNLIKE", snippet.getId());
-        } catch (JsonProcessingException e) {
-            log.error("Error creating like activity", e);
+        } catch (Exception e) {
+            log.error("Error creating like activity: {}", e.getMessage());
+            // Don't throw the error to prevent breaking the main functionality
         }
     }
-    
-    /**
+      /**
      * Create activity for comment
      */
     @Transactional
@@ -142,12 +141,13 @@ public class ActivityService {
                     .build();
             
             activityRepository.save(activity);
-            log.info("Created comment activity for snippet: {}", snippet.getId());        } catch (JsonProcessingException e) {
-            log.error("Error creating comment activity", e);
+            log.info("Created comment activity for snippet: {}", snippet.getId());
+        } catch (Exception e) {
+            log.error("Error creating comment activity: {}", e.getMessage());
+            // Don't throw the error to prevent breaking the main functionality
         }
     }
-    
-    /**
+      /**
      * Create activity for favorite
      */
     @Transactional
@@ -172,8 +172,9 @@ public class ActivityService {
             
             activityRepository.save(activity);
             log.info("Created {} activity for snippet: {}", isFavorite ? "FAVORITE" : "UNFAVORITE", snippet.getId());
-        } catch (JsonProcessingException e) {
-            log.error("Error creating favorite activity", e);
+        } catch (Exception e) {
+            log.error("Error creating favorite activity: {}", e.getMessage());
+            // Don't throw the error to prevent breaking the main functionality
         }
     }
       /**

@@ -23,16 +23,12 @@ public class Activity {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    private User user;    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 100)
     private ActivityType type;
     
     @Column(name = "target_id")
-    private Long targetId;
-    
-    @Column(name = "target_type")
+    private Long targetId;    @Column(name = "target_type", length = 100)
     private String targetType;
     
     @Column(columnDefinition = "TEXT")

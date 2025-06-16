@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
   Star, 
   GitFork, 
@@ -20,9 +19,9 @@ import {
   Heart,
   Bookmark
 } from 'lucide-react';
-import { Button, Card, Loading } from '../components/ui';
+import { Button, Card, Loading, FollowButton } from '../components/ui';
 import { useAuth } from '../contexts/AuthContext';
-import { snippetsAPI, favoritesAPI } from '../services/api';
+import { snippetsAPI, favoritesAPI, usersAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 const SnippetDetail = () => {
@@ -65,18 +64,18 @@ const SnippetDetail = () => {
         
         const response = await snippetsAPI.getSnippetById(id);
         console.log('✅ [SnippetDetail] Snippet loaded:', response.data);
-        
-        if (response.data) {
+          if (response.data) {
           // Transform API data to match component expectations
           const snippetData = {
             ...response.data,
             author: {
+              id: response.data.owner?.id,
               username: response.data.owner?.username || 'Anonymous',
               name: response.data.owner?.fullName || response.data.owner?.username || 'Anonymous',
               avatar: response.data.owner?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${response.data.owner?.username || 'anonymous'}`,
               bio: response.data.owner?.bio || '',
-              followers: 0, // Not available in current API
-              following: 0  // Not available in current API
+              followers: 0, // Will be loaded separately
+              following: 0  // Will be loaded separately
             },
             stats: {
               views: response.data.viewCount || 0,
@@ -113,6 +112,33 @@ const SnippetDetail = () => {
       loadSnippet();
     }
   }, [id, user]);
+
+  // Load author stats separately
+  useEffect(() => {
+    const loadAuthorStats = async () => {
+      if (!snippet?.author?.id) return;
+      
+      try {
+        const statsResponse = await usersAPI.getUserStats(snippet.author.id);
+        if (statsResponse.data) {
+          setSnippet(prev => ({
+            ...prev,
+            author: {
+              ...prev.author,
+              followers: statsResponse.data.followersCount || 0,
+              following: statsResponse.data.followingCount || 0
+            }
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to load author stats:', error);
+        // Don't show error toast, just keep default values
+      }
+    };
+
+    loadAuthorStats();
+  }, [snippet?.author?.id]);
+  
   const handleCopyCode = async () => {
     try {
       await navigator.clipboard.writeText(snippet.code);
@@ -158,15 +184,11 @@ const SnippetDetail = () => {
     try {
       setFavoriteLoading(true);
       
-      if (isFavorited) {
-        await favoritesAPI.removeFavorite(id);
-        setIsFavorited(false);
-        toast.success('Removed from favorites');
-      } else {
-        await favoritesAPI.addFavorite(id);
-        setIsFavorited(true);
-        toast.success('Added to favorites');
-      }
+      // Always use toggleFavorite for consistency
+      await favoritesAPI.toggleFavorite(id);
+      setIsFavorited(!isFavorited);
+      
+      toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites');
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
       toast.error('Failed to update favorite status');
@@ -210,13 +232,7 @@ const SnippetDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-8"
-            >
+            {/* Header */}            <div className="mb-8">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
@@ -310,16 +326,10 @@ const SnippetDetail = () => {
                   <Flag className="w-4 h-4" />
                   <span>Report</span>
                 </Button>
-              </div>
-            </motion.div>
+              </div>            </div>
 
             {/* Code Block */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="mb-8"
-            >
+            <div className="mb-8">
               <Card>
                 <Card.Header>
                   <div className="flex items-center justify-between">
@@ -353,16 +363,10 @@ const SnippetDetail = () => {
                     </pre>
                   </div>
                 </Card.Content>
-              </Card>
-            </motion.div>
+              </Card>            </div>
 
             {/* Tags */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-8"
-            >
+            <div className="mb-8">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
                 <Tag className="w-5 h-5 mr-2" />
                 Tags
@@ -377,15 +381,10 @@ const SnippetDetail = () => {
                     {tag}
                   </Link>
                 ))}
-              </div>
-            </motion.div>
+              </div>            </div>
 
             {/* Comments */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
+            <div>
               <h3 className="text-lg font-semibold text-white mb-6 flex items-center">
                 <MessageSquare className="w-5 h-5 mr-2" />
                 Comments ({snippet.comments.length})
@@ -452,21 +451,15 @@ const SnippetDetail = () => {
                         </div>
                       </div>
                     </Card.Content>
-                  </Card>
-                ))}
+                  </Card>                ))}
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-6">
-              {/* Author Info */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
+            <div className="sticky top-8 space-y-6">              {/* Author Info */}
+              <div>
                 <Card>
                   <Card.Header>
                     <h3 className="text-lg font-semibold text-white">Author</h3>
@@ -496,23 +489,17 @@ const SnippetDetail = () => {
                         <div className="text-center">
                           <div className="font-semibold text-white">{snippet.author.following}</div>
                           <div>Following</div>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm" className="w-full">
-                        <User className="w-4 h-4 mr-2" />
-                        Follow
-                      </Button>
+                        </div>                      </div>
+                      <FollowButton 
+                        userId={snippet.author.id}
+                        username={snippet.author.username}
+                        size="sm"
+                        className="w-full"
+                      />
                     </div>
-                  </Card.Content>
-                </Card>
-              </motion.div>
-
-              {/* Snippet Info */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
+                  </Card.Content>                </Card>
+              </div>              {/* Snippet Info */}
+              <div>
                 <Card>
                   <Card.Header>
                     <h3 className="text-lg font-semibold text-white">Details</h3>
@@ -542,16 +529,11 @@ const SnippetDetail = () => {
                         <span className="text-slate-300">{snippet.code.split('\\n').length}</span>
                       </div>
                     </div>
-                  </Card.Content>
-                </Card>
-              </motion.div>
+                  </Card.Content>                </Card>
+              </div>
 
               {/* Related Snippets */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
+              <div>
                 <Card>
                   <Card.Header>
                     <h3 className="text-lg font-semibold text-white">Related Snippets</h3>
@@ -577,9 +559,8 @@ const SnippetDetail = () => {
                         </Link>
                       ))}
                     </div>
-                  </Card.Content>
-                </Card>
-              </motion.div>
+                  </Card.Content>                </Card>
+              </div>
             </div>
           </div>
         </div>

@@ -15,7 +15,37 @@ import {
 import Button from './Button';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../../contexts/AuthContext';
+import { notificationsAPI } from '../../services/api';
 import toast from 'react-hot-toast';
+
+// Helper functions for notification icons and colors
+const getIconForType = (type) => {
+  const iconMap = {
+    'SNIPPET_LIKED': Heart,
+    'SNIPPET_COMMENTED': MessageSquare,
+    'SNIPPET_STARRED': Star,
+    'USER_FOLLOWED': UserPlus,
+    'COMMENT_REPLIED': MessageSquare,
+    'SNIPPET_FORKED': Star,
+    'MENTION': MessageSquare,
+    'SYSTEM_ANNOUNCEMENT': Bell
+  };
+  return iconMap[type] || Bell;
+};
+
+const getIconColorForType = (type) => {
+  const colorMap = {
+    'SNIPPET_LIKED': 'text-red-500',
+    'SNIPPET_COMMENTED': 'text-blue-500',
+    'SNIPPET_STARRED': 'text-yellow-500',
+    'USER_FOLLOWED': 'text-green-500',
+    'COMMENT_REPLIED': 'text-blue-500',
+    'SNIPPET_FORKED': 'text-purple-500',
+    'MENTION': 'text-orange-500',
+    'SYSTEM_ANNOUNCEMENT': 'text-cyan-500'
+  };
+  return colorMap[type] || 'text-gray-500';
+};
 
 const NotificationDropdown = ({ isOpen, onToggle, className = '', unreadCount = 0 }) => {
   const { user, isAuthenticated } = useAuth();
@@ -23,7 +53,7 @@ const NotificationDropdown = ({ isOpen, onToggle, className = '', unreadCount = 
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all'); // all, unread, read
-  const dropdownRef = useRef(null);  // Load notifications - Using mock data only since backend API not available
+  const dropdownRef = useRef(null);  // Load notifications from API
   const loadNotifications = useCallback(async () => {
     if (!isAuthenticated || !user) {
       setNotifications([]);
@@ -32,16 +62,40 @@ const NotificationDropdown = ({ isOpen, onToggle, className = '', unreadCount = 
     
     setLoading(true);
     try {
-      console.log('🔔 [NotificationDropdown] Using mock notifications (API not available)');
+      console.log('🔔 [NotificationDropdown] Loading notifications from API...');
       
-      // Always use mock data since backend API is not implemented
-      setNotifications(getMockNotifications());    } catch (error) {
-      console.error('Error loading notifications:', error);
+      // Try to load from real API
+      const response = await notificationsAPI.getNotifications(0, 20, filter);
+      
+      if (response && response.data && response.data.content) {
+        // Transform API response to match frontend format
+        const transformedNotifications = response.data.content.map(notification => ({
+          id: notification.id,
+          type: notification.type.toLowerCase(),
+          title: notification.title,
+          message: notification.message,
+          timestamp: new Date(notification.createdAt),
+          read: notification.read,
+          avatar: notification.actor?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${notification.actor?.username || 'user'}`,
+          icon: getIconForType(notification.type),
+          iconColor: getIconColorForType(notification.type),
+          actionUrl: notification.actionUrl || '#'
+        }));
+        
+        setNotifications(transformedNotifications);
+        console.log('✅ [NotificationDropdown] Loaded notifications from API:', transformedNotifications.length);
+      } else {
+        console.log('⚠️ [NotificationDropdown] Empty API response, using mock data');
+        setNotifications(getMockNotifications());
+      }
+    } catch (error) {
+      console.warn('⚠️ [NotificationDropdown] API not available, using mock data:', error.message);
+      // Fallback to mock data when API is not available
       setNotifications(getMockNotifications());
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, filter]);
 
   // Mock notifications as fallback
   const getMockNotifications = () => [
@@ -125,8 +179,7 @@ const NotificationDropdown = ({ isOpen, onToggle, className = '', unreadCount = 
   });
 
   const localUnreadCount = notifications.filter(n => !n.read).length;
-  const displayUnreadCount = unreadCount || localUnreadCount;
-  // Mark as read API call
+  const displayUnreadCount = unreadCount || localUnreadCount;  // Mark as read API call
   const markAsRead = async (id) => {
     try {
       await notificationsAPI.markAsRead(id);
@@ -139,7 +192,7 @@ const NotificationDropdown = ({ isOpen, onToggle, className = '', unreadCount = 
       );
       toast.success('Notification marked as read');
     } catch (error) {
-      console.warn('API not available for marking notification as read:', error);
+      console.warn('API error for marking notification as read:', error.message);
       // Fallback to local state update only
       setNotifications(prev => 
         prev.map(notification => 
@@ -161,7 +214,7 @@ const NotificationDropdown = ({ isOpen, onToggle, className = '', unreadCount = 
       );
       toast.success('All notifications marked as read');
     } catch (error) {
-      console.warn('API not available for marking all as read:', error);
+      console.warn('API error for marking all as read:', error.message);
       // Fallback to local state update only
       setNotifications(prev => 
         prev.map(notification => ({ ...notification, read: true }))
@@ -177,7 +230,7 @@ const NotificationDropdown = ({ isOpen, onToggle, className = '', unreadCount = 
       setNotifications(prev => prev.filter(notification => notification.id !== id));
       toast.success('Notification deleted');
     } catch (error) {
-      console.warn('API not available for deleting notification:', error);
+      console.warn('API error for deleting notification:', error.message);
       // Fallback to local state update only
       setNotifications(prev => prev.filter(notification => notification.id !== id));
       toast.success('Notification deleted (local)');

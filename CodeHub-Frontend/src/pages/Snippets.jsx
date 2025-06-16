@@ -51,7 +51,7 @@ const Snippets = () => {
         await favoritesAPI.removeFavorite(snippetId);
         toast.success('Removed from favorites');
       } else {
-        await favoritesAPI.addFavorite(snippetId);
+        await favoritesAPI.toggleFavorite(snippetId);
         toast.success('Added to favorites');
       }
       

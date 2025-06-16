@@ -13,7 +13,7 @@ import {
 } from "../components/profile";
 
 const Profile = () => {
-  const { userId } = useParams();
+  const { userId, username } = useParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
 
@@ -21,9 +21,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("snippets");
-
-  const isOwnProfile = !userId || userId === currentUser?.id?.toString();
-  useEffect(() => {
+  // Determine if this is own profile
+  const isOwnProfile = !userId && !username;useEffect(() => {
     const loadUserProfile = async () => {
       try {
         setLoading(true);
@@ -33,18 +32,28 @@ const Profile = () => {
         if (isOwnProfile) {
           // Load current user's profile
           response = await authAPI.getCurrentUser();
-        } else {
-          // Validate that userId is numeric
+        } else if (username) {
+          // Load user by username
+          try {
+            response = await usersAPI.getUserByUsername(username);
+          } catch (error) {
+            if (error.response?.status === 404) {
+              setError(`User "@${username}" not found.`);
+              return;
+            }
+            throw error;
+          }
+        } else if (userId) {
+          // Load user by ID
           const numericUserId = parseInt(userId);
           if (isNaN(numericUserId)) {
-            setError(
-              "Invalid user ID. User profiles must be accessed by numeric ID."
-            );
+            setError("Invalid user ID. User profiles must be accessed by numeric ID.");
             return;
           }
-
-          // Load specific user's profile
           response = await usersAPI.getUserById(numericUserId);
+        } else {
+          // Load current user if no parameters
+          response = await authAPI.getCurrentUser();
         }
 
         setUser(response.data);
@@ -63,12 +72,10 @@ const Profile = () => {
       } finally {
         setLoading(false);
       }
-    };
-
-    if (currentUser || userId) {
+    };    if (currentUser || userId || username) {
       loadUserProfile();
     }
-  }, [userId, currentUser, isOwnProfile]);
+  }, [userId, username, currentUser, isOwnProfile]);
 
   const handleUserUpdate = (updatedUser) => {
     setUser(updatedUser);

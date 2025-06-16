@@ -18,9 +18,11 @@ public class LikeService {
     private LikeRepository likeRepository;
       @Autowired
     private SnippetRepository snippetRepository;
+      @Autowired
+    private ActivityService activityService;
     
     @Autowired
-    private ActivityService activityService;
+    private NotificationService notificationService;
     
     @Transactional
     public boolean toggleLike(Long snippetId) {
@@ -54,9 +56,12 @@ public class LikeService {
             likeRepository.save(like);
             snippet.incrementLikeCount();
             snippetRepository.save(snippet);
-            
-            // Create like activity
+              // Create like activity
             activityService.createLikeActivity(snippet, true);
+            
+            // Create notification for snippet owner
+            notificationService.createSnippetLikeNotification(snippet, currentUser);
+            
             return true;
         }
     }

@@ -1,24 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, MapPin, Calendar, Mail, Github, Twitter, Linkedin, Edit3, UserCheck, UserPlus } from 'lucide-react';
-import { Button, Card } from '../ui';
+import { Button, Card, FollowButton } from '../ui';
 import { formatDate } from '../../utils/dateUtils';
 import { uploadAPI, authAPI, usersAPI } from '../../services/api';
 import { toast } from 'react-hot-toast';
 import EditProfileModal from './EditProfileModal';
+import rateLimiter from '../../utils/rateLimiter';
 
 const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser }) => {
-  const [isFollowing, setIsFollowing] = useState(user?.isFollowing || false);
   const [followersCount, setFollowersCount] = useState(user?.followersCount || 0);
   const [followingCount, setFollowingCount] = useState(user?.followingCount || 0);
   const [snippetsCount, setSnippetsCount] = useState(user?.snippetsCount || 0);
-  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-
-  // Load user statistics
+  const [showEditModal, setShowEditModal] = useState(false);  // Load user statistics
   useEffect(() => {
     const loadUserStats = async () => {
+      // Check rate limit
+      if (!rateLimiter.isAllowed('user-stats', user?.id)) {
+        console.warn('Rate limit exceeded for user stats');
+        // Use fallback values from user object
+        setFollowersCount(user?.followersCount || 0);
+        setFollowingCount(user?.followingCount || 0);
+        setSnippetsCount(user?.snippetsCount || 0);
+        return;
+      }
+      
       try {
         setStatsLoading(true);
         let response;
@@ -39,14 +46,22 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser }) => {
         setFollowersCount(user?.followersCount || 0);
         setFollowingCount(user?.followingCount || 0);
         setSnippetsCount(user?.snippetsCount || 0);
+        
+        // Don't show error toast for rate limiting
+        if (error.response?.status !== 429) {
+          console.warn('Failed to load user stats:', error.message);
+        }
       } finally {
         setStatsLoading(false);
       }
     };
 
     if (user?.id) {
-      loadUserStats();    }
-  }, [user?.id, isOwnProfile]);
+      // Add a small delay to prevent rapid successive calls
+      const timeoutId = setTimeout(loadUserStats, 200);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [user?.id, isOwnProfile, user?.followersCount, user?.followingCount, user?.snippetsCount]);
 
   const handleEditProfile = () => {
     setShowEditModal(true);
@@ -59,22 +74,9 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser }) => {
     }
   };
 
-  const handleFollowToggle = async () => {
-    if (isOwnProfile) return;
-    
-    setIsFollowLoading(true);
-    try {
-      // TODO: Implement follow/unfollow API call
-      // const response = await usersAPI.toggleFollow(user.id);
-      
-      // Simulate API call for now
-      setIsFollowing(!isFollowing);
-      setFollowersCount(prev => isFollowing ? prev - 1 : prev + 1);
-    } catch (error) {
-      console.error('Failed to toggle follow:', error);
-    } finally {
-      setIsFollowLoading(false);
-    }
+  // Handle follow state change from FollowButton
+  const handleFollowChange = (isFollowing, newFollowerCount) => {
+    setFollowersCount(newFollowerCount);
   };
   const handleAvatarChange = async (event) => {
     const file = event.target.files[0];
@@ -304,18 +306,15 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser }) => {
               >
                 <Edit3 className="w-4 h-4" />
                 <span>Edit Profile</span>
-              </Button>
-            ) : (
+              </Button>            ) : (
               <>
-                <Button
-                  variant={isFollowing ? "outline" : "primary"}
-                  onClick={handleFollowToggle}
-                  disabled={isFollowLoading}
-                  className="flex items-center space-x-2"
-                >
-                  {isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-                  <span>{isFollowing ? 'Following' : 'Follow'}</span>
-                </Button>
+                <FollowButton
+                  userId={user.id}
+                  username={user.username}
+                  onFollowChange={handleFollowChange}
+                  size="md"
+                  variant="primary"
+                />
                 
                 <Button variant="ghost">
                   Message

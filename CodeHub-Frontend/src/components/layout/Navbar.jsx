@@ -13,6 +13,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { notificationsAPI } from "../../services/api";
 import { Button, Input, NotificationDropdown } from "../ui";
 
 const Navbar = () => {
@@ -40,14 +41,35 @@ const Navbar = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
-    // Load unread notifications count - Mock data only since API not available
+  // Load unread notifications count from API
   useEffect(() => {
-    if (isAuthenticated && user) {
-      // Mock unread count since backend notifications API is not implemented
-      setUnreadCount(3);
-    } else {
-      setUnreadCount(0);
-    }
+    const loadUnreadCount = async () => {
+      if (isAuthenticated && user) {
+        try {
+          console.log('🔔 [Navbar] Loading unread count from API...');
+          const response = await notificationsAPI.getStats();
+          
+          if (response && response.data) {
+            setUnreadCount(response.data.unreadCount || 0);
+            console.log('✅ [Navbar] Loaded unread count:', response.data.unreadCount);
+          } else {
+            console.log('⚠️ [Navbar] Empty API response, using mock count');
+            setUnreadCount(3); // Mock fallback
+          }
+        } catch (error) {
+          console.warn('⚠️ [Navbar] API not available for unread count, using mock:', error.message);
+          setUnreadCount(3); // Mock fallback when API is not available
+        }
+      } else {
+        setUnreadCount(0);
+      }
+    };
+
+    loadUnreadCount();
+    
+    // Optionally, poll for updates every minute
+    const interval = setInterval(loadUnreadCount, 60000);
+    return () => clearInterval(interval);
   }, [isAuthenticated, user]);
 
   const handleSearch = (e) => {
@@ -228,17 +250,16 @@ const Navbar = () => {
                   </AnimatePresence>
                 </div>
               </>
-            ) : (
-              <>
+            ) : (              <>
                 <Link
-                  to="/auth/login"
+                  to="/login"
                   className="px-4 py-2 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900 font-medium"
                 >
                   Sign In
                 </Link>
                 <Button
                   as={Link}
-                  to="/auth/register"
+                  to="/register"
                   variant="primary"
                   size="sm"
                 >

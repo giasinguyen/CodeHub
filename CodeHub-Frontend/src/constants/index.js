@@ -14,8 +14,7 @@ export const API_ENDPOINTS = {
   // Auth
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
-  
-  // Snippets
+    // Snippets
   SNIPPETS: '/snippets',
   SNIPPET_BY_ID: (id) => `/snippets/${id}`,
   SNIPPET_VERSIONS: (id) => `/snippets/${id}/versions`,
@@ -24,19 +23,41 @@ export const API_ENDPOINTS = {
   SNIPPET_COMMENTS: (id) => `/snippets/${id}/comments`,
   SNIPPET_COMMENT_DELETE: (snippetId, commentId) => `/snippets/${snippetId}/comments/${commentId}`,
   
+  // Favorites
+  FAVORITES: '/favorites',
+  FAVORITE_TOGGLE: (id) => `/snippets/${id}/favorite/toggle`,
+  FAVORITE_STATUS: (id) => `/snippets/${id}/favorite/status`,
+  FAVORITE_ADD: (id) => `/snippets/${id}/favorite`,
+  FAVORITE_REMOVE: (id) => `/snippets/${id}/favorite`,
+  FAVORITE_STATS: '/favorites/stats',
+  
   // Search & Filters
   SEARCH_SNIPPETS: '/snippets/search',
   TRENDING_MOST_LIKED: '/snippets/trending/most-liked',
   TRENDING_MOST_VIEWED: '/snippets/trending/most-viewed',
   AVAILABLE_LANGUAGES: '/snippets/languages',
   AVAILABLE_TAGS: '/snippets/tags',
-  
   // Users
   USERS: '/users',
   USER_PROFILE: '/users/profile',
   USER_BY_ID: (id) => `/users/${id}`,
   USER_SNIPPETS: (id) => `/users/${id}/snippets`,
   CURRENT_USER_SNIPPETS: '/users/profile/snippets',
+  
+  // User Follow
+  USER_FOLLOW: (id) => `/users/${id}/follow`,
+  USER_FOLLOW_STATUS: (id) => `/users/${id}/follow/status`,
+  USER_FOLLOWERS: (id) => `/users/${id}/followers`,
+  USER_FOLLOWING: (id) => `/users/${id}/following`,
+  CURRENT_USER_FOLLOWERS: '/users/profile/followers',
+  CURRENT_USER_FOLLOWING: '/users/profile/following',
+  
+  // Notifications
+  NOTIFICATIONS: '/notifications',
+  NOTIFICATION_STATS: '/notifications/stats',
+  NOTIFICATION_MARK_READ: (id) => `/notifications/${id}/read`,
+  NOTIFICATION_MARK_ALL_READ: '/notifications/read-all',
+  NOTIFICATION_DELETE: (id) => `/notifications/${id}`,
 };
 
 // Theme

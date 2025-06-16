@@ -7,6 +7,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -27,10 +29,11 @@ public class DataLoader implements CommandLineRunner {
     private LikeRepository likeRepository;
 
     @Autowired
-    private SnippetVersionRepository versionRepository;
-
-    @Autowired
+    private SnippetVersionRepository versionRepository;    @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     private final Random random = new Random();
 
@@ -56,10 +59,11 @@ public class DataLoader implements CommandLineRunner {
         createVersions(snippets);
 
         // Create likes
-        createLikes(users, snippets);
-
-        // Create comments
+        createLikes(users, snippets);        // Create comments
         createComments(users, snippets);
+        
+        // Create sample notifications
+        createSampleNotifications(users, snippets);
 
         System.out.println("Sample data loaded successfully!");
     }
@@ -294,9 +298,83 @@ public class DataLoader implements CommandLineRunner {
                     .content(commentText)
                     .snippet(snippet)
                     .author(commenter)
-                    .build();
-                commentRepository.save(comment);
+                    .build();                commentRepository.save(comment);
             }
         }
+    }
+    
+    private void createSampleNotifications(List<User> users, List<Snippet> snippets) {
+        System.out.println("Creating sample notifications...");
+        
+        // Create notifications for the first user (john_doe)
+        User recipient = users.get(0); // john_doe
+        
+        // Notification 1: Like notification
+        Notification likeNotification = Notification.builder()
+                .recipient(recipient)
+                .actor(users.get(1)) // jane_smith
+                .type(Notification.NotificationType.SNIPPET_LIKED)
+                .title("New like on your snippet")
+                .message("jane_smith liked your \"" + snippets.get(0).getTitle() + "\" snippet")
+                .targetId(snippets.get(0).getId())
+                .targetType("snippet")
+                .actionUrl("/snippets/" + snippets.get(0).getId())
+                .read(false)
+                .createdAt(Instant.now().minus(5, ChronoUnit.MINUTES))
+                .build();
+        
+        // Notification 2: Comment notification
+        Notification commentNotification = Notification.builder()
+                .recipient(recipient)
+                .actor(users.get(2)) // alex_wilson
+                .type(Notification.NotificationType.SNIPPET_COMMENTED)
+                .title("New comment on your snippet")
+                .message("alex_wilson commented on your \"" + snippets.get(1).getTitle() + "\" snippet")
+                .targetId(snippets.get(1).getId())
+                .targetType("snippet")
+                .actionUrl("/snippets/" + snippets.get(1).getId())
+                .read(false)
+                .createdAt(Instant.now().minus(15, ChronoUnit.MINUTES))
+                .build();
+        
+        // Notification 3: Follow notification
+        Notification followNotification = Notification.builder()
+                .recipient(recipient)
+                .actor(users.get(3)) // sarah_dev
+                .type(Notification.NotificationType.USER_FOLLOWED)
+                .title("New follower")
+                .message("sarah_dev started following you")
+                .targetId(users.get(3).getId())
+                .targetType("user")
+                .actionUrl("/profile/" + users.get(3).getUsername())
+                .read(true)
+                .createdAt(Instant.now().minus(2, ChronoUnit.HOURS))
+                .readAt(Instant.now().minus(1, ChronoUnit.HOURS))
+                .build();
+        
+        // Notification 4: Star notification
+        Notification starNotification = Notification.builder()
+                .recipient(recipient)
+                .actor(users.get(4)) // mike_coder
+                .type(Notification.NotificationType.SNIPPET_STARRED)
+                .title("Snippet starred")
+                .message("mike_coder starred your \"" + snippets.get(2).getTitle() + "\" snippet")
+                .targetId(snippets.get(2).getId())
+                .targetType("snippet")
+                .actionUrl("/snippets/" + snippets.get(2).getId())
+                .read(true)
+                .createdAt(Instant.now().minus(1, ChronoUnit.DAYS))
+                .readAt(Instant.now().minus(23, ChronoUnit.HOURS))
+                .build();
+        
+        // Save all notifications
+        notificationRepository.saveAll(Arrays.asList(
+            likeNotification,
+            commentNotification,
+            followNotification,
+            starNotification
+        ));
+        
+        System.out.println("Created 4 sample notifications for user: " + recipient.getUsername());
     }
 }

@@ -52,6 +52,12 @@ public class UserService {
         return convertToProfileResponse(user);
     }
 
+    public UserProfileResponse getUserProfileByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+        return convertToProfileResponse(user);
+    }
+
     public UserStatsResponse getCurrentUserStats() {
         User currentUser = getCurrentUser();
         return getUserStatsForUser(currentUser);
@@ -387,36 +393,6 @@ public class UserService {
         }
 
         return leaderboard;
-    }
-
-    @Transactional
-    public void followUser(Long userId) {
-        User currentUser = getCurrentUser();
-        User userToFollow = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
-
-        if (currentUser.getId().equals(userId)) {
-            throw new RuntimeException("Cannot follow yourself");
-        }
-
-        // For now, just create an activity (following relationship would need a
-        // separate table)
-        activityService.createFollowActivity(userToFollow);
-    }
-
-    @Transactional
-    public void unfollowUser(Long userId) {
-        User currentUser = getCurrentUser();
-        User userToUnfollow = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
-
-        if (currentUser.getId().equals(userId)) {
-            throw new RuntimeException("Cannot unfollow yourself");
-        }
-
-        // For now, just create an activity (following relationship would need a
-        // separate table)
-        activityService.createUnfollowActivity(userToUnfollow);
     }
 
     private DeveloperResponse convertToDeveloperResponse(User user) {

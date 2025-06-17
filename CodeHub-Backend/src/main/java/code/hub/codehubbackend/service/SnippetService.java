@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +44,12 @@ public class SnippetService {
     
     @Autowired
     private ActivityService activityService;
+    
+    @Autowired
+    private RecentlyViewedRepository recentlyViewedRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
     
     public Page<SnippetResponse> getAllSnippets(int page, int size, String language, String tag, String sort) {
         Sort sortBy = switch (sort) {
@@ -220,23 +226,7 @@ public class SnippetService {
                 .versionNumber(version.getVersionNumber())
                 .changeMessage(version.getChangeMessage())
                 .createdAt(version.getCreatedAt())
-                .build();
-    }
-      private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return null;
-        }
-        
-        // Check if the principal is actually a User object
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof User) {
-            return (User) principal;
-        }
-        
-        // For anonymous users or other cases, return null
-        return null;
-    }
+                .build();    }
     
     // Public method for UserService to use
     public SnippetResponse convertToResponse(Snippet snippet) {
@@ -293,5 +283,77 @@ public class SnippetService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Snippet> snippets = snippetRepository.findMostViewed(pageable);
         return snippets.map(this::convertToResponse);
+    }
+    
+    // =============== RECENTLY VIEWED API METHODS ===============
+    
+    @Transactional
+    public void recordSnippetView(Long snippetId) {
+        User currentUser = getCurrentUser();
+        Snippet snippet = snippetRepository.findById(snippetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Snippet not found"));
+        
+        // Check if user already viewed this snippet
+        Optional<RecentlyViewed> existingView = recentlyViewedRepository.findByUserAndSnippet(currentUser, snippet);
+        
+        if (existingView.isPresent()) {
+            // Update existing view
+            RecentlyViewed recentView = existingView.get();
+            recentView.setViewedAt(LocalDateTime.now());
+            recentView.setViewCount(recentView.getViewCount() + 1);
+            recentlyViewedRepository.save(recentView);
+        } else {
+            // Create new view record
+            RecentlyViewed recentView = RecentlyViewed.builder()
+                    .user(currentUser)
+                    .snippet(snippet)
+                    .viewedAt(LocalDateTime.now())
+                    .viewCount(1)
+                    .build();
+            recentlyViewedRepository.save(recentView);
+        }
+          // Increment snippet view count
+        snippet.incrementViewCount();
+        snippetRepository.save(snippet);
+    }
+    
+    public Page<SnippetResponse> getRecentlyViewedSnippets(int page, int size) {
+        User currentUser = getCurrentUser();
+        Pageable pageable = PageRequest.of(page, size);
+        
+        Page<RecentlyViewed> recentViews = recentlyViewedRepository.findByUserOrderByViewedAtDesc(currentUser, pageable);
+        return recentViews.map(recentView -> convertToResponse(recentView.getSnippet()));
+    }
+    
+    @Transactional
+    public void removeFromRecentlyViewed(Long snippetId) {
+        User currentUser = getCurrentUser();
+        Snippet snippet = snippetRepository.findById(snippetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Snippet not found"));
+        
+        recentlyViewedRepository.deleteByUserAndSnippet(currentUser, snippet);
+    }
+    
+    @Transactional
+    public void clearRecentlyViewed() {
+        User currentUser = getCurrentUser();
+        recentlyViewedRepository.deleteByUser(currentUser);
+    }
+    
+    // =============== HELPER METHODS ===============
+    
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UnauthorizedException("User not authenticated");
+        }
+        
+        String username = authentication.getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }      private double calculatePercentage(Long count) {
+        Long totalSnippets = snippetRepository.count();
+        if (totalSnippets == 0) return 0.0;
+        return (count.doubleValue() / totalSnippets.doubleValue()) * 100.0;
     }
 }

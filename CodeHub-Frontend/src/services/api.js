@@ -585,10 +585,88 @@ export const notificationsAPI = {
     console.log('🌐 [API] Mark All as Read:', url);
     return api.put(url);
   },
-
   // Delete notification
   deleteNotification: (notificationId) => {
     const url = API_ENDPOINTS.NOTIFICATION_DELETE(notificationId);    console.log('🌐 [API] Delete Notification:', url);
+    return api.delete(url);
+  }
+};
+
+// ============================
+// CATEGORIES API
+// ============================
+export const categoriesAPI = {
+  // Get language statistics
+  getLanguageStats: () => {
+    const url = API_ENDPOINTS.CATEGORIES_LANGUAGES;
+    console.log('🌐 [API] Get Language Stats:', url);
+    return api.get(url);
+  },
+
+  // Get tag statistics
+  getTagStats: () => {
+    const url = API_ENDPOINTS.CATEGORIES_TAGS;
+    console.log('🌐 [API] Get Tag Stats:', url);
+    return api.get(url);
+  },
+
+  // Get popular categories
+  getPopularCategories: () => {
+    const url = API_ENDPOINTS.CATEGORIES_POPULAR;
+    console.log('🌐 [API] Get Popular Categories:', url);
+    return api.get(url);
+  },
+
+  // Get snippets by language
+  getSnippetsByLanguage: (language, page = 0, size = 12, sortBy = 'createdAt', sortDir = 'desc') => {
+    const url = API_ENDPOINTS.CATEGORIES_LANGUAGE_SNIPPETS(language);
+    console.log('🌐 [API] Get Snippets by Language:', { language, page, size, sortBy, sortDir });
+    return api.get(url, {
+      params: { page, size, sortBy, sortDir }
+    });
+  },
+
+  // Get snippets by tag
+  getSnippetsByTag: (tag, page = 0, size = 12, sortBy = 'createdAt', sortDir = 'desc') => {
+    const url = API_ENDPOINTS.CATEGORIES_TAG_SNIPPETS(tag);
+    console.log('🌐 [API] Get Snippets by Tag:', { tag, page, size, sortBy, sortDir });
+    return api.get(url, {
+      params: { page, size, sortBy, sortDir }
+    });
+  }
+};
+
+// ============================
+// RECENTLY VIEWED API
+// ============================
+export const recentAPI = {
+  // Get recently viewed snippets
+  getRecentlyViewed: (page = 0, size = 12) => {
+    const url = API_ENDPOINTS.RECENT_SNIPPETS;
+    console.log('🌐 [API] Get Recently Viewed:', { page, size });
+    return api.get(url, {
+      params: { page, size }
+    });
+  },
+
+  // Record snippet view
+  recordView: (snippetId) => {
+    const url = API_ENDPOINTS.RECENT_RECORD_VIEW(snippetId);
+    console.log('🌐 [API] Record Snippet View:', snippetId);
+    return api.post(url);
+  },
+
+  // Remove from recently viewed
+  removeFromRecent: (snippetId) => {
+    const url = API_ENDPOINTS.RECENT_REMOVE(snippetId);
+    console.log('🌐 [API] Remove from Recent:', snippetId);
+    return api.delete(url);
+  },
+
+  // Clear all recently viewed
+  clearAll: () => {
+    const url = API_ENDPOINTS.RECENT_CLEAR;
+    console.log('🌐 [API] Clear All Recent');
     return api.delete(url);
   }
 };

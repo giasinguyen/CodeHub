@@ -26,64 +26,67 @@ import {
   Notifications,
   Login,
   Register,
+  Recent,
 } from "./pages";
 import "./App.css";
 
 // Initialize theme on app load
 const initializeTheme = () => {
-  const savedSettings = localStorage.getItem('userSettings');
+  const savedSettings = localStorage.getItem("userSettings");
   if (savedSettings) {
     try {
       const parsed = JSON.parse(savedSettings);
       const appearance = parsed.appearance;
-      
+
       if (appearance) {
         const root = document.documentElement;
         const body = document.body;
-        
+
         // Apply theme
-        if (appearance.theme === 'light') {
-          root.classList.remove('dark', 'auto');
-          root.classList.add('light');
-          body.classList.remove('dark', 'auto');
-          body.classList.add('light');
-        } else if (appearance.theme === 'dark') {
-          root.classList.remove('light', 'auto');
-          root.classList.add('dark');
-          body.classList.remove('light', 'auto');
-          body.classList.add('dark');
+        if (appearance.theme === "light") {
+          root.classList.remove("dark", "auto");
+          root.classList.add("light");
+          body.classList.remove("dark", "auto");
+          body.classList.add("light");
+        } else if (appearance.theme === "dark") {
+          root.classList.remove("light", "auto");
+          root.classList.add("dark");
+          body.classList.remove("light", "auto");
+          body.classList.add("dark");
         } else {
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          root.classList.remove('light', 'dark');
-          root.classList.add('auto', prefersDark ? 'dark' : 'light');
-          body.classList.remove('light', 'dark');
-          body.classList.add('auto', prefersDark ? 'dark' : 'light');
+          const prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+          root.classList.remove("light", "dark");
+          root.classList.add("auto", prefersDark ? "dark" : "light");
+          body.classList.remove("light", "dark");
+          body.classList.add("auto", prefersDark ? "dark" : "light");
         }
-        
+
         // Apply other appearance settings
         if (appearance.fontSize) {
           const fontSizeMap = {
-            small: '14px',
-            medium: '16px',
-            large: '18px'
+            small: "14px",
+            medium: "16px",
+            large: "18px",
           };
           root.style.fontSize = fontSizeMap[appearance.fontSize];
         }
-        
+
         if (appearance.compactMode) {
-          root.classList.add('compact-mode');
+          root.classList.add("compact-mode");
         }
-        
+
         if (appearance.highContrast) {
-          root.classList.add('high-contrast');
+          root.classList.add("high-contrast");
         }
-        
+
         if (!appearance.animationsEnabled) {
-          root.classList.add('reduce-motion');
+          root.classList.add("reduce-motion");
         }
       }
     } catch (error) {
-      console.error('Error loading saved theme settings:', error);
+      console.error("Error loading saved theme settings:", error);
     }
   }
 };
@@ -161,12 +164,20 @@ const AppRoutes = () => {
             <Trending />
           </Layout>
         }
-      />
+      />{" "}
       <Route
         path="/tags/:tagName"
         element={
           <Layout>
             <TagPage />
+          </Layout>
+        }
+      />
+      <Route
+        path="/recent"
+        element={
+          <Layout>
+            <Recent />
           </Layout>
         }
       />
@@ -259,7 +270,8 @@ const AppRoutes = () => {
             </Layout>
           </ProtectedRoute>
         }
-      />      <Route
+      />{" "}
+      <Route
         path="/profile"
         element={
           <ProtectedRoute>

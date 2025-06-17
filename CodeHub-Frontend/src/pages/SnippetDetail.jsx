@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Button, Card, Loading, FollowButton } from '../components/ui';
 import { useAuth } from '../contexts/AuthContext';
-import { snippetsAPI, favoritesAPI, usersAPI } from '../services/api';
+import { snippetsAPI, favoritesAPI, usersAPI, recentAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 const SnippetDetail = () => {
@@ -87,6 +87,17 @@ const SnippetDetail = () => {
             comments: [], // TODO: Load comments separately
             relatedSnippets: [] // TODO: Load related snippets
           };          setSnippet(snippetData);
+          
+          // Record the view for recently viewed
+          if (user) {
+            try {
+              await recentAPI.recordView(id);
+              console.log('✅ [SnippetDetail] View recorded for recently viewed');
+            } catch (error) {
+              console.warn('⚠️ [SnippetDetail] Failed to record view:', error);
+              // Don't show error to user as this is not critical
+            }
+          }
           
           // Check favorite status
           if (user) {

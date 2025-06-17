@@ -51,13 +51,25 @@ export const API_ENDPOINTS = {
   USER_FOLLOWING: (id) => `/users/${id}/following`,
   CURRENT_USER_FOLLOWERS: '/users/profile/followers',
   CURRENT_USER_FOLLOWING: '/users/profile/following',
-  
-  // Notifications
+    // Notifications
   NOTIFICATIONS: '/notifications',
   NOTIFICATION_STATS: '/notifications/stats',
   NOTIFICATION_MARK_READ: (id) => `/notifications/${id}/read`,
   NOTIFICATION_MARK_ALL_READ: '/notifications/read-all',
   NOTIFICATION_DELETE: (id) => `/notifications/${id}`,
+  
+  // Categories
+  CATEGORIES_LANGUAGES: '/categories/languages',
+  CATEGORIES_TAGS: '/categories/tags',
+  CATEGORIES_POPULAR: '/categories/popular',
+  CATEGORIES_LANGUAGE_SNIPPETS: (language) => `/categories/languages/${language}/snippets`,
+  CATEGORIES_TAG_SNIPPETS: (tag) => `/categories/tags/${tag}/snippets`,
+  
+  // Recently Viewed
+  RECENT_SNIPPETS: '/recent/snippets',
+  RECENT_RECORD_VIEW: (id) => `/recent/snippets/${id}/view`,
+  RECENT_REMOVE: (id) => `/recent/snippets/${id}`,
+  RECENT_CLEAR: '/recent/snippets',
 };
 
 // Theme

@@ -48,7 +48,6 @@ const Sidebar = ({ className = "" }) => {
         { label: "Dashboard", path: "/", icon: Home },
         { label: "Browse Snippets", path: "/snippets", icon: Code2 },
         { label: "Trending", path: "/trending", icon: TrendingUp },
-        { label: "Categories", path: "/categories", icon: BookOpen },
         { label: "Developers", path: "/developers", icon: Users },
       ],
     },

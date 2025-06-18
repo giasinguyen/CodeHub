@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { notificationsAPI } from "../../services/api";
-import { Button, Input, NotificationDropdown } from "../ui";
+import { Button, Input, NotificationDropdown, SmartSearch } from "../ui";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -35,11 +35,9 @@ const Navbar = () => {
       });
     }
   }, [user]);
-
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   // Load unread notifications count from API
   useEffect(() => {
@@ -71,20 +69,10 @@ const Navbar = () => {
       }
     };
 
-    loadUnreadCount();
-
-    // Optionally, poll for updates every minute
+    loadUnreadCount();    // Optionally, poll for updates every minute
     const interval = setInterval(loadUnreadCount, 60000);
     return () => clearInterval(interval);
   }, [isAuthenticated, user]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -137,20 +125,14 @@ const Navbar = () => {
                 )}
               </Link>
             ))}
-          </div>
-          {/* Search Bar - Expanded */}
+          </div>          {/* Search Bar - Smart Search */}
           <div className="hidden md:flex flex-1 max-w-2xl mx-6">
-            <form onSubmit={handleSearch} className="w-full">
-              <Input
-                type="text"
-                placeholder="Search code snippets, languages, tags..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                icon={Search}
-                iconPosition="left"
-                className="bg-slate-800/80 dark:bg-slate-800/80 light:bg-gray-100 border-slate-600 dark:border-slate-600 light:border-gray-300 focus:border-cyan-500 h-12 text-base px-12"
-              />
-            </form>
+            <SmartSearch 
+              className="w-full"
+              placeholder="Search code snippets, users, tags..."
+              size="lg"
+              showFilters={true}
+            />
           </div>{" "}
           {/* Right Section */}
           <div className="flex items-center space-x-6 flex-shrink-0">
@@ -304,20 +286,14 @@ const Navbar = () => {
         {/* Mobile Menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
-            <div className="md:hidden border-t border-slate-700 dark:border-slate-700 light:border-gray-200 py-6">
-              {/* Mobile Search */}
+            <div className="md:hidden border-t border-slate-700 dark:border-slate-700 light:border-gray-200 py-6">              {/* Mobile Search */}
               <div className="px-6 pb-4">
-                <form onSubmit={handleSearch}>
-                  <Input
-                    type="text"
-                    placeholder="Search code snippets, languages, tags..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    icon={Search}
-                    iconPosition="left"
-                    className="bg-slate-800/80 dark:bg-slate-800/80 light:bg-gray-100 border-slate-600 dark:border-slate-600 light:border-gray-300 focus:border-cyan-500 h-12"
-                  />
-                </form>
+                <SmartSearch 
+                  className="w-full"
+                  placeholder="Search code snippets, users, tags..."
+                  size="md"
+                  showFilters={false}
+                />
               </div>
 
               {/* Mobile Navigation */}

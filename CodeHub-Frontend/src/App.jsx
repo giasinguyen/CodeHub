@@ -25,8 +25,8 @@ import {
   Settings,
   Notifications,
   Login,
-  Register,
-  Recent,
+  Register,  Recent,
+  Search,
 } from "./pages";
 import "./App.css";
 
@@ -172,12 +172,18 @@ const AppRoutes = () => {
             <TagPage />
           </Layout>
         }
-      />
-      <Route
+      />      <Route
         path="/recent"
         element={
           <Layout>
             <Recent />
+          </Layout>
+        }
+      />      <Route
+        path="/search"
+        element={
+          <Layout>
+            <Search />
           </Layout>
         }
       />

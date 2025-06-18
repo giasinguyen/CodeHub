@@ -11,5 +11,6 @@ export { default as Trending } from "./Trending";
 export { default as TagPage } from "./TagPage";
 export { default as Settings } from "./Settings";
 export { default as Recent } from "./Recent";
+export { default as Search } from "./Search";
 export { default as Notifications } from "./Notifications";
 export * from "./auth";

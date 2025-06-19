@@ -103,6 +103,26 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
     
+    @GetMapping("/search")
+    @Operation(summary = "Search users", description = "Search users by username or general query")
+    public ResponseEntity<Page<DeveloperResponse>> searchUsers(
+            @Parameter(description = "Search by username") @RequestParam(required = false) String username,
+            @Parameter(description = "General search query") @RequestParam(required = false) String q,
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "12") int size) {
+        
+        // Use username if provided, otherwise use q parameter
+        String searchQuery = username != null ? username : q;
+        
+        if (searchQuery == null || searchQuery.trim().isEmpty()) {
+            // Return empty page if no search query
+            return ResponseEntity.ok(Page.empty());
+        }
+        
+        Page<DeveloperResponse> users = userService.getAllDevelopers(page, size, "createdAt", "desc", searchQuery, null, null, null);
+        return ResponseEntity.ok(users);
+    }
+    
     // New endpoints for developers page
     @GetMapping
     @Operation(summary = "Get all developers", description = "Get a paginated list of all developers with filtering options")

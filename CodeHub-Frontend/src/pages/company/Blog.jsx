@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Search, Calendar, User, ArrowRight, Tag, Clock, TrendingUp } from 'lucide-react';
 import { Card } from '../../components/ui';
 
@@ -89,15 +88,11 @@ const Blog = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          <div>
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-6">
               CodeHub Blog
             </h1>
@@ -115,7 +110,7 @@ const Blog = () => {
                 className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               />
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -145,12 +140,7 @@ const Blog = () => {
         <div className="max-w-7xl mx-auto">
           {/* Featured Post */}
           {filteredPosts.find(post => post.featured) && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="mb-16"
-            >
+            <div className="mb-16">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8 flex items-center">
                 <TrendingUp className="w-6 h-6 mr-2 text-cyan-500" />
                 Featured Article
@@ -207,18 +197,13 @@ const Blog = () => {
                   </Card>
                 );
               })()}
-            </motion.div>
+            </div>
           )}
 
           {/* Regular Posts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredPosts.filter(post => !post.featured).map((post, index) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-              >
+            {filteredPosts.filter(post => !post.featured).map((post) => (
+              <div key={post.id}>
                 <Card className="overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow h-full">
                   <img
                     src={post.image}
@@ -269,7 +254,7 @@ const Blog = () => {
                     </div>
                   </div>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
 
@@ -285,11 +270,7 @@ const Blog = () => {
       {/* Newsletter Signup */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-600 to-blue-600">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          <div>
             <h2 className="text-4xl font-bold text-white mb-6">
               Stay Updated
             </h2>
@@ -306,7 +287,7 @@ const Blog = () => {
                 Subscribe
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>

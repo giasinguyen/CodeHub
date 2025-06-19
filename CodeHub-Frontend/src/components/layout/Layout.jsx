@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import ThemeToggle from '../ui/ThemeToggle';
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -63,10 +64,11 @@ const Layout = ({ children }) => {
             {children}
           </div>
         </main>
-      </div>
-
-      {/* Footer */}
+      </div>      {/* Footer */}
       <Footer />
+      
+      {/* Theme Toggle */}
+      <ThemeToggle />
     </div>
   );
 };

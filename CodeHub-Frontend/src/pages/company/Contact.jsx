@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { 
   Mail, 
   Phone, 
@@ -94,13 +93,12 @@ const Contact = () => {
       });
     }, 2000);
   };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div
+          <div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -112,7 +110,7 @@ const Contact = () => {
               Have questions, feedback, or need support? We'd love to hear from you. 
               Our team is here to help and respond quickly.
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -120,7 +118,7 @@ const Contact = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Contact Methods */}
           <div className="lg:col-span-1">
-            <motion.div
+            <div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
@@ -132,7 +130,7 @@ const Contact = () => {
                 {contactMethods.map((method, index) => (
                   <Card 
                     key={index}
-                    className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer"
+                    className="p-4 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 hover:shadow-lg transition-shadow cursor-pointer"
                     onClick={() => method.action !== '#' && window.open(method.action, '_blank')}
                   >
                     <div className="flex items-start space-x-4">
@@ -160,7 +158,7 @@ const Contact = () => {
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                   Office Information
                 </h3>
-                <Card className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <Card className="p-4 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600">
                   <div className="space-y-3">
                     <div className="flex items-start space-x-3">
                       <MapPin className="w-5 h-5 text-cyan-500 mt-0.5" />
@@ -199,7 +197,7 @@ const Contact = () => {
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-cyan-50 dark:hover:bg-slate-700 transition-colors"
+                      className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-slate-200 dark:border-gray-600 hover:bg-cyan-50 dark:hover:bg-gray-700 transition-colors"
                       title={social.name}
                     >
                       <social.icon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
@@ -207,17 +205,17 @@ const Contact = () => {
                   ))}
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Contact Form */}
           <div className="lg:col-span-2">
-            <motion.div
+            <div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <Card className="p-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <Card className="p-8 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
                   Send us a Message
                 </h2>
@@ -227,12 +225,11 @@ const Contact = () => {
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       What can we help you with?
-                    </label>
-                    <select
+                    </label>                    <select
                       name="type"
                       value={formData.type}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-900 dark:text-white"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-900 dark:text-white"
                       required
                     >
                       <option value="general">General Inquiry</option>
@@ -330,22 +327,20 @@ const Contact = () => {
                 </form>
 
                 {/* Additional Info */}
-                <div className="mt-6 p-4 bg-cyan-50 dark:bg-slate-700 rounded-lg">
+                <div className="mt-6 p-4 bg-cyan-50 dark:bg-gray-700 rounded-lg">
                   <p className="text-sm text-slate-600 dark:text-slate-300">
                     <strong>Response Time:</strong> We typically respond within 24 hours during business days. 
                     For urgent technical issues, please use our live chat or GitHub issues.
                   </p>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* FAQ Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-800">
+      </div>      {/* FAQ Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800">
         <div className="max-w-4xl mx-auto">
-          <motion.div
+          <div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -357,7 +352,7 @@ const Contact = () => {
             <p className="text-slate-600 dark:text-slate-300">
               Can't find what you're looking for? Check out our help center or contact us directly.
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
@@ -378,13 +373,13 @@ const Contact = () => {
                 answer: "Yes, we provide enterprise support and custom solutions. Contact us for more information."
               }
             ].map((faq, index) => (
-              <motion.div
+              <div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
               >
-                <Card className="p-6 h-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <Card className="p-6 h-full bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600">
                   <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
                     {faq.question}
                   </h3>
@@ -392,7 +387,7 @@ const Contact = () => {
                     {faq.answer}
                   </p>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { MapPin, Users, Briefcase, GraduationCap, Code2, Zap, Heart, Globe } from 'lucide-react';
 import { Card } from '../../components/ui';
 
@@ -115,13 +114,12 @@ const Careers = () => {
     { label: 'Years of Experience', value: '2+' },
     { label: 'Coffee Consumed', value: '∞' }
   ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div
+          <div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -141,7 +139,7 @@ const Careers = () => {
                 Learn About Our Culture
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -150,7 +148,7 @@ const Careers = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {companyStats.map((stat, index) => (
-              <motion.div
+              <div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -163,16 +161,14 @@ const Careers = () => {
                 <div className="text-slate-600 dark:text-slate-300">
                   {stat.label}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-800">
+      </section>      {/* Benefits Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto">
-          <motion.div
+          <div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -184,17 +180,17 @@ const Careers = () => {
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               We believe in creating an environment where our team can do their best work while growing personally and professionally.
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {benefits.map((benefit, index) => (
-              <motion.div
+              <div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
               >
-                <Card className="p-6 h-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+                <Card className="p-6 h-full bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 hover:shadow-lg transition-shadow">
                   <benefit.icon className="w-12 h-12 text-cyan-500 mb-4" />
                   <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
                     {benefit.title}
@@ -203,7 +199,7 @@ const Careers = () => {
                     {benefit.description}
                   </p>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -212,7 +208,7 @@ const Careers = () => {
       {/* Open Positions */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <motion.div
+          <div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -224,17 +220,17 @@ const Careers = () => {
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               Ready to make an impact? Check out our current openings and find your next career opportunity.
             </p>
-          </motion.div>
+          </div>
 
           <div className="space-y-8">
             {openPositions.map((position, index) => (
-              <motion.div
+              <div
                 key={position.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
               >
-                <Card className="p-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+                <Card className="p-8 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 hover:shadow-lg transition-shadow">
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-4 mb-4">
@@ -302,18 +298,18 @@ const Careers = () => {
                     </div>
                   </div>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {/* Don't see a fit? */}
-          <motion.div
+          <div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="mt-16 text-center"
           >
-            <Card className="p-8 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 border border-cyan-200 dark:border-slate-600">
+            <Card className="p-8 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 border border-cyan-200 dark:border-gray-600">
               <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
                 Don't see the perfect role?
               </h3>
@@ -325,14 +321,14 @@ const Careers = () => {
                 Send Us Your Resume
               </button>
             </Card>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Culture Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-600 to-blue-600">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div
+          <div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -361,7 +357,7 @@ const Careers = () => {
                 <p className="text-cyan-100 text-sm">We invest in our team's personal and professional development</p>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>

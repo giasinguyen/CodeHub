@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Code2, Users, Target, Heart, Lightbulb, Globe } from 'lucide-react';
 
 const About = () => {
@@ -46,17 +45,12 @@ const About = () => {
       }
     }
   ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          <div>
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-6">
               About CodeHub
             </h1>
@@ -64,21 +58,16 @@ const About = () => {
               We're on a mission to empower developers worldwide by creating the most comprehensive 
               and user-friendly platform for sharing, discovering, and collaborating on code snippets.
             </p>
-          </motion.div>
+          </div>
         </div>
-      </section>
-
-      {/* Stats Section */}
+      </section>      {/* Stats Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-center"
+                className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-center hover:shadow-xl transition-all duration-300"
               >
                 <stat.icon className="w-8 h-8 text-cyan-500 mx-auto mb-4" />
                 <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
@@ -87,7 +76,7 @@ const About = () => {
                 <div className="text-slate-600 dark:text-slate-300">
                   {stat.label}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -96,12 +85,7 @@ const About = () => {
       {/* Mission Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">            <div>
               <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">
                 Our Mission
               </h2>
@@ -114,13 +98,8 @@ const About = () => {
                 Whether you're a beginner looking to learn or an expert wanting to share your 
                 knowledge, CodeHub provides the tools and community you need to grow as a developer.
               </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="relative"
-            >
+            </div>
+            <div className="relative">
               <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-8 rounded-2xl shadow-2xl">
                 <Code2 className="w-16 h-16 text-white mb-4" />
                 <h3 className="text-2xl font-bold text-white mb-3">
@@ -131,36 +110,24 @@ const About = () => {
                   to collaborative commenting and version control.
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
-      </section>
-
-      {/* Values Section */}
+      </section>      {/* Values Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-800">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
+          <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">
               Our Values
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               These core values guide everything we do and shape the culture of our platform.
             </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          </div>          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {values.map((value, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                className="p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow"
+                className="p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all duration-300"
               >
                 <value.icon className="w-10 h-10 text-cyan-500 mb-4" />
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
@@ -169,37 +136,27 @@ const About = () => {
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                   {value.description}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Team Section */}
+      </section>      {/* Team Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
+          <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">
               Meet Our Team
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               The passionate individuals behind CodeHub who are dedicated to serving the developer community.
             </p>
-          </motion.div>
+          </div>
 
           <div className="flex justify-center">
             {team.map((member, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 max-w-sm"
+                className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 max-w-sm hover:shadow-xl transition-all duration-300"
               >
                 <img
                   src={member.image}
@@ -215,7 +172,7 @@ const About = () => {
                 <p className="text-slate-600 dark:text-slate-300 text-center text-sm leading-relaxed">
                   {member.bio}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -224,14 +181,9 @@ const About = () => {
       {/* Call to Action */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-600 to-blue-600">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          <div>
             <h2 className="text-4xl font-bold text-white mb-6">
-              Join Our Community
-            </h2>
+              Join Our Community            </h2>
             <p className="text-xl text-cyan-100 mb-8 leading-relaxed">
               Ready to start sharing your code and learning from others? 
               Join thousands of developers already using CodeHub.
@@ -244,7 +196,7 @@ const About = () => {
                 Learn More
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>

@@ -5,6 +5,7 @@ import code.hub.codehubbackend.dto.user.*;
 import code.hub.codehubbackend.entity.Snippet;
 import code.hub.codehubbackend.entity.User;
 import code.hub.codehubbackend.exception.ResourceNotFoundException;
+import code.hub.codehubbackend.mapper.SnippetMapper;
 import code.hub.codehubbackend.repository.SnippetRepository;
 import code.hub.codehubbackend.repository.UserRepository;
 import code.hub.codehubbackend.repository.UserFollowRepository;
@@ -32,9 +33,8 @@ public class UserService {
     private SnippetRepository snippetRepository;
 
     @Autowired
-    private UserFollowRepository userFollowRepository;
-    @Autowired
-    private SnippetService snippetService;
+    private UserFollowRepository userFollowRepository;    @Autowired
+    private SnippetMapper snippetMapper;
     @Autowired
     private ActivityService activityService;
 
@@ -156,7 +156,7 @@ public class UserService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Snippet> snippets = snippetRepository.findByOwner(user, pageable);
 
-        return snippets.map(snippet -> snippetService.convertToResponse(snippet));
+        return snippets.map(snippetMapper::convertToResponse);
     }
 
     public Page<SnippetResponse> getCurrentUserSnippets(int page, int size) {

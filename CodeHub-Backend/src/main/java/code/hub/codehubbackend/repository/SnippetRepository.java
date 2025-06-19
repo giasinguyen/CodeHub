@@ -5,6 +5,7 @@ import code.hub.codehubbackend.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -62,4 +63,9 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
     // Community statistics queries
     @Query("SELECT COALESCE(SUM(s.likeCount), 0) FROM Snippet s")
     Long sumAllLikes();
+    
+    // Atomic increment để tránh race condition
+    @Modifying
+    @Query("UPDATE Snippet s SET s.viewCount = s.viewCount + 1 WHERE s.id = :id")
+    void incrementViewCount(@Param("id") Long id);
 }

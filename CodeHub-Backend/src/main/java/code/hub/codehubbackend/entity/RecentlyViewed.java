@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -31,10 +32,23 @@ public class RecentlyViewed {
     private Snippet snippet;
     
     @CreationTimestamp
-    @Column(name = "viewed_at", nullable = false)
+    @Column(name = "viewed_at", nullable = false, updatable = false)
     private LocalDateTime viewedAt;
+    
+    @UpdateTimestamp
+    @Column(name = "last_viewed_at", nullable = true) // Nullable for backward compatibility
+    private LocalDateTime lastViewedAt;
     
     @Column(name = "view_count", nullable = false)
     @Builder.Default
     private Integer viewCount = 1;
+    
+    @Version
+    @Column(nullable = true) // Nullable for backward compatibility
+    private Long version;
+    
+    // Helper method to get the most recent viewed time
+    public LocalDateTime getMostRecentViewedAt() {
+        return lastViewedAt != null ? lastViewedAt : viewedAt;
+    }
 }

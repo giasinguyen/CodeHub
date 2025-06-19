@@ -14,8 +14,12 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface RecentlyViewedRepository extends JpaRepository<RecentlyViewed, Long> {
+public interface RecentlyViewedRepository extends JpaRepository<RecentlyViewed, Long> {    @Query("SELECT rv FROM RecentlyViewed rv WHERE rv.user = :user ORDER BY " +
+           "CASE WHEN rv.lastViewedAt IS NOT NULL THEN rv.lastViewedAt " +
+           "ELSE rv.viewedAt END DESC")
+    Page<RecentlyViewed> findByUserOrderByLastViewedAtDesc(@Param("user") User user, Pageable pageable);
     
+    // Fallback method for backward compatibility
     @Query("SELECT rv FROM RecentlyViewed rv WHERE rv.user = :user ORDER BY rv.viewedAt DESC")
     Page<RecentlyViewed> findByUserOrderByViewedAtDesc(@Param("user") User user, Pageable pageable);
     
@@ -28,7 +32,17 @@ public interface RecentlyViewedRepository extends JpaRepository<RecentlyViewed, 
     @Modifying
     @Query("DELETE FROM RecentlyViewed rv WHERE rv.user = :user")
     void deleteByUser(@Param("user") User user);
-    
-    @Query("SELECT COUNT(rv) FROM RecentlyViewed rv WHERE rv.user = :user")
+      @Query("SELECT COUNT(rv) FROM RecentlyViewed rv WHERE rv.user = :user")
     long countByUser(@Param("user") User user);
+    
+    // Safe upsert method that works with both old and new schema
+    @Modifying
+    @Query(value = """
+        INSERT INTO recently_viewed (user_id, snippet_id, view_count, viewed_at) 
+        VALUES (:userId, :snippetId, 1, NOW())
+        ON DUPLICATE KEY UPDATE 
+            view_count = view_count + 1,
+            viewed_at = NOW()
+        """, nativeQuery = true)
+    void upsertRecentlyViewedSafe(@Param("userId") Long userId, @Param("snippetId") Long snippetId);
 }

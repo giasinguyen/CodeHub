@@ -7,7 +7,9 @@ import code.hub.codehubbackend.dto.snippet.SnippetVersionResponse;
 import code.hub.codehubbackend.entity.*;
 import code.hub.codehubbackend.exception.ResourceNotFoundException;
 import code.hub.codehubbackend.exception.UnauthorizedException;
+import code.hub.codehubbackend.mapper.SnippetMapper;
 import code.hub.codehubbackend.repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
@@ -19,34 +21,30 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
-import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class SnippetService {
     
     @Autowired
     private SnippetRepository snippetRepository;
-    
-    @Autowired
+      @Autowired
     private SnippetVersionRepository versionRepository;
     
     @Autowired
-    private LikeRepository likeRepository;
-    
-    @Autowired
-    private CommentRepository commentRepository;
-      @Autowired
     private FileUploadService fileUploadService;
-    
-    @Autowired
+      @Autowired
     private ActivityService activityService;
+      @Autowired
+    private RecentlyViewedService recentlyViewedService;
     
     @Autowired
-    private RecentlyViewedRepository recentlyViewedRepository;
+    private SnippetMapper snippetMapper;
     
     @Autowired
     private UserRepository userRepository;
@@ -67,19 +65,17 @@ public class SnippetService {
         } else if (language != null) {
             snippets = snippetRepository.findByLanguageIgnoreCase(language, pageable);
         } else {
-            snippets = snippetRepository.findAll(pageable);
-        }
+            snippets = snippetRepository.findAll(pageable);        }
         
-        return snippets.map(this::convertToResponse);
-    }    public SnippetResponse getSnippetById(Long id) {
+        return snippets.map(snippetMapper::convertToResponse);
+    }public SnippetResponse getSnippetById(Long id) {
         Snippet snippet = snippetRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Snippet", "id", id));
-        
-        // Increment view count
+          // Increment view count
         snippet.incrementViewCount();
         snippetRepository.save(snippet);
         
-        return convertToResponse(snippet);
+        return snippetMapper.convertToResponse(snippet);
     }    @Transactional
     @CacheEvict(value = {"languages", "tags", "mostLiked", "mostViewed"}, allEntries = true)
     public SnippetResponse createSnippet(SnippetCreateRequest request, List<MultipartFile> files) {
@@ -108,11 +104,10 @@ public class SnippetService {
           snippet = snippetRepository.save(snippet);
           // Create initial version
         createVersion(snippet, snippet.getCode(), snippet.getDescription(), "Initial version");
-        
-        // Create activity for snippet creation
+          // Create activity for snippet creation
         activityService.createSnippetActivity(snippet, Activity.ActivityType.SNIPPET_CREATED);
         
-        return convertToResponse(snippet);
+        return snippetMapper.convertToResponse(snippet);
     }@Transactional
     @CacheEvict(value = {"languages", "tags", "mostLiked", "mostViewed"}, allEntries = true)
     public SnippetResponse updateSnippet(Long id, SnippetUpdateRequest request, List<MultipartFile> files) {
@@ -140,11 +135,10 @@ public class SnippetService {
         snippet.setTags(request.getTags());
         
         snippet = snippetRepository.save(snippet);
-        
-        // Create activity for snippet update
+          // Create activity for snippet update
         activityService.createSnippetActivity(snippet, Activity.ActivityType.SNIPPET_UPDATED);
         
-        return convertToResponse(snippet);
+        return snippetMapper.convertToResponse(snippet);
     }    @Transactional
     @CacheEvict(value = {"languages", "tags", "mostLiked", "mostViewed"}, allEntries = true)
     public void deleteSnippet(Long id) {
@@ -186,9 +180,8 @@ public class SnippetService {
         // Revert to selected version
         snippet.setCode(version.getCode());
         snippet.setDescription(version.getDescription());
-        
-        snippet = snippetRepository.save(snippet);
-        return convertToResponse(snippet);
+          snippet = snippetRepository.save(snippet);
+        return snippetMapper.convertToResponse(snippet);
     }
       @Cacheable("languages")
     public List<String> getAvailableLanguages() {
@@ -227,131 +220,92 @@ public class SnippetService {
                 .changeMessage(version.getChangeMessage())
                 .createdAt(version.getCreatedAt())
                 .build();    }
-    
-    // Public method for UserService to use
-    public SnippetResponse convertToResponse(Snippet snippet) {
-        User currentUser = getCurrentUser();
-        boolean isLiked = currentUser != null && 
-                         likeRepository.existsByUserIdAndSnippetId(currentUser.getId(), snippet.getId());
-        
-        long commentCount = commentRepository.countBySnippetId(snippet.getId());
-        
-        return SnippetResponse.builder()
-                .id(snippet.getId())
-                .title(snippet.getTitle())
-                .code(snippet.getCode())
-                .language(snippet.getLanguage())
-                .description(snippet.getDescription())
-                .mediaUrls(snippet.getMediaUrls())
-                .tags(snippet.getTags())
-                .owner(SnippetResponse.UserSummary.builder()
-                        .id(snippet.getOwner().getId())
-                        .username(snippet.getOwner().getUsername())
-                        .avatarUrl(snippet.getOwner().getAvatarUrl())
-                        .build())
-                .createdAt(snippet.getCreatedAt())
-                .updatedAt(snippet.getUpdatedAt())
-                .viewCount(snippet.getViewCount())
-                .likeCount(snippet.getLikeCount())
-                .commentCount(commentCount)
-                .isLiked(isLiked)
-                .build();
-    }
-
-    public Page<SnippetResponse> searchSnippets(String keyword, int page, int size, String sort) {
+      public Page<SnippetResponse> searchSnippets(String keyword, int page, int size, String sort) {
         Sort sortBy = switch (sort) {
             case "likes" -> Sort.by(Sort.Direction.DESC, "likeCount");
             case "views" -> Sort.by(Sort.Direction.DESC, "viewCount");
             case "oldest" -> Sort.by(Sort.Direction.ASC, "createdAt");
             default -> Sort.by(Sort.Direction.DESC, "createdAt");
         };
-        
-        Pageable pageable = PageRequest.of(page, size, sortBy);
+          Pageable pageable = PageRequest.of(page, size, sortBy);
         Page<Snippet> snippets = snippetRepository.searchByKeyword(keyword, pageable);
         
-        return snippets.map(this::convertToResponse);
-    }
-      @Cacheable(value = "mostLiked", key = "#page + '_' + #size")
+        return snippets.map(snippetMapper::convertToResponse);
+    }    @Cacheable(value = "mostLiked", key = "#page + '_' + #size")
     public Page<SnippetResponse> getMostLikedSnippets(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Snippet> snippets = snippetRepository.findMostLiked(pageable);
-        return snippets.map(this::convertToResponse);
+        return snippets.map(snippetMapper::convertToResponse);
     }
-    
-    @Cacheable(value = "mostViewed", key = "#page + '_' + #size")
+      @Cacheable(value = "mostViewed", key = "#page + '_' + #size")
     public Page<SnippetResponse> getMostViewedSnippets(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Snippet> snippets = snippetRepository.findMostViewed(pageable);
-        return snippets.map(this::convertToResponse);
+        return snippets.map(snippetMapper::convertToResponse);
     }
     
-    // =============== RECENTLY VIEWED API METHODS ===============
-    
-    @Transactional
+    // =============== RECENTLY VIEWED API METHODS ===============    @Transactional
     public void recordSnippetView(Long snippetId) {
         User currentUser = getCurrentUser();
-        Snippet snippet = snippetRepository.findById(snippetId)
-                .orElseThrow(() -> new ResourceNotFoundException("Snippet not found"));
         
-        // Check if user already viewed this snippet
-        Optional<RecentlyViewed> existingView = recentlyViewedRepository.findByUserAndSnippet(currentUser, snippet);
-        
-        if (existingView.isPresent()) {
-            // Update existing view
-            RecentlyViewed recentView = existingView.get();
-            recentView.setViewedAt(LocalDateTime.now());
-            recentView.setViewCount(recentView.getViewCount() + 1);
-            recentlyViewedRepository.save(recentView);
-        } else {
-            // Create new view record
-            RecentlyViewed recentView = RecentlyViewed.builder()
-                    .user(currentUser)
-                    .snippet(snippet)
-                    .viewedAt(LocalDateTime.now())
-                    .viewCount(1)
-                    .build();
-            recentlyViewedRepository.save(recentView);
+        // Kiểm tra snippet có tồn tại không (không cần lưu reference)
+        if (!snippetRepository.existsById(snippetId)) {
+            throw new ResourceNotFoundException("Snippet not found");
+        }        // Use recently viewed service
+        try {
+            recentlyViewedService.recordView(currentUser, snippetId);
+        } catch (Exception e) {
+            // Log error nhưng không throw exception để không ảnh hưởng đến business logic chính
+            log.warn("Failed to record recently viewed for user {} and snippet {}: {}", 
+                     currentUser.getId(), snippetId, e.getMessage());
         }
-          // Increment snippet view count
-        snippet.incrementViewCount();
-        snippetRepository.save(snippet);
+        
+        // Increment snippet view count trong transaction riêng để tránh conflict
+        incrementSnippetViewCount(snippetId);
     }
     
-    public Page<SnippetResponse> getRecentlyViewedSnippets(int page, int size) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void incrementSnippetViewCount(Long snippetId) {
+        try {
+            snippetRepository.incrementViewCount(snippetId);
+        } catch (Exception e) {
+            log.warn("Failed to increment view count for snippet {}: {}", snippetId, e.getMessage());
+        }
+    }    public Page<SnippetResponse> getRecentlyViewedSnippets(int page, int size) {
         User currentUser = getCurrentUser();
         Pageable pageable = PageRequest.of(page, size);
-        
-        Page<RecentlyViewed> recentViews = recentlyViewedRepository.findByUserOrderByViewedAtDesc(currentUser, pageable);
-        return recentViews.map(recentView -> convertToResponse(recentView.getSnippet()));
+          Page<RecentlyViewed> recentViews = recentlyViewedService.getRecentlyViewedByUser(currentUser, pageable);
+        return recentViews.map(recentView -> snippetMapper.convertToResponse(recentView.getSnippet()));
     }
-    
-    @Transactional
+      @Transactional
     public void removeFromRecentlyViewed(Long snippetId) {
         User currentUser = getCurrentUser();
         Snippet snippet = snippetRepository.findById(snippetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Snippet not found"));
         
-        recentlyViewedRepository.deleteByUserAndSnippet(currentUser, snippet);
+        recentlyViewedService.removeFromRecentlyViewed(currentUser, snippet);
     }
     
     @Transactional
     public void clearRecentlyViewed() {
         User currentUser = getCurrentUser();
-        recentlyViewedRepository.deleteByUser(currentUser);
+        recentlyViewedService.clearRecentlyViewed(currentUser);
     }
     
     // =============== HELPER METHODS ===============
     
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new UnauthorizedException("User not authenticated");
+        if (authentication == null || !authentication.isAuthenticated()) {            throw new UnauthorizedException("User not authenticated");
         }
         
         String username = authentication.getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    }      private double calculatePercentage(Long count) {
+    }
+    
+    @SuppressWarnings("unused")
+    private double calculatePercentage(Long count) {
         Long totalSnippets = snippetRepository.count();
         if (totalSnippets == 0) return 0.0;
         return (count.doubleValue() / totalSnippets.doubleValue()) * 100.0;

@@ -5,6 +5,7 @@ import code.hub.codehubbackend.dto.snippet.SnippetResponse;
 import code.hub.codehubbackend.entity.Favorite;
 import code.hub.codehubbackend.entity.Snippet;
 import code.hub.codehubbackend.entity.User;
+import code.hub.codehubbackend.mapper.SnippetMapper;
 import code.hub.codehubbackend.repository.FavoriteRepository;
 import code.hub.codehubbackend.repository.SnippetRepository;
 import code.hub.codehubbackend.repository.UserRepository;
@@ -19,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,11 +34,11 @@ public class FavoriteService {
     
     @Autowired
     private UserRepository userRepository;
+      @Autowired
+    private ActivityService activityService;
     
     @Autowired
-    private ActivityService activityService;
-      @Autowired
-    private SnippetService snippetService;
+    private SnippetMapper snippetMapper;
     
     @Autowired
     private NotificationService notificationService;
@@ -211,7 +211,7 @@ public class FavoriteService {
         favoriteRepository.save(favorite);
     }
       private FavoriteResponse convertToFavoriteResponse(Favorite favorite) {
-        SnippetResponse snippetResponse = snippetService.convertToResponse(favorite.getSnippet());
+        SnippetResponse snippetResponse = snippetMapper.convertToResponse(favorite.getSnippet());
         
         return FavoriteResponse.builder()
                 .id(favorite.getId().getSnippetId())

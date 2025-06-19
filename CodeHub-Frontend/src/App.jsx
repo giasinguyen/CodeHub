@@ -28,6 +28,7 @@ import {
   Register,  Recent,
   Search,
 } from "./pages";
+import { About, Blog, Careers, Contact } from "./pages/company";
 import "./App.css";
 
 // Initialize theme on app load
@@ -208,6 +209,41 @@ const AppRoutes = () => {
           </PublicRoute>
         }
       />
+
+      {/* Company Pages */}
+      <Route
+        path="/about"
+        element={
+          <Layout>
+            <About />
+          </Layout>
+        }
+      />
+      <Route
+        path="/blog"
+        element={
+          <Layout>
+            <Blog />
+          </Layout>
+        }
+      />
+      <Route
+        path="/careers"
+        element={
+          <Layout>
+            <Careers />
+          </Layout>
+        }
+      />
+      <Route
+        path="/contact"
+        element={
+          <Layout>
+            <Contact />
+          </Layout>
+        }
+      />
+
       {/* Protected Routes - Only accessible when logged in */}
       <Route
         path="/dashboard"

@@ -114,20 +114,16 @@ const Careers = () => {
     { label: 'Years of Experience', value: '2+' },
     { label: 'Coffee Consumed', value: '∞' }
   ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-slate-900 dark:bg-slate-900 light:bg-white transition-colors duration-200">
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          <div>
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-6">
               Join Our Team
-            </h1>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed mb-8">
+            </h1>            <p className="text-xl text-slate-400 dark:text-slate-400 light:text-slate-600 max-w-3xl mx-auto leading-relaxed mb-8">
               Build the future of code sharing with a passionate team of developers. 
               We're always looking for talented individuals who share our vision.
             </p>
@@ -148,54 +144,38 @@ const Careers = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {companyStats.map((stat, index) => (
-              <div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                className="text-center"
-              >
+              <div key={index} className="text-center">
                 <div className="text-4xl font-bold text-cyan-600 mb-2">
                   {stat.value}
                 </div>
-                <div className="text-slate-600 dark:text-slate-300">
+                <div className="text-slate-400 dark:text-slate-400 light:text-slate-600">
                   {stat.label}
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </section>      {/* Benefits Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800">
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-800 dark:bg-slate-800 light:bg-white">
         <div className="max-w-7xl mx-auto">
-          <div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">
+          <div className="text-center mb-16">            <h2 className="text-4xl font-bold text-white dark:text-white light:text-slate-900 mb-6">
               Why Work With Us?
             </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+            <p className="text-lg text-slate-400 dark:text-slate-400 light:text-slate-600 max-w-2xl mx-auto">
               We believe in creating an environment where our team can do their best work while growing personally and professionally.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {benefits.map((benefit, index) => (
-              <div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-              >
-                <Card className="p-6 h-full bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 hover:shadow-lg transition-shadow">
-                  <benefit.icon className="w-12 h-12 text-cyan-500 mb-4" />
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
+              <div key={index}>
+                <Card className="p-6 h-full bg-slate-800 dark:bg-slate-800 light:bg-white border border-slate-700 dark:border-slate-700 light:border-slate-200 hover:shadow-lg transition-shadow">
+                  <benefit.icon className="w-12 h-12 text-cyan-500 mb-4" />                  <h3 className="text-xl font-semibold text-white dark:text-white light:text-slate-900 mb-3">
                     {benefit.title}
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 leading-relaxed">
                     {benefit.description}
                   </p>
                 </Card>
@@ -208,33 +188,22 @@ const Careers = () => {
       {/* Open Positions */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">
+          <div className="text-center mb-16">            <h2 className="text-4xl font-bold text-white dark:text-white light:text-slate-900 mb-6">
               Open Positions
             </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+            <p className="text-lg text-slate-400 dark:text-slate-400 light:text-slate-600 max-w-2xl mx-auto">
               Ready to make an impact? Check out our current openings and find your next career opportunity.
             </p>
           </div>
 
           <div className="space-y-8">
-            {openPositions.map((position, index) => (
-              <div
-                key={position.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-              >
-                <Card className="p-8 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 hover:shadow-lg transition-shadow">
+            {openPositions.map((position) => (
+              <div key={position.id}>
+                <Card className="p-8 bg-slate-800 dark:bg-slate-800 light:bg-white border border-slate-700 dark:border-slate-700 light:border-slate-200 hover:shadow-lg transition-shadow">
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-4 mb-4">
-                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                        <h3 className="text-2xl font-bold text-white dark:text-white light:text-slate-900">
                           {position.title}
                         </h3>
                         <span className="bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-300 px-3 py-1 rounded-full text-sm font-medium">
@@ -242,7 +211,7 @@ const Careers = () => {
                         </span>
                       </div>
                       
-                      <div className="flex flex-wrap items-center gap-6 mb-6 text-slate-600 dark:text-slate-300">
+                      <div className="flex flex-wrap items-center gap-6 mb-6 text-slate-400 dark:text-slate-400 light:text-slate-600">
                         <div className="flex items-center">
                           <MapPin className="w-4 h-4 mr-2" />
                           {position.location}
@@ -257,31 +226,29 @@ const Careers = () => {
                         </div>
                       </div>
 
-                      <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
+                      <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 mb-6 leading-relaxed">
                         {position.description}
                       </p>
 
-                      <div className="grid md:grid-cols-2 gap-8">
-                        <div>
-                          <h4 className="font-semibold text-slate-900 dark:text-white mb-3">
+                      <div className="grid md:grid-cols-2 gap-8">                        <div>
+                          <h4 className="font-semibold text-white dark:text-white light:text-slate-900 mb-3">
                             Requirements:
                           </h4>
                           <ul className="space-y-2">
                             {position.requirements.map((req, reqIndex) => (
-                              <li key={reqIndex} className="text-slate-600 dark:text-slate-300 text-sm flex items-start">
+                              <li key={reqIndex} className="text-slate-400 dark:text-slate-400 light:text-slate-600 text-sm flex items-start">
                                 <span className="w-2 h-2 bg-cyan-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                                 {req}
                               </li>
                             ))}
                           </ul>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900 dark:text-white mb-3">
+                        </div>                        <div>
+                          <h4 className="font-semibold text-white dark:text-white light:text-slate-900 mb-3">
                             Responsibilities:
                           </h4>
                           <ul className="space-y-2">
                             {position.responsibilities.map((resp, respIndex) => (
-                              <li key={respIndex} className="text-slate-600 dark:text-slate-300 text-sm flex items-start">
+                              <li key={respIndex} className="text-slate-400 dark:text-slate-400 light:text-slate-600 text-sm flex items-start">
                                 <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                                 {resp}
                               </li>
@@ -303,17 +270,12 @@ const Careers = () => {
           </div>
 
           {/* Don't see a fit? */}
-          <div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-16 text-center"
-          >
-            <Card className="p-8 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 border border-cyan-200 dark:border-gray-600">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+          <div className="mt-16 text-center">
+            <Card className="p-8 bg-gradient-to-r from-slate-800 to-slate-700 dark:from-slate-800 dark:to-slate-700 light:from-cyan-50 light:to-blue-50 border border-slate-600 dark:border-slate-600 light:border-cyan-200">
+              <h3 className="text-2xl font-bold text-white dark:text-white light:text-slate-900 mb-4">
                 Don't see the perfect role?
               </h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-6 max-w-2xl mx-auto">
+              <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 mb-6 max-w-2xl mx-auto">
                 We're always interested in connecting with talented individuals. 
                 Send us your resume and let us know how you'd like to contribute to CodeHub.
               </p>
@@ -328,11 +290,7 @@ const Careers = () => {
       {/* Culture Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-600 to-blue-600">
         <div className="max-w-4xl mx-auto text-center">
-          <div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          <div>
             <h2 className="text-4xl font-bold text-white mb-6">
               Our Culture
             </h2>

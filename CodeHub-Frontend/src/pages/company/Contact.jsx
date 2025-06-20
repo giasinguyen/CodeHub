@@ -92,21 +92,15 @@ const Contact = () => {
         type: 'general'
       });
     }, 2000);
-  };
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Hero Section */}
+  };  return (
+    <div className="min-h-screen bg-slate-900 dark:bg-slate-900 light:bg-white transition-colors duration-200">{/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          <div>
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-6">
               Get in Touch
             </h1>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-slate-400 dark:text-slate-400 light:text-slate-600 max-w-3xl mx-auto leading-relaxed">
               Have questions, feedback, or need support? We'd love to hear from you. 
               Our team is here to help and respond quickly.
             </p>
@@ -115,22 +109,16 @@ const Contact = () => {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Contact Methods */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">          {/* Contact Methods */}
           <div className="lg:col-span-1">
-            <div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
+            <div>              <h2 className="text-2xl font-bold text-white dark:text-white light:text-slate-900 mb-6">
                 Contact Methods
               </h2>
               <div className="space-y-4">
                 {contactMethods.map((method, index) => (
                   <Card 
                     key={index}
-                    className="p-4 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600 hover:shadow-lg transition-shadow cursor-pointer"
+                    className="p-4 bg-slate-800 dark:bg-slate-800 light:bg-white border border-slate-700 dark:border-slate-700 light:border-slate-200 hover:shadow-lg transition-shadow cursor-pointer"
                     onClick={() => method.action !== '#' && window.open(method.action, '_blank')}
                   >
                     <div className="flex items-start space-x-4">
@@ -138,10 +126,10 @@ const Contact = () => {
                         <method.icon className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
+                        <h3 className="font-semibold text-white dark:text-white light:text-slate-900 mb-1">
                           {method.title}
                         </h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">
+                        <p className="text-sm text-slate-400 dark:text-slate-400 light:text-slate-600 mb-2">
                           {method.description}
                         </p>
                         <p className="text-sm font-medium text-cyan-600 dark:text-cyan-400">
@@ -153,41 +141,39 @@ const Contact = () => {
                 ))}
               </div>
 
-              {/* Office Information */}
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+              {/* Office Information */}              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-white dark:text-white light:text-slate-900 mb-4">
                   Office Information
                 </h3>
-                <Card className="p-4 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600">
+                <Card className="p-4 bg-slate-800 dark:bg-slate-800 light:bg-white border border-slate-700 dark:border-slate-700 light:border-slate-200">
                   <div className="space-y-3">
                     <div className="flex items-start space-x-3">
                       <MapPin className="w-5 h-5 text-cyan-500 mt-0.5" />
                       <div>
-                        <p className="font-medium text-slate-900 dark:text-white">Address</p>
-                        <p className="text-sm text-slate-600 dark:text-slate-300">{officeInfo.address}</p>
+                        <p className="font-medium text-white dark:text-white light:text-slate-900">Address</p>
+                        <p className="text-sm text-slate-400 dark:text-slate-400 light:text-slate-600">{officeInfo.address}</p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
                       <Clock className="w-5 h-5 text-cyan-500 mt-0.5" />
                       <div>
-                        <p className="font-medium text-slate-900 dark:text-white">Business Hours</p>
-                        <p className="text-sm text-slate-600 dark:text-slate-300">{officeInfo.hours}</p>
+                        <p className="font-medium text-white dark:text-white light:text-slate-900">Business Hours</p>
+                        <p className="text-sm text-slate-400 dark:text-slate-400 light:text-slate-600">{officeInfo.hours}</p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
                       <Globe className="w-5 h-5 text-cyan-500 mt-0.5" />
                       <div>
-                        <p className="font-medium text-slate-900 dark:text-white">Timezone</p>
-                        <p className="text-sm text-slate-600 dark:text-slate-300">{officeInfo.timezone}</p>
+                        <p className="font-medium text-white dark:text-white light:text-slate-900">Timezone</p>
+                        <p className="text-sm text-slate-400 dark:text-slate-400 light:text-slate-600">{officeInfo.timezone}</p>
                       </div>
                     </div>
                   </div>
                 </Card>
               </div>
 
-              {/* Social Links */}
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+              {/* Social Links */}              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-white dark:text-white light:text-slate-900 mb-4">
                   Follow Us
                 </h3>
                 <div className="flex space-x-4">
@@ -197,39 +183,32 @@ const Contact = () => {
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-slate-200 dark:border-gray-600 hover:bg-cyan-50 dark:hover:bg-gray-700 transition-colors"
+                      className="bg-slate-800 dark:bg-slate-800 light:bg-white p-3 rounded-lg border border-slate-700 dark:border-slate-700 light:border-slate-200 hover:bg-slate-700 dark:hover:bg-slate-700 light:hover:bg-cyan-50 transition-colors"
                       title={social.name}
                     >
-                      <social.icon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                      <social.icon className="w-5 h-5 text-slate-400 dark:text-slate-400 light:text-slate-600" />
                     </a>
                   ))}
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Contact Form */}
+          </div>          {/* Contact Form */}
           <div className="lg:col-span-2">
-            <div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <Card className="p-8 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
+            <div>
+              <Card className="p-8 bg-slate-800 dark:bg-slate-800 light:bg-white border border-slate-700 dark:border-slate-700 light:border-slate-200">
+                <h2 className="text-2xl font-bold text-white dark:text-white light:text-slate-900 mb-6">
                   Send us a Message
                 </h2>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Contact Type */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  {/* Contact Type */}                  <div>
+                    <label className="block text-sm font-medium text-slate-400 dark:text-slate-400 light:text-slate-700 mb-2">
                       What can we help you with?
-                    </label>                    <select
+                    </label><select
                       name="type"
                       value={formData.type}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-900 dark:text-white"
+                      className="w-full px-4 py-3 bg-slate-700 dark:bg-slate-700 light:bg-slate-50 border border-slate-600 dark:border-slate-600 light:border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-white dark:text-white light:text-slate-900"
                       required
                     >
                       <option value="general">General Inquiry</option>
@@ -243,29 +222,27 @@ const Contact = () => {
                   {/* Name and Email */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-slate-400 dark:text-slate-400 light:text-slate-700 mb-2">
                         Your Name *
                       </label>
                       <input
                         type="text"
-                        name="name"
-                        value={formData.name}
+                        name="name"                        value={formData.name}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-900 dark:text-white"
+                        className="w-full px-4 py-3 bg-slate-700 dark:bg-slate-700 light:bg-slate-50 border border-slate-600 dark:border-slate-600 light:border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-white dark:text-white light:text-slate-900"
                         placeholder="Enter your full name"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-slate-400 dark:text-slate-400 light:text-slate-700 mb-2">
                         Email Address *
                       </label>
                       <input
                         type="email"
                         name="email"
                         value={formData.email}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-900 dark:text-white"
+                        onChange={handleInputChange}                        className="w-full px-4 py-3 bg-slate-700 dark:bg-slate-700 light:bg-slate-50 border border-slate-600 dark:border-slate-600 light:border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-white dark:text-white light:text-slate-900"
                         placeholder="Enter your email"
                         required
                       />
@@ -274,15 +251,14 @@ const Contact = () => {
 
                   {/* Subject */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-400 dark:text-slate-400 light:text-slate-700 mb-2">
                       Subject *
                     </label>
                     <input
                       type="text"
                       name="subject"
-                      value={formData.subject}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-900 dark:text-white"
+                      value={formData.subject}                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-slate-700 dark:bg-slate-700 light:bg-slate-50 border border-slate-600 dark:border-slate-600 light:border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-white dark:text-white light:text-slate-900"
                       placeholder="Brief description of your inquiry"
                       required
                     />
@@ -290,15 +266,14 @@ const Contact = () => {
 
                   {/* Message */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-400 dark:text-slate-400 light:text-slate-700 mb-2">
                       Message *
                     </label>
                     <textarea
                       name="message"
                       value={formData.message}
-                      onChange={handleInputChange}
-                      rows="6"
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-900 dark:text-white resize-vertical"
+                      onChange={handleInputChange}                      rows="6"
+                      className="w-full px-4 py-3 bg-slate-700 dark:bg-slate-700 light:bg-slate-50 border border-slate-600 dark:border-slate-600 light:border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-white dark:text-white light:text-slate-900 resize-vertical"
                       placeholder="Please provide as much detail as possible..."
                       required
                     ></textarea>
@@ -327,7 +302,7 @@ const Contact = () => {
                 </form>
 
                 {/* Additional Info */}
-                <div className="mt-6 p-4 bg-cyan-50 dark:bg-gray-700 rounded-lg">
+                <div className="mt-6 p-4 bg-slate-700 dark:bg-slate-700 light:bg-cyan-50 rounded-lg">
                   <p className="text-sm text-slate-600 dark:text-slate-300">
                     <strong>Response Time:</strong> We typically respond within 24 hours during business days. 
                     For urgent technical issues, please use our live chat or GitHub issues.
@@ -337,19 +312,13 @@ const Contact = () => {
             </div>
           </div>
         </div>
-      </div>      {/* FAQ Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800">
+      </div>      {/* FAQ Section */}      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-800 dark:bg-slate-800 light:bg-white">
         <div className="max-w-4xl mx-auto">
-          <div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white dark:text-white light:text-slate-900 mb-4">
               Frequently Asked Questions
             </h2>
-            <p className="text-slate-600 dark:text-slate-300">
+            <p className="text-slate-400 dark:text-slate-400 light:text-slate-600">
               Can't find what you're looking for? Check out our help center or contact us directly.
             </p>
           </div>
@@ -371,19 +340,13 @@ const Contact = () => {
               {
                 question: "Do you offer enterprise support?",
                 answer: "Yes, we provide enterprise support and custom solutions. Contact us for more information."
-              }
-            ].map((faq, index) => (
-              <div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-              >
-                <Card className="p-6 h-full bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-600">
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
+              }            ].map((faq, index) => (
+              <div key={index}>
+                <Card className="p-6 h-full bg-slate-800 dark:bg-slate-800 light:bg-white border border-slate-700 dark:border-slate-700 light:border-slate-200">
+                  <h3 className="font-semibold text-white dark:text-white light:text-slate-900 mb-3">
                     {faq.question}
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                  <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 text-sm leading-relaxed">
                     {faq.answer}
                   </p>
                 </Card>

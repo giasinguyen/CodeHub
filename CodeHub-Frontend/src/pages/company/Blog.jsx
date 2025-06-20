@@ -88,7 +88,7 @@ const Blog = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-900 dark:bg-slate-900 light:bg-white transition-colors duration-200">
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
@@ -96,7 +96,7 @@ const Blog = () => {
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-6">
               CodeHub Blog
             </h1>
-            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed mb-8">
+            <p className="text-xl text-slate-400 dark:text-slate-400 light:text-slate-600 max-w-3xl mx-auto leading-relaxed mb-8">
               Insights, tutorials, and updates from the CodeHub team. 
               Stay up to date with the latest in web development and programming.
             </p>
@@ -107,7 +107,7 @@ const Blog = () => {
               <input
                 type="text"
                 placeholder="Search articles..."
-                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 bg-slate-800 dark:bg-slate-800 light:bg-white border border-slate-600 dark:border-slate-600 light:border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-white dark:text-white light:text-slate-900"
               />
             </div>
           </div>
@@ -125,7 +125,7 @@ const Blog = () => {
                 className={`px-6 py-3 rounded-full font-medium transition-all ${
                   selectedCategory === category.id
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600'
+                    : 'bg-slate-800 dark:bg-slate-800 light:bg-white text-slate-300 dark:text-slate-300 light:text-slate-600 hover:bg-slate-700 dark:hover:bg-slate-700 light:hover:bg-cyan-50 border border-slate-600 dark:border-slate-600 light:border-slate-200'
                 }`}
               >
                 {category.name} ({category.count})
@@ -141,14 +141,14 @@ const Blog = () => {
           {/* Featured Post */}
           {filteredPosts.find(post => post.featured) && (
             <div className="mb-16">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8 flex items-center">
+              <h2 className="text-2xl font-bold text-white dark:text-white light:text-slate-900 mb-8 flex items-center">
                 <TrendingUp className="w-6 h-6 mr-2 text-cyan-500" />
                 Featured Article
               </h2>
               {(() => {
                 const featuredPost = filteredPosts.find(post => post.featured);
                 return (
-                  <Card className="overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  <Card className="overflow-hidden bg-slate-800 dark:bg-slate-800 light:bg-white border border-slate-700 dark:border-slate-700 light:border-slate-200">
                     <div className="md:flex">
                       <div className="md:w-1/2">
                         <img
@@ -166,10 +166,10 @@ const Blog = () => {
                             {formatDate(featuredPost.date)}
                           </span>
                         </div>
-                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+                        <h3 className="text-2xl font-bold text-white dark:text-white light:text-slate-900 mb-4">
                           {featuredPost.title}
                         </h3>
-                        <p className="text-slate-600 dark:text-slate-300 mb-6">
+                        <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 mb-6">
                           {featuredPost.excerpt}
                         </p>
                         <div className="flex items-center justify-between">
@@ -179,7 +179,7 @@ const Blog = () => {
                               alt={featuredPost.author}
                               className="w-8 h-8 rounded-full"
                             />
-                            <span className="text-sm text-slate-600 dark:text-slate-300">
+                            <span className="text-sm text-slate-400 dark:text-slate-400 light:text-slate-600">
                               {featuredPost.author}
                             </span>
                             <span className="text-slate-400">•</span>
@@ -204,7 +204,7 @@ const Blog = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPosts.filter(post => !post.featured).map((post) => (
               <div key={post.id}>
-                <Card className="overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow h-full">
+                <Card className="overflow-hidden bg-slate-800 dark:bg-slate-800 light:bg-white border border-slate-700 dark:border-slate-700 light:border-slate-200 hover:shadow-lg transition-shadow h-full">
                   <img
                     src={post.image}
                     alt={post.title}
@@ -219,10 +219,10 @@ const Blog = () => {
                         {formatDate(post.date)}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
+                    <h3 className="text-lg font-semibold text-white dark:text-white light:text-slate-900 mb-3">
                       {post.title}
                     </h3>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm mb-4">
+                    <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 text-sm mb-4">
                       {post.excerpt}
                     </p>
                     <div className="flex flex-wrap gap-2 mb-4">
@@ -281,9 +281,8 @@ const Blog = () => {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-lg border-0 focus:ring-2 focus:ring-white"
-              />
-              <button className="bg-white text-cyan-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                className="flex-1 px-4 py-3 rounded-lg border focus:ring-2 focus:ring-white"
+              />              <button className="bg-white text-cyan-600 px-6 py-3 rounded-lg font-semibold hover:bg-slate-100 dark:hover:bg-slate-200 transition-colors">
                 Subscribe
               </button>
             </div>

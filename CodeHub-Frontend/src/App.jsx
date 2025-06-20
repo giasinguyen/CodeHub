@@ -11,8 +11,7 @@ import { Layout } from "./components/layout";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 import ThemeHelper from "./components/ThemeHelper";
-import {
-  Home,
+import {  Home,
   Snippets,
   SnippetDetail,
   CreateSnippet,
@@ -27,6 +26,10 @@ import {
   Login,
   Register,  Recent,
   Search,
+  HelpCenter,
+  ReportBug,
+  Feedback,
+  Community,
 } from "./pages";
 import { About, Blog, Careers, Contact } from "./pages/company";
 import "./App.css";
@@ -234,12 +237,53 @@ const AppRoutes = () => {
             <Careers />
           </Layout>
         }
-      />
-      <Route
+      />      <Route
         path="/contact"
         element={
           <Layout>
             <Contact />
+          </Layout>
+        }
+      />
+
+      {/* Support Pages */}
+      <Route
+        path="/support"
+        element={
+          <Layout>
+            <HelpCenter />
+          </Layout>
+        }
+      />
+      <Route
+        path="/support/help"
+        element={
+          <Layout>
+            <HelpCenter />
+          </Layout>
+        }
+      />
+      <Route
+        path="/support/report-bug"
+        element={
+          <Layout>
+            <ReportBug />
+          </Layout>
+        }
+      />
+      <Route
+        path="/support/feedback"
+        element={
+          <Layout>
+            <Feedback />
+          </Layout>
+        }
+      />
+      <Route
+        path="/support/community"
+        element={
+          <Layout>
+            <Community />
           </Layout>
         }
       />

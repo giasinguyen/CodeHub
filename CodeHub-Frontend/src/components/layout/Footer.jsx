@@ -31,14 +31,13 @@ const Footer = () => {
         { label: "Careers", href: "/careers" },
         { label: "Contact", href: "/contact" },
       ],
-    },
-    support: {
+    },    support: {
       title: "Support",
       links: [
-        { label: "Help Center", href: "/help" },
-        { label: "Report Bug", href: "/report" },
-        { label: "Feedback", href: "/feedback" },
-        { label: "Community", href: "/community" },
+        { label: "Help Center", href: "/support" },
+        { label: "Report Bug", href: "/support/report-bug" },
+        { label: "Feedback", href: "/support/feedback" },
+        { label: "Community", href: "/support/community" },
       ],
     },
     legal: {

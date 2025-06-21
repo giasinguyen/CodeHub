@@ -156,100 +156,109 @@ const ReportBug = () => {
       default: return <AlertTriangle className="w-5 h-5 text-gray-500" />;
     }
   };
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/support">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Support
-              </Link>
-            </Button>
-          </div>
-          <div className="mt-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                <Bug className="w-6 h-6 text-red-600 dark:text-red-400" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Report a Bug
-                </h1>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Help us improve CodeHub by reporting issues you encounter
-                </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 light:from-gray-50 light:via-white light:to-gray-100">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500 rounded-full opacity-10 blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500 rounded-full opacity-10 blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-blue-500 rounded-full opacity-5 blur-3xl animate-pulse delay-500"></div>
+      </div>
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="bg-slate-800/50 dark:bg-slate-800/50 light:bg-white shadow-sm border-b border-slate-700 dark:border-slate-700 light:border-gray-200">
+          <div className="max-w-4xl mx-auto px-4 py-6">
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="sm" asChild className="text-slate-300 dark:text-slate-300 light:text-gray-600 hover:text-white dark:hover:text-white light:hover:text-gray-900">
+                <Link to="/support">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Support
+                </Link>
+              </Button>
+            </div>
+            <div className="mt-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg">
+                  <Bug className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white dark:text-white light:text-gray-900">
+                    Report a Bug
+                  </h1>
+                  <p className="text-slate-300 dark:text-slate-300 light:text-gray-600">
+                    Help us improve CodeHub by reporting issues you encounter
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <Card className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Basic Information */}
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Basic Information
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Bug Title *
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="Brief description of the issue"
-                    value={formData.title}
-                    onChange={(e) => handleInputChange('title', e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Severity *
-                  </label>
-                  <Select
-                    value={formData.severity}
-                    onChange={(value) => handleInputChange('severity', value)}
-                  >
-                    {severityOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Select>
-                  <div className="flex items-center mt-2 space-x-2">
-                    {getSeverityIcon(formData.severity)}
-                    <span className={`text-sm ${severityOptions.find(opt => opt.value === formData.severity)?.color}`}>
-                      {severityOptions.find(opt => opt.value === formData.severity)?.label}
-                    </span>
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <Card className="p-8 bg-slate-800/50 dark:bg-slate-800/50 light:bg-white border-slate-700 dark:border-slate-700 light:border-gray-200">
+            <form onSubmit={handleSubmit} className="space-y-8">              {/* Basic Information */}
+              <div>
+                <h2 className="text-lg font-semibold text-white dark:text-white light:text-gray-900 mb-4">
+                  Basic Information
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-300 dark:text-slate-300 light:text-gray-700 mb-2">
+                      Bug Title *
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="Brief description of the issue"
+                      value={formData.title}
+                      onChange={(e) => handleInputChange('title', e.target.value)}
+                      required
+                      className="bg-slate-700/50 dark:bg-slate-700/50 light:bg-white border-slate-600 dark:border-slate-600 light:border-gray-300 text-white dark:text-white light:text-gray-900 placeholder-slate-400 dark:placeholder-slate-400 light:placeholder-gray-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 dark:text-slate-300 light:text-gray-700 mb-2">
+                      Severity *
+                    </label>
+                    <Select
+                      value={formData.severity}
+                      onChange={(value) => handleInputChange('severity', value)}
+                      className="bg-slate-700/50 dark:bg-slate-700/50 light:bg-white border-slate-600 dark:border-slate-600 light:border-gray-300 text-white dark:text-white light:text-gray-900"
+                    >
+                      {severityOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </Select>
+                    <div className="flex items-center mt-2 space-x-2">
+                      {getSeverityIcon(formData.severity)}
+                      <span className={`text-sm ${severityOptions.find(opt => opt.value === formData.severity)?.color}`}>
+                        {severityOptions.find(opt => opt.value === formData.severity)?.label}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 dark:text-slate-300 light:text-gray-700 mb-2">
+                      Category
+                    </label>
+                    <Select
+                      value={formData.category}
+                      onChange={(value) => handleInputChange('category', value)}
+                      className="bg-slate-700/50 dark:bg-slate-700/50 light:bg-white border-slate-600 dark:border-slate-600 light:border-gray-300 text-white dark:text-white light:text-gray-900"
+                    >
+                      <option value="">Select a category</option>
+                      {categoryOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </Select>
                   </div>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Category
-                  </label>
-                  <Select
-                    value={formData.category}
-                    onChange={(value) => handleInputChange('category', value)}
-                  >
-                    <option value="">Select a category</option>
-                    {categoryOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
               </div>
-            </div>
 
             {/* Bug Description */}
             <div>
@@ -439,8 +448,7 @@ const ReportBug = () => {
                 </Button>
                 <Button 
                   type="submit" 
-                  disabled={isSubmitting}
-                  className="min-w-[120px]"
+                  disabled={isSubmitting}                  className="min-w-[120px]"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Bug Report'}
                 </Button>
@@ -448,6 +456,7 @@ const ReportBug = () => {
             </div>
           </form>
         </Card>
+      </div>
       </div>
     </div>
   );

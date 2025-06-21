@@ -161,15 +161,14 @@ const Community = () => {
     discussion.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     discussion.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600">
+      <div className="bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-blue-600/20 backdrop-blur-sm border-b border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="flex items-center space-x-4 mb-6">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/support" className="text-white hover:text-gray-200">
+            <Button variant="ghost" size="sm" asChild className="text-slate-300 hover:text-white">
+              <Link to="/support">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Support
               </Link>
@@ -179,32 +178,32 @@ const Community = () => {
             className="text-center"
           >
             <div className="flex items-center justify-center space-x-3 mb-4">
-              <Users className="w-12 h-12 text-white" />
-              <h1 className="text-4xl md:text-5xl font-bold text-white">
+              <Users className="w-12 h-12 text-blue-400" />
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 CodeHub Community
               </h1>
             </div>
-            <p className="text-xl text-purple-100 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
               Connect with developers worldwide, share knowledge, and grow together in our vibrant community
             </p>
             
             {/* Community Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="bg-slate-800/60 backdrop-blur-sm rounded-lg p-4 border border-slate-700/50">
                 <div className="text-2xl font-bold text-white">{communityStats.totalMembers.toLocaleString()}</div>
-                <div className="text-purple-100">Members</div>
+                <div className="text-slate-300">Members</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="bg-slate-800/60 backdrop-blur-sm rounded-lg p-4 border border-slate-700/50">
                 <div className="text-2xl font-bold text-white">{communityStats.activeToday.toLocaleString()}</div>
-                <div className="text-purple-100">Active Today</div>
+                <div className="text-slate-300">Active Today</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="bg-slate-800/60 backdrop-blur-sm rounded-lg p-4 border border-slate-700/50">
                 <div className="text-2xl font-bold text-white">{communityStats.totalPosts.toLocaleString()}</div>
-                <div className="text-purple-100">Discussions</div>
+                <div className="text-slate-300">Discussions</div>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="bg-slate-800/60 backdrop-blur-sm rounded-lg p-4 border border-slate-700/50">
                 <div className="text-2xl font-bold text-white">{communityStats.totalSnippets.toLocaleString()}</div>
-                <div className="text-purple-100">Code Snippets</div>
+                <div className="text-slate-300">Code Snippets</div>
               </div>
             </div>
           </div>
@@ -212,7 +211,7 @@ const Community = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex space-x-8 overflow-x-auto">
             {tabs.map((tab) => {
@@ -223,8 +222,8 @@ const Community = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                      ? 'border-blue-400 text-blue-400'
+                      : 'border-transparent text-slate-400 hover:text-slate-200'
                   }`}
                 >
                   <IconComponent className="w-4 h-4" />
@@ -239,26 +238,25 @@ const Community = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="space-y-8">
-            {/* Welcome Section */}
-            <Card className="p-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <div className="space-y-8">            {/* Welcome Section */}
+            <Card className="p-8 bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-sm border border-slate-600/50">
+              <h2 className="text-2xl font-bold text-white mb-4">
                 Welcome to the CodeHub Community
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-slate-300 mb-6">
                 Join thousands of developers sharing code, solving problems, and building amazing projects together. 
                 Whether you're a beginner or an expert, there's a place for you here.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button>
+                <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0">
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Start a Discussion
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                   <Users className="w-4 h-4 mr-2" />
                   Find Developers
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                   <Calendar className="w-4 h-4 mr-2" />
                   Join Events
                 </Button>
@@ -267,12 +265,11 @@ const Community = () => {
 
             {/* Featured Members */}
             <section>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              <h2 className="text-xl font-bold text-white mb-6">
                 Featured Community Members
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              </h2>              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {featuredMembers.map((member) => (
-                  <Card key={member.id} className="p-6">
+                  <Card key={member.id} className="p-6 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50">
                     <div className="flex items-start space-x-4">
                       <img
                         src={member.avatar}
@@ -281,22 +278,22 @@ const Community = () => {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                          <h3 className="font-semibold text-white truncate">
                             {member.username}
                           </h3>
-                          <Award className="w-4 h-4 text-yellow-500" />
+                          <Award className="w-4 h-4 text-yellow-400" />
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                        <p className="text-sm text-slate-300 mb-2">
                           {member.title}
                         </p>
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+                        <div className="flex items-center text-sm text-slate-400 mb-3">
                           <MapPin className="w-3 h-3 mr-1" />
                           {member.location}
                         </div>
                       </div>
                     </div>
                     
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    <p className="text-sm text-slate-300 mb-4">
                       {member.bio}
                     </p>
                     
@@ -325,21 +322,19 @@ const Community = () => {
                   </Card>
                 ))}
               </div>
-            </section>
-
-            {/* Recent Discussions */}
+            </section>            {/* Recent Discussions */}
             <section>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-bold text-white">
                   Recent Discussions
                 </h2>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                   View All
                 </Button>
               </div>
               <div className="space-y-4">
                 {discussions.slice(0, 3).map((discussion) => (
-                  <Card key={discussion.id} className="p-4">
+                  <Card key={discussion.id} className="p-4 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50">
                     <div className="flex items-start space-x-4">
                       <img
                         src={discussion.avatar}
@@ -348,7 +343,7 @@ const Community = () => {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="font-medium text-gray-900 dark:text-white">
+                          <h3 className="font-medium text-white">
                             {discussion.title}
                           </h3>
                           {discussion.isPinned && (
@@ -387,9 +382,7 @@ const Community = () => {
               </div>
             </section>
           </div>
-        )}
-
-        {/* Discussions Tab */}
+        )}        {/* Discussions Tab */}
         {activeTab === 'discussions' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -399,9 +392,10 @@ const Community = () => {
                   placeholder="Search discussions..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-slate-800/60 border-slate-700 text-white placeholder-slate-400"
                 />
               </div>
-              <Button>
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0">
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Start Discussion
               </Button>
@@ -409,7 +403,7 @@ const Community = () => {
 
             <div className="space-y-4">
               {filteredDiscussions.map((discussion) => (
-                <Card key={discussion.id} className="p-6 hover:shadow-md transition-shadow">
+                <Card key={discussion.id} className="p-6 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 hover:bg-slate-800/80 transition-all">
                   <div className="flex items-start space-x-4">
                     <img
                       src={discussion.avatar}
@@ -418,11 +412,11 @@ const Community = () => {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
+                        <h3 className="text-lg font-medium text-white hover:text-blue-400 cursor-pointer">
                           {discussion.title}
                         </h3>
                         {discussion.isPinned && (
-                          <Badge variant="outline">
+                          <Badge variant="outline" className="border-yellow-400 text-yellow-400">
                             Pinned
                           </Badge>
                         )}
@@ -463,9 +457,7 @@ const Community = () => {
               ))}
             </div>
           </div>
-        )}
-
-        {/* Members Tab */}
+        )}        {/* Members Tab */}
         {activeTab === 'members' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -475,13 +467,14 @@ const Community = () => {
                   placeholder="Search members..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-slate-800/60 border-slate-700 text-white placeholder-slate-400"
                 />
               </div>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                   Top Contributors
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white">
                   New Members
                 </Button>
               </div>
@@ -489,41 +482,41 @@ const Community = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredMembers.map((member) => (
-                <Card key={member.id} className="p-6">
+                <Card key={member.id} className="p-6 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50">
                   <div className="text-center">
                     <img
                       src={member.avatar}
                       alt={member.username}
                       className="w-16 h-16 rounded-full mx-auto mb-4"
                     />
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    <h3 className="font-semibold text-white mb-1">
                       {member.username}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <p className="text-sm text-slate-300 mb-2">
                       {member.title}
                     </p>
-                    <div className="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    <div className="flex items-center justify-center text-sm text-slate-400 mb-4">
                       <MapPin className="w-3 h-3 mr-1" />
                       {member.location}
                     </div>
                     
-                    <div className="flex justify-center space-x-4 text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    <div className="flex justify-center space-x-4 text-sm text-slate-300 mb-4">
                       <div className="text-center">
                         <div className="font-semibold">{member.snippets}</div>
-                        <div className="text-xs text-gray-500">Snippets</div>
+                        <div className="text-xs text-slate-400">Snippets</div>
                       </div>
                       <div className="text-center">
                         <div className="font-semibold">{member.followers}</div>
-                        <div className="text-xs text-gray-500">Followers</div>
+                        <div className="text-xs text-slate-400">Followers</div>
                       </div>
                       <div className="text-center">
                         <div className="font-semibold">{member.reputation}</div>
-                        <div className="text-xs text-gray-500">Reputation</div>
+                        <div className="text-xs text-slate-400">Reputation</div>
                       </div>
                     </div>
                     
                     <div className="flex justify-center space-x-2 mb-4">
-                      <Button size="sm">Follow</Button>
+                      <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0">Follow</Button>
                       <Button size="sm" variant="outline">
                         <MessageSquare className="w-4 h-4" />
                       </Button>
@@ -541,16 +534,14 @@ const Community = () => {
               ))}
             </div>
           </div>
-        )}
-
-        {/* Events Tab */}
+        )}        {/* Events Tab */}
         {activeTab === 'events' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-bold text-white">
                 Upcoming Community Events
               </h2>
-              <Button>
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0">
                 <Calendar className="w-4 h-4 mr-2" />
                 Create Event
               </Button>
@@ -558,72 +549,70 @@ const Community = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {events.map((event) => (
-                <Card key={event.id} className="p-6">
+                <Card key={event.id} className="p-6 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50">
                   <div className="flex items-start justify-between mb-4">
-                    <Badge variant="outline">{event.type}</Badge>
-                    <div className="text-right text-sm text-gray-500 dark:text-gray-400">
+                    <Badge variant="outline" className="border-slate-600 text-slate-300">{event.type}</Badge>
+                    <div className="text-right text-sm text-slate-400">
                       <div>{new Date(event.date).toLocaleDateString()}</div>
                       <div>{event.time}</div>
                     </div>
                   </div>
                   
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="font-semibold text-white mb-2">
                     {event.title}
                   </h3>
                   
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  <p className="text-sm text-slate-300 mb-4">
                     {event.description}
                   </p>
                   
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center space-x-1 text-sm text-slate-400">
                       <Users className="w-4 h-4" />
                       <span>{event.attendees} attending</span>
                     </div>
-                    <Button size="sm">Join Event</Button>
+                    <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0">Join Event</Button>
                   </div>
                 </Card>
               ))}
             </div>
           </div>
         )}
-      </div>
-
-      {/* Community Guidelines */}
-      <div className="bg-gray-100 dark:bg-gray-800 py-12">
+      </div>{/* Community Guidelines */}
+      <div className="bg-slate-800/30 backdrop-blur-sm border-t border-slate-700/50 py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-2xl font-bold text-white mb-4">
             Community Guidelines
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-8">
+          <p className="text-slate-300 mb-8">
             Our community thrives on respect, collaboration, and shared learning. 
             Please review our guidelines to ensure a positive experience for everyone.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg inline-block mb-3">
-                <Heart className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-3 bg-blue-500/20 backdrop-blur-sm rounded-lg inline-block mb-3 border border-blue-400/30">
+                <Heart className="w-6 h-6 text-blue-400" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Be Respectful</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <h3 className="font-semibold text-white mb-2">Be Respectful</h3>
+              <p className="text-sm text-slate-300">
                 Treat all community members with kindness and respect, regardless of their experience level.
               </p>
             </div>
             <div className="text-center">
-              <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg inline-block mb-3">
-                <Coffee className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="p-3 bg-green-500/20 backdrop-blur-sm rounded-lg inline-block mb-3 border border-green-400/30">
+                <Coffee className="w-6 h-6 text-green-400" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Share Knowledge</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <h3 className="font-semibold text-white mb-2">Share Knowledge</h3>
+              <p className="text-sm text-slate-300">
                 Help others learn by sharing your knowledge, code snippets, and experiences.
               </p>
             </div>
             <div className="text-center">
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg inline-block mb-3">
-                <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-3 bg-purple-500/20 backdrop-blur-sm rounded-lg inline-block mb-3 border border-purple-400/30">
+                <TrendingUp className="w-6 h-6 text-purple-400" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Keep Learning</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <h3 className="font-semibold text-white mb-2">Keep Learning</h3>
+              <p className="text-sm text-slate-300">
                 Stay curious, ask questions, and embrace continuous learning and growth.
               </p>
             </div>

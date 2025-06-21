@@ -15,3 +15,4 @@ export { default as Search } from "./Search";
 export { default as Notifications } from "./Notifications";
 export * from "./auth";
 export * from "./support";
+export * from "./legal";

@@ -39,14 +39,13 @@ const Footer = () => {
         { label: "Feedback", href: "/support/feedback" },
         { label: "Community", href: "/support/community" },
       ],
-    },
-    legal: {
+    },    legal: {
       title: "Legal",
       links: [
-        { label: "Terms of Service", href: "/terms" },
-        { label: "Privacy Policy", href: "/privacy" },
-        { label: "Cookie Policy", href: "/cookies" },
-        { label: "Licenses", href: "/licenses" },
+        { label: "Terms of Service", href: "/legal/terms-of-service" },
+        { label: "Privacy Policy", href: "/legal/privacy-policy" },
+        { label: "Cookie Policy", href: "/legal/cookie-policy" },
+        { label: "Licenses", href: "/legal/licenses" },
       ],
     },
   };

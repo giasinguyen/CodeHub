@@ -30,6 +30,10 @@ import {  Home,
   ReportBug,
   Feedback,
   Community,
+  TermsOfService,
+  PrivacyPolicy,
+  CookiePolicy,
+  Licenses,
 } from "./pages";
 import { About, Blog, Careers, Contact } from "./pages/company";
 import "./App.css";
@@ -278,12 +282,45 @@ const AppRoutes = () => {
             <Feedback />
           </Layout>
         }
-      />
-      <Route
+      />      <Route
         path="/support/community"
         element={
           <Layout>
             <Community />
+          </Layout>
+        }
+      />
+
+      {/* Legal Pages */}
+      <Route
+        path="/legal/terms-of-service"
+        element={
+          <Layout>
+            <TermsOfService />
+          </Layout>
+        }
+      />
+      <Route
+        path="/legal/privacy-policy"
+        element={
+          <Layout>
+            <PrivacyPolicy />
+          </Layout>
+        }
+      />
+      <Route
+        path="/legal/cookie-policy"
+        element={
+          <Layout>
+            <CookiePolicy />
+          </Layout>
+        }
+      />
+      <Route
+        path="/legal/licenses"
+        element={
+          <Layout>
+            <Licenses />
           </Layout>
         }
       />

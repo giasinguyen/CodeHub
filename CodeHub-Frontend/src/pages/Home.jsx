@@ -17,15 +17,25 @@ import { Button, Card, Loading } from '../components/ui';
 import { snippetsAPI } from '../services/api';
 import { useSnippet } from '../contexts/SnippetContext';
 
-const Home = () => {
-  const { refreshTrigger } = useSnippet();
+const Home = () => {  const { refreshTrigger } = useSnippet();
   const [featuredSnippets, setFeaturedSnippets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [languages, setLanguages] = useState([]);
-
+  const [languages, setLanguages] = useState([
+    { name: 'JavaScript', color: '#f7df1e', count: 2340 },
+    { name: 'Python', color: '#3776ab', count: 1890 },
+    { name: 'TypeScript', color: '#3178c6', count: 1456 },
+    { name: 'Java', color: '#ed8b00', count: 1234 },
+    { name: 'CSS', color: '#1572b6', count: 987 },
+    { name: 'PHP', color: '#777bb4', count: 876 }
+  ]); // Initialize with default data
+  const [stats, setStats] = useState([
+    { label: 'Code Snippets', value: '0', icon: Code2 },
+    { label: 'Active Developers', value: '0', icon: Users },
+    { label: 'Programming Languages', value: '0', icon: BookOpen },
+    { label: 'Stars Given', value: '0', icon: Star }
+  ]);
   // Load featured snippets from API
-  useEffect(() => {
-    const loadFeaturedSnippets = async () => {
+  useEffect(() => {    const loadFeaturedSnippets = async () => {
       try {
         setLoading(true);
         // Get trending snippets
@@ -52,39 +62,145 @@ const Home = () => {
         }
       } catch (error) {
         console.error('Error loading featured snippets:', error);
-        // Fallback to empty array if API fails
-        setFeaturedSnippets([]);
+        // Fallback to mock data if API fails or requires auth
+        const mockSnippets = [
+          {
+            id: 1,
+            title: 'React useEffect Hook Examples',
+            description: 'Common patterns and best practices for using React useEffect hook in functional components.',
+            language: 'JavaScript',
+            languageColor: getLanguageColor('JavaScript'),
+            author: 'reactdev',
+            authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=reactdev',
+            views: 1250,
+            stars: 89,
+            forks: 12,
+            createdAt: '2 days ago',
+            tags: ['react', 'hooks', 'useeffect']
+          },
+          {
+            id: 2,
+            title: 'Python Data Validation',
+            description: 'Robust data validation functions using Python with type hints and error handling.',
+            language: 'Python',
+            languageColor: getLanguageColor('Python'),
+            author: 'pythonista',
+            authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pythonista',
+            views: 890,
+            stars: 156,
+            forks: 23,
+            createdAt: '1 week ago',
+            tags: ['python', 'validation', 'typing']
+          },
+          {
+            id: 3,
+            title: 'CSS Grid Layout Templates',
+            description: 'Responsive CSS Grid layouts for modern web applications with fallbacks.',
+            language: 'CSS',
+            languageColor: getLanguageColor('CSS'),
+            author: 'cssmaster',
+            authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=cssmaster',
+            views: 2340,
+            stars: 234,
+            forks: 45,
+            createdAt: '3 days ago',
+            tags: ['css', 'grid', 'layout', 'responsive']
+          },
+          {
+            id: 4,
+            title: 'TypeScript Generic Utilities',
+            description: 'Useful TypeScript generic utility types for better type safety and code reusability.',
+            language: 'TypeScript',
+            languageColor: getLanguageColor('TypeScript'),
+            author: 'tsdev',
+            authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tsdev',
+            views: 1567,
+            stars: 198,
+            forks: 34,
+            createdAt: '5 days ago',
+            tags: ['typescript', 'generics', 'utilities']
+          },
+          {
+            id: 5,
+            title: 'Node.js Express Middleware',
+            description: 'Custom Express middleware for authentication, logging, and error handling.',
+            language: 'JavaScript',
+            languageColor: getLanguageColor('JavaScript'),
+            author: 'nodedev',
+            authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=nodedev',
+            views: 987,
+            stars: 167,
+            forks: 28,
+            createdAt: '1 week ago',
+            tags: ['nodejs', 'express', 'middleware']
+          },
+          {
+            id: 6,
+            title: 'SQL Query Optimization',
+            description: 'Advanced SQL queries with optimization techniques for better performance.',
+            language: 'SQL',
+            languageColor: getLanguageColor('SQL'),
+            author: 'sqlexpert',
+            authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sqlexpert',
+            views: 1876,
+            stars: 289,
+            forks: 56,
+            createdAt: '4 days ago',
+            tags: ['sql', 'optimization', 'performance']
+          }
+        ];
+        setFeaturedSnippets(mockSnippets);
       } finally {
         setLoading(false);
       }
-    };
-
-    const loadLanguages = async () => {
+    };    const loadLanguages = async () => {
       try {
-        const response = await snippetsAPI.getLanguages();
-        if (response.data) {
-          const transformedLanguages = response.data.map(lang => ({
+        const response = await snippetsAPI.getLanguageStats();
+        console.log('🌐 Language Stats Response:', response);
+        
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          const transformedLanguages = response.data.slice(0, 6).map(lang => ({
             name: lang.name,
             color: getLanguageColor(lang.name),
             count: lang.count || 0
           }));
           setLanguages(transformedLanguages);
+          console.log('✅ Loaded languages from API:', transformedLanguages);
+        } else {
+          console.log('⚠️ API returned empty data, keeping default languages');
         }
       } catch (error) {
-        console.error('Error loading languages:', error);
-        // Fallback to default languages
-        setLanguages([
-          { name: 'JavaScript', color: '#f7df1e', count: 2340 },
-          { name: 'Python', color: '#3776ab', count: 1890 },
-          { name: 'TypeScript', color: '#3178c6', count: 1456 },
-          { name: 'Java', color: '#ed8b00', count: 1234 },
-          { name: 'CSS', color: '#1572b6', count: 987 },
-          { name: 'PHP', color: '#777bb4', count: 876 }
-        ]);
+        console.error('❌ Error loading languages:', error);
+        console.log('🔄 Keeping default languages due to API error');
+        // Keep existing default languages
       }
-    };    loadFeaturedSnippets();
+    };
+
+    const loadStats = async () => {
+      try {        // Load different types of data to get real stats
+        const [snippetsResponse, languagesResponse] = await Promise.all([
+          snippetsAPI.getSnippets(0, 1), // Just to get total count
+          snippetsAPI.getLanguages()
+        ]);
+
+        const totalSnippets = snippetsResponse.data?.totalElements || 0;
+        const totalLanguages = languagesResponse.data?.length || 0;
+
+        setStats([
+          { label: 'Code Snippets', value: totalSnippets > 0 ? `${totalSnippets.toLocaleString()}` : '10,000+', icon: Code2 },
+          { label: 'Active Developers', value: '5,000+', icon: Users },
+          { label: 'Programming Languages', value: totalLanguages > 0 ? totalLanguages.toString() : '50+', icon: BookOpen },
+          { label: 'Stars Given', value: '25,000+', icon: Star }
+        ]);
+      } catch (error) {
+        console.error('Error loading stats:', error);
+        // Keep default stats if API fails
+      }
+    };
+
+    loadFeaturedSnippets();
     loadLanguages();
-  }, [refreshTrigger]);
+    loadStats();  }, [refreshTrigger]);
 
   // Helper function to get language color
   const getLanguageColor = (language) => {
@@ -126,16 +242,8 @@ const Home = () => {
     if (diffInDays < 7) return `${diffInDays} days ago`;
     
     const diffInWeeks = Math.floor(diffInDays / 7);
-    if (diffInWeeks < 4) return `${diffInWeeks} weeks ago`;
-    
-    return date.toLocaleDateString();
+    if (diffInWeeks < 4) return `${diffInWeeks} weeks ago`;    return date.toLocaleDateString();
   };
-  const stats = [
-    { label: 'Code Snippets', value: '10,000+', icon: Code2 },
-    { label: 'Active Developers', value: '5,000+', icon: Users },
-    { label: 'Programming Languages', value: '50+', icon: BookOpen },
-    { label: 'Stars Given', value: '25,000+', icon: Star }
-  ];
 
   return (
     <div className="min-h-screen bg-slate-900 dark:bg-slate-900 light:bg-white transition-colors duration-200">      {/* Hero Section */}
@@ -165,16 +273,19 @@ const Home = () => {
               Discover, share, and collaborate on code snippets with developers worldwide. 
               Build something amazing together.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button size="lg" className="px-8 py-4">
-                <Zap className="w-5 h-5 mr-2" />
-                Start Coding
-              </Button>
-              <Button variant="outline" size="lg" className="px-8 py-4">
-                Explore Snippets
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Link to="/create-snippet">
+                <Button size="lg" className="px-8 py-4">
+                  <Zap className="w-5 h-5 mr-2" />
+                  Start Coding
+                </Button>
+              </Link>
+              <Link to="/snippets">
+                <Button variant="outline" size="lg" className="px-8 py-4">
+                  Explore Snippets
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
             </div>
 
             {/* Stats */}
@@ -226,80 +337,96 @@ const Home = () => {
                   key={snippet.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}                  viewport={{ once: true }}
                 >
-                  <Card className="h-full hover:scale-105 transition-transform duration-300">
-                    <Card.Header>
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-2">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: snippet.languageColor }}
-                          ></div>
-                          <span className="text-sm text-slate-400">{snippet.language}</span>
-                        </div>
-                        <div className="flex items-center space-x-4 text-sm text-slate-400">
-                          <div className="flex items-center space-x-1">
-                            <Eye className="w-4 h-4" />
-                            <span>{snippet.views}</span>
+                  <Link to={`/snippets/${snippet.id}`}>
+                    <Card className="h-full hover:scale-105 transition-transform duration-300 cursor-pointer">
+                      <Card.Header>
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center space-x-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: snippet.languageColor }}
+                            ></div>
+                            <span className="text-sm text-slate-400">{snippet.language}</span>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-4 h-4" />
-                            <span>{snippet.stars}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <h3 className="text-lg font-semibold text-white mb-2">
-                        {snippet.title}
-                      </h3>
-                      <p className="text-slate-400 text-sm line-clamp-2">
-                        {snippet.description}
-                      </p>
-                    </Card.Header>
-
-                    <Card.Content>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {snippet.tags.map((tag, tagIndex) => (
-                          <span
-                            key={tagIndex}
-                            className="px-2 py-1 bg-slate-700 text-xs text-slate-300 rounded-md"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </Card.Content>
-
-                    <Card.Footer>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <img
-                            src={snippet.authorAvatar}
-                            alt={snippet.author}
-                            className="w-8 h-8 rounded-full"
-                          />
-                          <div>
-                            <div className="text-sm font-medium text-white">
-                              {snippet.author}
+                          <div className="flex items-center space-x-4 text-sm text-slate-400">
+                            <div className="flex items-center space-x-1">
+                              <Eye className="w-4 h-4" />
+                              <span>{snippet.views}</span>
                             </div>
-                            <div className="flex items-center space-x-1 text-xs text-slate-400">
-                              <Clock className="w-3 h-3" />
-                              <span>{snippet.createdAt}</span>
+                            <div className="flex items-center space-x-1">
+                              <Star className="w-4 h-4" />
+                              <span>{snippet.stars}</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm">
-                            <GitFork className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Star className="w-4 h-4" />
-                          </Button>
+                        <h3 className="text-lg font-semibold text-white mb-2">
+                          {snippet.title}
+                        </h3>
+                        <p className="text-slate-400 text-sm line-clamp-2">
+                          {snippet.description}
+                        </p>
+                      </Card.Header>
+
+                      <Card.Content>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {snippet.tags.map((tag, tagIndex) => (
+                            <span
+                              key={tagIndex}
+                              className="px-2 py-1 bg-slate-700 text-xs text-slate-300 rounded-md"
+                            >
+                              {tag}
+                            </span>
+                          ))}
                         </div>
-                      </div>
-                    </Card.Footer>
-                  </Card>
+                      </Card.Content>
+
+                      <Card.Footer>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <img
+                              src={snippet.authorAvatar}
+                              alt={snippet.author}
+                              className="w-8 h-8 rounded-full"
+                            />
+                            <div>
+                              <div className="text-sm font-medium text-white">
+                                {snippet.author}
+                              </div>
+                              <div className="flex items-center space-x-1 text-xs text-slate-400">
+                                <Clock className="w-3 h-3" />
+                                <span>{snippet.createdAt}</span>
+                              </div>
+                            </div>
+                          </div>                          <div className="flex items-center space-x-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                // TODO: Implement fork functionality
+                                console.log('Fork snippet:', snippet.id);
+                              }}
+                            >
+                              <GitFork className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                // TODO: Implement like functionality
+                                console.log('Like snippet:', snippet.id);
+                              }}
+                            >
+                              <Star className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card.Footer>
+                    </Card>
+                  </Link>
                 </motion.div>
               ))
             ) : (
@@ -318,9 +445,7 @@ const Home = () => {
             </Link>
           </div>
         </div>
-      </section>
-
-      {/* Popular Languages */}
+      </section>      {/* Popular Languages */}
       <section className="py-20 bg-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -342,20 +467,24 @@ const Home = () => {
             {languages.map((language, index) => (
               <motion.div
                 key={language.name}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-slate-700 rounded-lg p-6 text-center hover:bg-slate-600 transition-colors cursor-pointer"
               >
-                <div
-                  className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center"
-                  style={{ backgroundColor: language.color }}
+                <Link 
+                  to={`/snippets?language=${encodeURIComponent(language.name)}`}
+                  className="block bg-slate-700 rounded-lg p-6 text-center hover:bg-slate-600 transition-all duration-300 hover:scale-105 cursor-pointer"
                 >
-                  <Code2 className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-white font-semibold mb-1">{language.name}</h3>
-                <p className="text-slate-400 text-sm">{language.count} snippets</p>
+                  <div
+                    className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center"
+                    style={{ backgroundColor: language.color }}
+                  >
+                    <Code2 className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-white font-semibold mb-1">{language.name}</h3>
+                  <p className="text-slate-400 text-sm">{language.count.toLocaleString()} snippets</p>
+                </Link>
               </motion.div>
             ))}
           </div>

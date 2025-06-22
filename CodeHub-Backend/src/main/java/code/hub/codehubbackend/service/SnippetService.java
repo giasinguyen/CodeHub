@@ -1,5 +1,6 @@
 package code.hub.codehubbackend.service;
 
+import code.hub.codehubbackend.dto.LanguageStatsResponse;
 import code.hub.codehubbackend.dto.snippet.SnippetCreateRequest;
 import code.hub.codehubbackend.dto.snippet.SnippetResponse;
 import code.hub.codehubbackend.dto.snippet.SnippetUpdateRequest;
@@ -182,10 +183,25 @@ public class SnippetService {
         snippet.setDescription(version.getDescription());
           snippet = snippetRepository.save(snippet);
         return snippetMapper.convertToResponse(snippet);
-    }
-      @Cacheable("languages")
+    }    @Cacheable("languages")
     public List<String> getAvailableLanguages() {
         return snippetRepository.findDistinctLanguages();
+    }
+      @Cacheable("languageStats")
+    public List<LanguageStatsResponse> getLanguageStats() {
+        try {
+            List<Object[]> results = snippetRepository.findLanguagesWithCount();
+            return results.stream()
+                    .map(result -> {
+                        String language = (String) result[0];
+                        Number count = (Number) result[1];
+                        return new LanguageStatsResponse(language, count.longValue());
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error getting language stats: ", e);
+            return new ArrayList<>();
+        }
     }
     
     @Cacheable("tags")

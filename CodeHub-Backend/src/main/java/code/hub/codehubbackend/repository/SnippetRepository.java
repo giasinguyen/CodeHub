@@ -37,12 +37,13 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
     Page<Snippet> findMostLiked(Pageable pageable);
     
     @Query("SELECT s FROM Snippet s ORDER BY s.viewCount DESC")
-    Page<Snippet> findMostViewed(Pageable pageable);
-      @Query("SELECT DISTINCT s.language FROM Snippet s WHERE s.language IS NOT NULL ORDER BY s.language")
+    Page<Snippet> findMostViewed(Pageable pageable);    @Query("SELECT DISTINCT s.language FROM Snippet s WHERE s.language IS NOT NULL ORDER BY s.language")
     List<String> findDistinctLanguages();
+      @Query("SELECT s.language, COUNT(s) FROM Snippet s WHERE s.language IS NOT NULL GROUP BY s.language ORDER BY COUNT(s) DESC")
+    List<Object[]> findLanguagesWithCount();
     
     @Query("SELECT DISTINCT tag FROM Snippet s JOIN s.tags tag ORDER BY tag")
-    List<String> findDistinctTags();    // User statistics queries
+    List<String> findDistinctTags();// User statistics queries
     @Query("SELECT COUNT(s) FROM Snippet s WHERE s.owner = :user")
     Long countByOwner(@Param("user") User user);
     

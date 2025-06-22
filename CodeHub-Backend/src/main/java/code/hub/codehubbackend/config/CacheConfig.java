@@ -12,10 +12,10 @@ public class CacheConfig {
     
     @Bean
     public CacheManager cacheManager() {
-        ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
-        cacheManager.setCacheNames(java.util.Arrays.asList(
+        ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();        cacheManager.setCacheNames(java.util.Arrays.asList(
             "snippets",
             "languages", 
+            "languageStats",
             "tags",
             "userProfiles",
             "mostLiked",

@@ -1,5 +1,6 @@
 package code.hub.codehubbackend.controller;
 
+import code.hub.codehubbackend.dto.LanguageStatsResponse;
 import code.hub.codehubbackend.dto.snippet.SnippetCreateRequest;
 import code.hub.codehubbackend.dto.snippet.SnippetResponse;
 import code.hub.codehubbackend.dto.snippet.SnippetUpdateRequest;
@@ -116,13 +117,18 @@ public class SnippetController {
 
         SnippetResponse snippet = snippetService.revertToVersion(id, versionId);
         return ResponseEntity.ok(snippet);
-    }
-
-    @GetMapping("/languages")
+    }    @GetMapping("/languages")
     @Operation(summary = "Get available languages", description = "Get list of programming languages used in snippets")
     public ResponseEntity<List<String>> getAvailableLanguages() {
         List<String> languages = snippetService.getAvailableLanguages();
         return ResponseEntity.ok(languages);
+    }
+
+    @GetMapping("/languages/stats")
+    @Operation(summary = "Get language statistics", description = "Get programming languages with snippet count")
+    public ResponseEntity<List<LanguageStatsResponse>> getLanguageStats() {
+        List<LanguageStatsResponse> languageStats = snippetService.getLanguageStats();
+        return ResponseEntity.ok(languageStats);
     }
 
     @GetMapping("/tags")

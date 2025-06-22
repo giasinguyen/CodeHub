@@ -234,11 +234,17 @@ export const snippetsAPI = {
     const url = `/snippets/trending/${type}?page=${page}&size=${size}`;
     console.log('🌐 [API] GET Trending Snippets:', url);
     return api.get(url);
-  },
-  // Get available languages
+  },  // Get available languages
   getLanguages: () => {
     const url = '/snippets/languages';
     console.log('🌐 [API] GET Languages:', url);
+    return api.get(url);
+  },
+  
+  // Get languages with count statistics
+  getLanguageStats: () => {
+    const url = '/snippets/languages/stats';
+    console.log('🌐 [API] GET Language Stats:', url);
     return api.get(url);
   },
   // Get snippets by tag

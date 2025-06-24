@@ -9,7 +9,9 @@ import code.hub.codehubbackend.entity.*;
 import code.hub.codehubbackend.exception.ResourceNotFoundException;
 import code.hub.codehubbackend.exception.UnauthorizedException;
 import code.hub.codehubbackend.mapper.SnippetMapper;
+import code.hub.codehubbackend.monitoring.CustomMetrics;
 import code.hub.codehubbackend.repository.*;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -34,21 +36,33 @@ public class SnippetService {
     
     @Autowired
     private SnippetRepository snippetRepository;
-      @Autowired
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private LikeRepository likeRepository;
+    
+    @Autowired
+    private CommentRepository commentRepository;
+    
+    @Autowired
     private SnippetVersionRepository versionRepository;
     
     @Autowired
     private FileUploadService fileUploadService;
-      @Autowired
+    
+    @Autowired
     private ActivityService activityService;
-      @Autowired
+    
+    @Autowired
     private RecentlyViewedService recentlyViewedService;
     
     @Autowired
     private SnippetMapper snippetMapper;
     
     @Autowired
-    private UserRepository userRepository;
+    private CustomMetrics customMetrics;
     
     public Page<SnippetResponse> getAllSnippets(int page, int size, String language, String tag, String sort) {
         Sort sortBy = switch (sort) {

@@ -4,6 +4,7 @@ import code.hub.codehubbackend.entity.*;
 import code.hub.codehubbackend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -14,9 +15,7 @@ import java.util.List;
 import java.util.Random;
 
 @Component
-public class DataLoader implements CommandLineRunner {
-
-    @Autowired
+public class DataLoader implements CommandLineRunner {    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -34,11 +33,17 @@ public class DataLoader implements CommandLineRunner {
     
     @Autowired
     private NotificationRepository notificationRepository;
+    
+    @Autowired
+    private Environment environment;
 
-    private final Random random = new Random();
-
-    @Override
+    private final Random random = new Random();    @Override
     public void run(String... args) throws Exception {
+        // Don't load sample data during tests
+        if (Arrays.asList(environment.getActiveProfiles()).contains("test")) {
+            return;
+        }
+        
         if (userRepository.count() == 0) {
             loadSampleData();
         }

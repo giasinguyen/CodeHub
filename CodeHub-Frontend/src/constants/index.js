@@ -83,6 +83,7 @@ export const STORAGE_KEYS = {
   AUTH_TOKEN: 'codehub_auth_token',
   USER_DATA: 'codehub_user_data',
   THEME: 'codehub_theme',
+  TOKEN_EXPIRATION: 'codehub_token_expiration',
 };
 
 // Pagination

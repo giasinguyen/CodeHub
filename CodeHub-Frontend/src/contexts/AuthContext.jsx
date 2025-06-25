@@ -68,9 +68,23 @@ export function AuthProvider({ children }) {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
       
       const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const tokenExpiration = localStorage.getItem(STORAGE_KEYS.TOKEN_EXPIRATION);
+      
       if (!token) {
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
         return;
+      }
+
+      // Check if token is expired
+      if (tokenExpiration) {
+        const expirationDate = new Date(tokenExpiration);
+        const now = new Date();
+        
+        if (now > expirationDate) {
+          console.log('Token expired, logging out');
+          logout();
+          return;
+        }
       }
 
       // Verify token and get user info
@@ -94,24 +108,81 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
-
   // Login function
   const login = async (credentials) => {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
-        const response = await authAPI.login(credentials);
+      
+      const response = await authAPI.login({
+        username: credentials.username,
+        password: credentials.password
+      });
+      
       const { token, user } = response.data;
 
-      // Store token
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+      // Store token with different expiration based on rememberMe
+      if (credentials.rememberMe) {
+        // Set longer expiration for remember me (30 days)
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() + 30);
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+        localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRATION, expirationDate.toISOString());
+      } else {
+        // Set shorter expiration for regular login (1 day)
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() + 1);
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+        localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRATION, expirationDate.toISOString());
+      }
       
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: { user, token },
-      });      toast.success('Login successful!');
+      });
+
+      toast.success('Đăng nhập thành công!');
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
+      console.error('Login error:', error);
+      
+      // Handle different types of errors
+      let message = 'Đăng nhập thất bại';
+      
+      if (error.response) {
+        const status = error.response.status;
+        const errorData = error.response.data;
+        
+        switch (status) {
+          case 401:
+            if (errorData?.message?.toLowerCase().includes('username') || 
+                errorData?.message?.toLowerCase().includes('user not found')) {
+              message = 'Tên đăng nhập không tồn tại';
+            } else if (errorData?.message?.toLowerCase().includes('password') ||
+                       errorData?.message?.toLowerCase().includes('invalid credentials')) {
+              message = 'Mật khẩu không chính xác';
+            } else {
+              message = 'Thông tin đăng nhập không chính xác';
+            }
+            break;
+          case 403:
+            message = 'Tài khoản đã bị khóa hoặc chưa được kích hoạt';
+            break;
+          case 404:
+            message = 'Tên đăng nhập không tồn tại';
+            break;
+          case 429:
+            message = 'Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau';
+            break;
+          case 500:
+            message = 'Lỗi máy chủ. Vui lòng thử lại sau';
+            break;
+          default:
+            message = errorData?.message || 'Đăng nhập thất bại';
+        }
+      } else if (error.request) {
+        message = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng';
+      }
+      
       toast.error(message);
       return { success: false, error: message };
     } finally {
@@ -143,13 +214,13 @@ export function AuthProvider({ children }) {
     } finally {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
     }
-  };
-  // Logout function
+  };  // Logout function
   const logout = () => {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+    localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRATION);
     dispatch({ type: AUTH_ACTIONS.LOGOUT });
-    toast.success('Logout successful!');
+    toast.success('Đăng xuất thành công!');
   };
 
   // Update user profile

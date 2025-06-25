@@ -214,3 +214,86 @@ body {
 .animate-slide-down {
   animation: slideDown 0.3s ease-out;
 }
+
+/* Developer Cards Grid Styles */
+.developer-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .developer-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.developer-card-equal-height {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.developer-card-equal-height .card-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.developer-card-header {
+  flex-shrink: 0;
+}
+
+.developer-card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.developer-bio {
+  flex-grow: 1;
+  display: flex;
+  align-items: flex-start;
+}
+
+.developer-skills {
+  margin-top: auto;
+}
+
+.developer-stats {
+  flex-shrink: 0;
+}
+
+.developer-card-badges {
+  flex-shrink: 0;
+}
+
+.developer-card-social {
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+.developer-actions {
+  flex-shrink: 0;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 768px) {
+  .developer-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .developer-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .developer-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

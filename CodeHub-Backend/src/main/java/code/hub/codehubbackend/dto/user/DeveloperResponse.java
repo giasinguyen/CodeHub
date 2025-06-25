@@ -31,6 +31,9 @@ public class DeveloperResponse {
     private Long snippetCount;
     private Long totalLikes;
     private Long totalViews;
+    private Long followers;
+    private Long following;
+    private Long contributions;
     private Double reputation;
     private List<String> skills;
     private Integer experienceLevel; // 1-5 scale

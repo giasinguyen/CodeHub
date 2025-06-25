@@ -59,7 +59,7 @@ const DeveloperGrid = ({
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 developer-cards-grid"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-8 developer-cards-grid"
       >
         {developers.map((developer, index) => (
           <motion.div

@@ -34,7 +34,7 @@ const DeveloperCard = ({ developer, onClick, variant = 'default', showActions = 
     followers = 0,
     following = 0,
     contributions = 0,
-    joinedAt,
+    createdAt,
     isOnline = false,
     lastActive,
     githubUrl,
@@ -78,34 +78,35 @@ const DeveloperCard = ({ developer, onClick, variant = 'default', showActions = 
         onClick={handleCardClick}
       >        <Card.Content className="p-6 flex-1 flex flex-col card-content">
           {/* Header with Avatar and Online Status */}
-          <div className="flex items-start justify-between mb-4 developer-card-header">
-            <div className="flex items-center space-x-3">
-              <div className="relative">
+          <div className="mb-4 developer-card-header">
+            <div className="flex flex-col items-center text-center mb-3">
+              <div className="relative mb-3">
                 <img
-                  src={avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`}
+                  src={avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName || username)}&background=3b82f6&color=fff&size=80`}
                   alt={fullName || username}
-                  className="w-16 h-16 rounded-full border-2 border-slate-600 group-hover:border-cyan-500 transition-colors"
+                  className="w-20 h-20 rounded-full border-3 border-slate-600 group-hover:border-cyan-500 transition-colors object-cover shadow-lg"
                 />
                 {isOnline && (
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-slate-800 rounded-full"></div>
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-3 border-slate-800 rounded-full"></div>
                 )}
                 {isVerified && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                    <Award className="w-3 h-3 text-white" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                    <Award className="w-4 h-4 text-white" />
                   </div>
                 )}
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white group-hover:text-cyan-400 transition-colors">
+              <div>
+                <h3 className="text-lg font-semibold text-white group-hover:text-cyan-400 transition-colors mb-1">
                   {fullName || username}
                 </h3>
-                <p className="text-sm text-slate-400">@{username}</p>
+                <p className="text-sm text-slate-400 mb-2">@{username}</p>
                 <ReputationBadge reputation={reputation} />
               </div>
             </div>
-              {/* Action Buttons */}
+
+            {/* Action Buttons - moved to bottom */}
             {showActions && (
-              <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity developer-actions">
+              <div className="flex justify-center space-x-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity developer-actions">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -151,28 +152,32 @@ const DeveloperCard = ({ developer, onClick, variant = 'default', showActions = 
                 <span>{location}</span>
               </div>
             )}
-            {joinedAt && (
+            {createdAt && (
               <div className="flex items-center space-x-1">
                 <Calendar className="w-3 h-3" />
-                <span>Joined {formatDate(joinedAt)}</span>
+                <span>Joined {formatDate(createdAt)}</span>
               </div>
             )}
-          </div>          {/* Skills - fixed height */}
-          <div className="mb-4 h-8 flex items-start developer-skills">
-            {skills.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {skills.slice(0, 3).map((skill, index) => (
-                  <SkillBadge key={index} skill={skill} size="sm" />
-                ))}
-                {skills.length > 3 && (
-                  <span className="px-2 py-1 bg-slate-700 text-slate-400 rounded text-xs">
-                    +{skills.length - 3}
-                  </span>
-                )}
-              </div>
-            ) : (
-              <span className="text-xs text-slate-500 italic">No skills listed</span>
-            )}
+          </div>          {/* Skills - improved display */}
+          <div className="mb-4 developer-skills">
+            <div className="min-h-[2.5rem] flex flex-col justify-start">
+              {skills.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5 justify-center">
+                  {skills.slice(0, 4).map((skill, index) => (
+                    <SkillBadge key={index} skill={skill} size="sm" />
+                  ))}
+                  {skills.length > 4 && (
+                    <span className="px-2 py-1 bg-slate-700 text-slate-300 rounded-full text-xs font-medium">
+                      +{skills.length - 4} more
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center">
+                  <span className="text-xs text-slate-500 italic">No skills listed</span>
+                </div>
+              )}
+            </div>
           </div>          {/* Stats */}
           <div className="grid grid-cols-3 gap-4 mb-4 text-center developer-stats">
             <div>

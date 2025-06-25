@@ -11,7 +11,8 @@ import { Layout } from "./components/layout";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 import ThemeHelper from "./components/ThemeHelper";
-import {  Home,
+import {
+  Home,
   Snippets,
   SnippetDetail,
   CreateSnippet,
@@ -24,7 +25,8 @@ import {  Home,
   Settings,
   Notifications,
   Login,
-  Register,  Recent,
+  Register,
+  Recent,
   Search,
   HelpCenter,
   ReportBug,
@@ -180,14 +182,16 @@ const AppRoutes = () => {
             <TagPage />
           </Layout>
         }
-      />      <Route
+      />{" "}
+      <Route
         path="/recent"
         element={
           <Layout>
             <Recent />
           </Layout>
         }
-      />      <Route
+      />{" "}
+      <Route
         path="/search"
         element={
           <Layout>
@@ -216,7 +220,6 @@ const AppRoutes = () => {
           </PublicRoute>
         }
       />
-
       {/* Company Pages */}
       <Route
         path="/about"
@@ -241,7 +244,8 @@ const AppRoutes = () => {
             <Careers />
           </Layout>
         }
-      />      <Route
+      />{" "}
+      <Route
         path="/contact"
         element={
           <Layout>
@@ -249,7 +253,6 @@ const AppRoutes = () => {
           </Layout>
         }
       />
-
       {/* Support Pages */}
       <Route
         path="/support"
@@ -282,7 +285,8 @@ const AppRoutes = () => {
             <Feedback />
           </Layout>
         }
-      />      <Route
+      />{" "}
+      <Route
         path="/support/community"
         element={
           <Layout>
@@ -290,7 +294,6 @@ const AppRoutes = () => {
           </Layout>
         }
       />
-
       {/* Legal Pages */}
       <Route
         path="/legal/terms-of-service"
@@ -324,7 +327,6 @@ const AppRoutes = () => {
           </Layout>
         }
       />
-
       {/* Protected Routes - Only accessible when logged in */}
       <Route
         path="/dashboard"

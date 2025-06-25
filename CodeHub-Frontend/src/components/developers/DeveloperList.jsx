@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Star, MapPin, Calendar, Users, ExternalLink, Github, Linkedin, Twitter } from 'lucide-react';
 import { Card } from '../ui';
 import { SkillBadge, ReputationBadge } from './';
@@ -43,8 +44,8 @@ const DeveloperList = ({ developers, loading, onDeveloperClick }) => {
                 {/* Avatar */}
                 <div className="flex-shrink-0">
                   <img
-                    src={developer.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(developer.name)}&background=3b82f6&color=fff&size=64`}
-                    alt={developer.name}
+                    src={developer.avatarUrl || developer.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(developer.fullName || developer.name || developer.username)}&background=3b82f6&color=fff&size=64`}
+                    alt={developer.fullName || developer.name || developer.username}
                     className="w-16 h-16 rounded-full object-cover ring-2 ring-slate-600 group-hover:ring-blue-500/50 transition-all duration-300"
                   />
                 </div>
@@ -54,11 +55,11 @@ const DeveloperList = ({ developers, loading, onDeveloperClick }) => {
                   <div className="flex items-start justify-between mb-3">
                     <div>                      <div className="flex items-center space-x-3 mb-1">
                         <h3 className="text-xl font-semibold text-white group-hover:text-blue-400 transition-colors">
-                          {developer.name}
+                          {developer.fullName || developer.name || developer.username}
                         </h3>
                         <ReputationBadge reputation={developer.reputation} />
                       </div>
-                      <p className="text-slate-300 font-medium mb-1">{developer.title}</p>
+                      <p className="text-slate-300 font-medium mb-1">{developer.title || developer.bio || 'Developer'}</p>
                       <div className="flex items-center space-x-4 text-sm text-slate-400">
                         {developer.location && (
                           <div className="flex items-center space-x-1">
@@ -68,7 +69,12 @@ const DeveloperList = ({ developers, loading, onDeveloperClick }) => {
                         )}
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4" />
-                          <span>Joined {new Date(developer.joinedAt).getFullYear()}</span>
+                          <span>
+                            Joined {developer.createdAt ? 
+                              (new Date(developer.createdAt).getFullYear() || 'Recently') : 
+                              'Recently'
+                            }
+                          </span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Users className="w-4 h-4" />
@@ -107,15 +113,15 @@ const DeveloperList = ({ developers, loading, onDeveloperClick }) => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-6 text-sm text-slate-400">
                       <div>
-                        <span className="text-white font-medium">{developer.projects || 12}</span>
+                        <span className="text-white font-medium">{developer.projects || 0}</span>
                         <span className="ml-1">projects</span>
                       </div>
                       <div>
-                        <span className="text-white font-medium">{developer.contributions || 248}</span>
+                        <span className="text-white font-medium">{developer.contributions || 0}</span>
                         <span className="ml-1">contributions</span>
                       </div>
                       <div>
-                        <span className="text-white font-medium">{developer.experience || '3+'}</span>
+                        <span className="text-white font-medium">{developer.experience || 0}</span>
                         <span className="ml-1">years exp</span>
                       </div>
                     </div>

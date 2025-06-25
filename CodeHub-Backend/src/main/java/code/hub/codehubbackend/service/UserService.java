@@ -399,6 +399,10 @@ public class UserService {
         Long snippetCount = snippetRepository.countByOwner(user);
         Long totalLikes = snippetRepository.sumLikesByOwner(user);
         Long totalViews = snippetRepository.sumViewsByOwner(user);
+        
+        // Get followers and following counts
+        Long followersCount = userFollowRepository.countFollowersByUserId(user.getId());
+        Long followingCount = userFollowRepository.countFollowingByUserId(user.getId());
 
         // Calculate reputation based on activity
         Double reputation = calculateReputation(snippetCount, totalLikes, totalViews);
@@ -424,6 +428,9 @@ public class UserService {
                 .snippetCount(snippetCount != null ? snippetCount : 0L)
                 .totalLikes(totalLikes != null ? totalLikes : 0L)
                 .totalViews(totalViews != null ? totalViews : 0L)
+                .followers(followersCount != null ? followersCount : 0L)
+                .following(followingCount != null ? followingCount : 0L)
+                .contributions(snippetCount != null ? snippetCount : 0L) // Use snippet count as contributions for now
                 .reputation(reputation)
                 .skills(skills)
                 .experienceLevel(calculateExperienceLevel(snippetCount, reputation))

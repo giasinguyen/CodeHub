@@ -77,6 +77,8 @@ public class SecurityConfig {
                     .requestMatchers("/api/recent/**").permitAll()
                     .requestMatchers("/api/users/featured").permitAll()
                     .requestMatchers("/api/users/stats/community").permitAll()
+                    .requestMatchers("/api/users/username/**").permitAll()
+                    .requestMatchers("/api/users/{id:[\\d+]}").permitAll()
                     .requestMatchers("/h2-console/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .anyRequest().authenticated()

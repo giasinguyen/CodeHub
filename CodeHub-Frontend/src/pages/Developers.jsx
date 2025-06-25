@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Users,
@@ -46,6 +47,7 @@ import { developersAPI } from "../services/api";
 import toast from "react-hot-toast";
 
 const Developers = () => {
+  const navigate = useNavigate();
   const [developers, setDevelopers] = useState([]);
   const [filteredDevelopers, setFilteredDevelopers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +60,6 @@ const Developers = () => {
     sortBy: "reputation",
   });
   const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
-  const [selectedDeveloper, setSelectedDeveloper] = useState(null);
   const [communityStats, setCommunityStats] = useState(null);
   const [featuredDevelopers, setFeaturedDevelopers] = useState([]);
   const [pagination, setPagination] = useState({
@@ -219,7 +220,11 @@ const Developers = () => {
   };
 
   const handleDeveloperClick = (developer) => {
-    setSelectedDeveloper(developer);
+    // Navigate to user profile using username
+    const username = developer.username;
+    if (username) {
+      navigate(`/users/${username}`);
+    }
   };
 
   const handleLoadMore = () => {

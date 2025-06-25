@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Code2, Eye, EyeOff, Github, User } from 'lucide-react';
+import { Code2, Github, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button, Input, Card } from '../../components/ui';
 
@@ -12,7 +12,6 @@ const Login = () => {
     password: '',
     rememberMe: false,
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -41,15 +40,15 @@ const Login = () => {
     const newErrors = {};
     
     if (!formData.username.trim()) {
-      newErrors.username = 'Tên đăng nhập không được để trống';
+      newErrors.username = 'Username is required';
     } else if (formData.username.length < 3) {
-      newErrors.username = 'Tên đăng nhập phải có ít nhất 3 ký tự';
+      newErrors.username = 'Username must be at least 3 characters';
     }
     
     if (!formData.password) {
-      newErrors.password = 'Mật khẩu không được để trống';
+      newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+      newErrors.password = 'Password must be at least 6 characters';
     }
     
     setErrors(newErrors);
@@ -83,33 +82,39 @@ const Login = () => {
         // Navigate after successful login
         navigate(from, { replace: true });
       } else {
-        // Handle specific error types
-        if (result.error?.includes('username') || result.error?.includes('user not found')) {
+        // Handle specific error types and display them under appropriate fields
+        const errorMessage = result.error?.toLowerCase() || '';
+        
+        if (errorMessage.includes('username') || errorMessage.includes('user not found') || errorMessage.includes('user does not exist')) {
           setErrors({
-            username: 'Tên đăng nhập không tồn tại'
+            username: 'Username does not exist'
           });
-        } else if (result.error?.includes('password') || result.error?.includes('invalid credentials')) {
+        } else if (errorMessage.includes('password') || errorMessage.includes('invalid credentials') || errorMessage.includes('incorrect password')) {
           setErrors({
-            password: 'Mật khẩu không chính xác'
+            password: 'Incorrect password'
           });
-        } else if (result.error?.includes('account') && result.error?.includes('locked')) {
+        } else if (errorMessage.includes('account') && errorMessage.includes('locked')) {
           setErrors({
-            submit: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.'
+            submit: 'Account has been locked. Please contact administrator.'
           });
-        } else if (result.error?.includes('verification') || result.error?.includes('verify')) {
+        } else if (errorMessage.includes('verification') || errorMessage.includes('verify') || errorMessage.includes('not verified')) {
           setErrors({
-            submit: 'Tài khoản chưa được xác thực. Vui lòng kiểm tra email để xác thực tài khoản.'
+            submit: 'Account not verified. Please check your email to verify your account.'
+          });        } else if (errorMessage.includes('credentials') || (errorMessage.includes('invalid') && (errorMessage.includes('login') || errorMessage.includes('auth')))) {
+          // For general invalid credentials, show error under password field
+          setErrors({
+            password: 'Invalid username or password'
           });
         } else {
           setErrors({
-            submit: result.error || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.'
+            submit: result.error || 'Login failed. Please check your credentials and try again.'
           });
         }
       }
     } catch (error) {
       console.error('Login error:', error);
       setErrors({
-        submit: 'Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau.'
+        submit: 'An error occurred during login. Please try again later.'
       });
     } finally {
       setIsLoading(false);
@@ -139,50 +144,37 @@ const Login = () => {
               <Code2 className="w-8 h-8 text-white" />
             </div>
             <span className="text-3xl font-bold text-white">CodeHub</span>
-          </Link>
-            <h2 className="text-3xl font-bold text-white mb-2">
-            Chào mừng trở lại
+          </Link>          <h2 className="text-3xl font-bold text-white mb-2">
+            Welcome back
           </h2>
           <p className="text-slate-400">
-            Đăng nhập vào tài khoản của bạn để tiếp tục
+            Sign in to your account to continue
           </p>
         </div>        {/* Login Form */}
         <div>
           <Card className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">{/* Username */}              <div>
                 <Input
-                  label="Tên đăng nhập"
+                  label="Username"
                   type="text"
                   name="username"
                   value={formData.username}
                   onChange={handleChange}
-                  placeholder="Nhập tên đăng nhập của bạn"
+                  placeholder="Enter your username"
                   icon={User}
                   error={errors.username}
                   disabled={isLoading}
                   autoFocus
                 />
-              </div>
-
-              {/* Password */}
+              </div>              {/* Password */}
               <div>
                 <Input
-                  label="Mật khẩu"
-                  type={showPassword ? 'text' : 'password'}
+                  label="Password"
+                  type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Nhập mật khẩu của bạn"
-                  rightElement={
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="p-2 text-slate-400 hover:text-white transition-colors"
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  }
+                  placeholder="Enter your password"
                   error={errors.password}
                   disabled={isLoading}
                 />
@@ -199,16 +191,16 @@ const Login = () => {
                     className="w-4 h-4 text-cyan-500 bg-slate-800 border-slate-600 rounded focus:ring-cyan-500 focus:ring-2"
                     disabled={isLoading}
                   />
-                  <span className="text-sm text-slate-300">Ghi nhớ đăng nhập</span>
+                  <span className="text-sm text-slate-300">Remember me</span>
                 </label>
                 
                 <Link
                   to="/forgot-password"
                   className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
                 >
-                  Quên mật khẩu?
+                  Forgot password?
                 </Link>
-              </div>              {/* Submit Error */}
+              </div>              {/* Submit Error - Only show for general errors */}
               {errors.submit && (
                 <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
                   <div className="flex items-start space-x-3">
@@ -219,31 +211,9 @@ const Login = () => {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-red-400">
-                        Đăng nhập thất bại
+                        Login Failed
                       </h3>
                       <p className="text-sm text-red-300 mt-1">{errors.submit}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Field-specific errors summary */}
-              {(errors.username || errors.password) && (
-                <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0">
-                      <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-yellow-400">
-                        Vui lòng kiểm tra lại thông tin
-                      </h3>
-                      <ul className="text-sm text-yellow-300 mt-1 space-y-1">
-                        {errors.username && <li>• {errors.username}</li>}
-                        {errors.password && <li>• {errors.password}</li>}
-                      </ul>
                     </div>
                   </div>
                 </div>
@@ -257,7 +227,7 @@ const Login = () => {
                 isLoading={isLoading}
                 disabled={isLoading}
               >
-                {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
 
@@ -267,7 +237,7 @@ const Login = () => {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-700" />
                 </div>                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-slate-800 text-slate-400">Hoặc tiếp tục với</span>
+                  <span className="px-2 bg-slate-800 text-slate-400">Or continue with</span>
                 </div>
               </div>
             </div>
@@ -284,18 +254,18 @@ const Login = () => {
                 }}
               >
                 <Github className="w-5 h-5 mr-2" />
-                Đăng nhập với GitHub
+                Sign in with GitHub
               </Button>
             </div>
 
             {/* Sign up link */}            <div className="mt-6 text-center">
               <p className="text-slate-400">
-                Chưa có tài khoản?{' '}
+                Don't have an account?{' '}
                 <Link
                   to="/register"
                   className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors"
                 >
-                  Đăng ký ngay
+                  Sign up
                 </Link>
               </p>
             </div></Card>
@@ -303,13 +273,13 @@ const Login = () => {
 
         {/* Demo Credentials */}        <div className="text-center">
           <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-300 mb-2">Tài khoản demo</h3>
+            <h3 className="text-sm font-semibold text-slate-300 mb-2">Demo Credentials</h3>
             <div className="text-xs text-slate-400 space-y-1">
-              <p>Tên đăng nhập: john_doe</p>
-              <p>Mật khẩu: password123</p>
+              <p>Username: john_doe</p>
+              <p>Password: password123</p>
             </div>
             <p className="text-xs text-slate-500 mt-2">
-              Sử dụng thông tin trên để trải nghiệm hệ thống
+              Use these credentials to test the system
             </p>
           </div>
         </div>

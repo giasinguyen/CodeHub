@@ -138,15 +138,13 @@ export function AuthProvider({ children }) {
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: { user, token },
-      });
-
-      toast.success('Đăng nhập thành công!');
+      });      toast.success('Login successful!');
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
       
       // Handle different types of errors
-      let message = 'Đăng nhập thất bại';
+      let message = 'Login failed';
       
       if (error.response) {
         const status = error.response.status;
@@ -154,33 +152,34 @@ export function AuthProvider({ children }) {
         
         switch (status) {
           case 401:
+          case 403:
             if (errorData?.message?.toLowerCase().includes('username') || 
                 errorData?.message?.toLowerCase().includes('user not found')) {
-              message = 'Tên đăng nhập không tồn tại';
+              message = 'username does not exist';
             } else if (errorData?.message?.toLowerCase().includes('password') ||
                        errorData?.message?.toLowerCase().includes('invalid credentials')) {
-              message = 'Mật khẩu không chính xác';
+              message = 'incorrect password';
             } else {
-              message = 'Thông tin đăng nhập không chính xác';
+              message = 'invalid credentials';
             }
             break;
-          case 403:
-            message = 'Tài khoản đã bị khóa hoặc chưa được kích hoạt';
-            break;
           case 404:
-            message = 'Tên đăng nhập không tồn tại';
+            message = 'user not found';
+            break;
+          case 423:
+            message = 'account locked';
             break;
           case 429:
-            message = 'Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau';
+            message = 'too many login attempts. please try again later';
             break;
           case 500:
-            message = 'Lỗi máy chủ. Vui lòng thử lại sau';
+            message = 'server error. please try again later';
             break;
           default:
-            message = errorData?.message || 'Đăng nhập thất bại';
+            message = errorData?.message || 'login failed';
         }
       } else if (error.request) {
-        message = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng';
+        message = 'unable to connect to server. please check your network connection';
       }
       
       toast.error(message);
@@ -220,7 +219,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(STORAGE_KEYS.USER_DATA);
     localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRATION);
     dispatch({ type: AUTH_ACTIONS.LOGOUT });
-    toast.success('Đăng xuất thành công!');
+    toast.success('Logout successful!');
   };
 
   // Update user profile

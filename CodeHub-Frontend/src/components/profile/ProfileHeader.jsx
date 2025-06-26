@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import EditProfileModal from './EditProfileModal';
 import rateLimiter from '../../utils/rateLimiter';
 
-const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFollowing, followStatusLoaded = false, onFollowStateChange }) => {
+const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFollowing, followStatusLoaded = false, onFollowStateChange, onOpenFollowModal }) => {
   const [followersCount, setFollowersCount] = useState(user?.followersCount || 0);
   const [followingCount, setFollowingCount] = useState(user?.followingCount || 0);
   const [snippetsCount, setSnippetsCount] = useState(user?.snippetsCount || 0);
@@ -332,19 +332,25 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
           </div>
         </div>        {/* Followers/Following */}
         <div className="flex items-center space-x-6 mt-6 pt-6 border-t border-slate-700">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white">
+          <button
+            onClick={() => onOpenFollowModal && onOpenFollowModal('followers')}
+            className="text-center hover:bg-slate-800/50 rounded-lg p-2 transition-colors group"
+          >
+            <div className="text-2xl font-bold text-white group-hover:text-cyan-400">
               {statsLoading ? '...' : followersCount}
             </div>
-            <div className="text-sm text-slate-400">Followers</div>
-          </div>
+            <div className="text-sm text-slate-400 group-hover:text-slate-300">Followers</div>
+          </button>
           
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white">
+          <button
+            onClick={() => onOpenFollowModal && onOpenFollowModal('following')}
+            className="text-center hover:bg-slate-800/50 rounded-lg p-2 transition-colors group"
+          >
+            <div className="text-2xl font-bold text-white group-hover:text-cyan-400">
               {statsLoading ? '...' : followingCount}
             </div>
-            <div className="text-sm text-slate-400">Following</div>
-          </div>
+            <div className="text-sm text-slate-400 group-hover:text-slate-300">Following</div>
+          </button>
           
           <div className="text-center">
             <div className="text-2xl font-bold text-white">

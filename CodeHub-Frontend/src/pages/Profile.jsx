@@ -10,6 +10,7 @@ import {
   ProfileTabs,
   ProfileSnippets,
   ProfileActivity,
+  FollowModal,
 } from "../components/profile";
 
 const Profile = () => {
@@ -23,6 +24,8 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("snippets");
   const [initialIsFollowing, setInitialIsFollowing] = useState(undefined);
   const [followStatusLoaded, setFollowStatusLoaded] = useState(false);
+  const [showFollowModal, setShowFollowModal] = useState(false);
+  const [followModalType, setFollowModalType] = useState('followers'); // 'followers' or 'following'
   
   
   // Determine if this is own profile
@@ -158,6 +161,37 @@ const Profile = () => {
     console.log('Profile: Follow state changed from FollowButton:', isFollowing, 'new count:', newFollowerCount);
     console.log('Profile: Updating initialIsFollowing from', initialIsFollowing, 'to', isFollowing);
     setInitialIsFollowing(isFollowing);
+    
+    // Update user data with new follower count
+    if (user) {
+      setUser(prev => ({
+        ...prev,
+        followersCount: newFollowerCount
+      }));
+    }
+  };
+
+  // Handle opening follow modal
+  const handleOpenFollowModal = (type) => {
+    setFollowModalType(type);
+    setShowFollowModal(true);
+  };
+
+  // Handle follow state change from modal
+  const handleModalFollowChange = (isFollowing, targetUserId) => {
+    // If we're following/unfollowing the current profile user
+    if (targetUserId === user?.id) {
+      const newFollowerCount = isFollowing ? 
+        (user.followersCount || 0) + 1 : 
+        Math.max(0, (user.followersCount || 0) - 1);
+      
+      setUser(prev => ({
+        ...prev,
+        followersCount: newFollowerCount
+      }));
+      
+      setInitialIsFollowing(isFollowing);
+    }
   };
 
   if (loading) {
@@ -225,6 +259,7 @@ const Profile = () => {
           initialIsFollowing={initialIsFollowing}
           followStatusLoaded={followStatusLoaded}
           onFollowStateChange={handleFollowStateChange}
+          onOpenFollowModal={handleOpenFollowModal}
         />
         {/* Profile Stats */}
         <ProfileStats user={user} /> {/* Profile Tabs */}
@@ -240,6 +275,16 @@ const Profile = () => {
           )}
         </div>
       </div>
+
+      {/* Follow Modal */}
+      <FollowModal
+        isOpen={showFollowModal}
+        onClose={() => setShowFollowModal(false)}
+        userId={user?.id}
+        username={user?.username}
+        type={followModalType}
+        onFollowChange={handleModalFollowChange}
+      />
     </div>
   );
 };

@@ -11,6 +11,7 @@ export { default as CodeEditor } from './CodeEditor';
 export { default as NotificationDropdown } from './NotificationDropdown';
 export { default as FollowButton } from './FollowButton';
 export { default as SmartSearch } from './SmartSearch';
+export { default as Avatar } from './Avatar';
 export {
   LoadingSpinner,
   LoadingDots,

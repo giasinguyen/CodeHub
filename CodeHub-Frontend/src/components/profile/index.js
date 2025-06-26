@@ -4,6 +4,7 @@ export { default as ProfileTabs } from './ProfileTabs';
 export { default as ProfileSnippets } from './ProfileSnippets';
 export { default as ProfileActivity } from './ProfileActivity';
 export { default as EditProfileModal } from './EditProfileModal';
+export { default as FollowModal } from './FollowModal';
 export { default as ActivityItem } from './ActivityItem';
 export { default as ActivityStats } from './ActivityStats';
 export { default as AvatarUpload } from './AvatarUpload';

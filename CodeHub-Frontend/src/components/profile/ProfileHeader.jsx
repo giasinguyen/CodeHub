@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import EditProfileModal from './EditProfileModal';
 import rateLimiter from '../../utils/rateLimiter';
 
-const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser }) => {
+const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFollowing, followStatusLoaded = false, onFollowStateChange }) => {
   const [followersCount, setFollowersCount] = useState(user?.followersCount || 0);
   const [followingCount, setFollowingCount] = useState(user?.followingCount || 0);
   const [snippetsCount, setSnippetsCount] = useState(user?.snippetsCount || 0);
@@ -76,7 +76,13 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser }) => {
 
   // Handle follow state change from FollowButton
   const handleFollowChange = (isFollowing, newFollowerCount) => {
+    console.log('ProfileHeader: Follow state changed:', isFollowing, 'new count:', newFollowerCount);
     setFollowersCount(newFollowerCount);
+    
+    // Also notify parent Profile component
+    if (onFollowStateChange) {
+      onFollowStateChange(isFollowing, newFollowerCount);
+    }
   };
   const handleAvatarChange = async (event) => {
     const file = event.target.files[0];
@@ -311,6 +317,8 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser }) => {
                 <FollowButton
                   userId={user.id}
                   username={user.username}
+                  initialIsFollowing={initialIsFollowing}
+                  followStatusLoaded={followStatusLoaded}
                   onFollowChange={handleFollowChange}
                   size="md"
                   variant="primary"

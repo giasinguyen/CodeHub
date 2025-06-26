@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { usersAPI, authAPI } from "../services/api";
+import { usersAPI, authAPI, userFollowAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { Loading } from "../components/ui";
 import {
@@ -21,12 +21,28 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("snippets");
+  const [initialIsFollowing, setInitialIsFollowing] = useState(undefined);
+  const [followStatusLoaded, setFollowStatusLoaded] = useState(false);
+  
+  
   // Determine if this is own profile
-  const isOwnProfile = !userId && !username;useEffect(() => {
+  const isOwnProfile = !userId && !username;
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Profile: State update - user:', user?.username, 'isOwnProfile:', isOwnProfile, 'initialIsFollowing:', initialIsFollowing, 'followStatusLoaded:', followStatusLoaded);
+    if (followStatusLoaded && initialIsFollowing === undefined) {
+      console.warn('⚠️ Profile: followStatusLoaded is true but initialIsFollowing is undefined - this should not happen!');
+    }
+  }, [user, initialIsFollowing, isOwnProfile, followStatusLoaded]);  useEffect(() => {
+    console.log('🔄 Profile: useEffect triggered - userId:', userId, 'username:', username, 'currentUser:', currentUser?.id);
     const loadUserProfile = async () => {
       try {
         setLoading(true);
         setError(null);
+        // Reset follow status when loading new profile
+        setFollowStatusLoaded(false);
+        setInitialIsFollowing(undefined);
 
         let response;
         if (isOwnProfile) {
@@ -56,7 +72,57 @@ const Profile = () => {
           response = await authAPI.getCurrentUser();
         }
 
-        setUser(response.data);
+        const userData = response.data;
+        setUser(userData);
+
+        // Load initial follow status if not own profile and user is authenticated
+        console.log('Profile: Checking follow status conditions:');
+        console.log('  - isOwnProfile:', isOwnProfile);
+        console.log('  - currentUser:', !!currentUser, currentUser?.id);
+        console.log('  - userData.id:', userData.id);
+        console.log('  - userData.id !== currentUser.id:', userData.id !== currentUser?.id);
+        
+        if (!isOwnProfile && currentUser && userData.id !== currentUser.id) {
+          console.log('Profile: Loading follow status for user:', userData.id, 'current user:', currentUser.id);
+          try {
+            const followResponse = await userFollowAPI.getFollowStatus(userData.id);
+            console.log('Profile: Initial follow status API response:', followResponse);
+            console.log('Profile: Response data:', followResponse.data);
+            console.log('Profile: Response data keys:', Object.keys(followResponse.data || {}));
+            console.log('Profile: isFollowing value:', followResponse.data?.isFollowing, 'type:', typeof followResponse.data?.isFollowing);
+            console.log('Profile: following value:', followResponse.data?.following, 'type:', typeof followResponse.data?.following);
+            
+            // Check if response has valid isFollowing or following field
+            const followingValue = followResponse.data?.isFollowing ?? followResponse.data?.following;
+            if (followResponse.data && typeof followingValue === 'boolean') {
+              console.log('Profile: Setting initialIsFollowing to:', followingValue);
+              setInitialIsFollowing(followingValue);
+              console.log('Profile: Set followStatusLoaded to true');
+              setFollowStatusLoaded(true);
+            } else {
+              console.error('Profile: API response missing or invalid follow field:', followResponse.data);
+              console.log('Profile: Setting initialIsFollowing to false (invalid response)');
+              setInitialIsFollowing(false);
+              console.log('Profile: Set followStatusLoaded to true (invalid response case)');
+              setFollowStatusLoaded(true);
+            }
+          } catch (error) {
+            console.error('Profile: Failed to load initial follow status:', error);
+            // Don't show error, just use default false
+            console.log('Profile: Setting initialIsFollowing to false (error fallback)');
+            setInitialIsFollowing(false);
+            console.log('Profile: Set followStatusLoaded to true (error case)');
+            setFollowStatusLoaded(true);
+          }
+        } else {
+          // For own profile or when not authenticated, set to false
+          console.log('Profile: Own profile or not authenticated, setting initialIsFollowing to false');
+          console.log('  - Reason: isOwnProfile=' + isOwnProfile + ', currentUser=' + !!currentUser + ', sameUser=' + (userData.id === currentUser?.id));
+          setInitialIsFollowing(false);
+          console.log('Profile: Set followStatusLoaded to true (own profile case)');
+          setFollowStatusLoaded(true);
+        }
+
       } catch (error) {
         console.error("Failed to load user profile:", error);
 
@@ -73,13 +139,25 @@ const Profile = () => {
         setLoading(false);
       }
     };    if (currentUser || userId || username) {
+      console.log('🚀 Profile: Calling loadUserProfile - currentUser:', !!currentUser, 'userId:', userId, 'username:', username);
       loadUserProfile();
+    } else {
+      console.log('⏭️ Profile: Skipping loadUserProfile - no user info');
     }
-  }, [userId, username, currentUser, isOwnProfile]);
+    // isOwnProfile is derived from userId and username, so it's included for completeness
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, username, currentUser]);
 
   const handleUserUpdate = (updatedUser) => {
     setUser(updatedUser);
     toast.success("Profile updated successfully!");
+  };
+
+  // Handle follow state change and update initialIsFollowing for consistency
+  const handleFollowStateChange = (isFollowing, newFollowerCount) => {
+    console.log('Profile: Follow state changed from FollowButton:', isFollowing, 'new count:', newFollowerCount);
+    console.log('Profile: Updating initialIsFollowing from', initialIsFollowing, 'to', isFollowing);
+    setInitialIsFollowing(isFollowing);
   };
 
   if (loading) {
@@ -144,6 +222,9 @@ const Profile = () => {
           isOwnProfile={isOwnProfile}
           onUserUpdate={handleUserUpdate}
           setUser={setUser}
+          initialIsFollowing={initialIsFollowing}
+          followStatusLoaded={followStatusLoaded}
+          onFollowStateChange={handleFollowStateChange}
         />
         {/* Profile Stats */}
         <ProfileStats user={user} /> {/* Profile Tabs */}

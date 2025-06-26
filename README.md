@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="CodeHub-Frontend/public/CodeHub-Logo.png" alt="CodeHub Logo" >
+  <img src="CodeHub-Frontend/public/CodeHub-Logo-nobg.png" alt="CodeHub Logo" >
   <h1>CodeHub</h1>
   <p><strong>A modern platform for developers to share, discover, and collaborate on code snippets</strong></p>
-  <p><em>Phát triển bởi: Nguyễn Trần Gia Sĩ | Cập nhật: 09/06/2025</em></p>
+  <p><em>Phát triển bởi: Nguyễn Trần Gia Sĩ | Cập nhật: 26/06/2025</em></p>
 </div>
 
 <p align="center">

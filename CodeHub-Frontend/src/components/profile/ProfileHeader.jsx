@@ -1,55 +1,80 @@
-import React, { useState, useEffect } from 'react';
-import { Camera, MapPin, Calendar, Mail, Github, Twitter, Linkedin, Edit3, UserCheck, UserPlus } from 'lucide-react';
-import { Button, Card, FollowButton } from '../ui';
-import { formatDate } from '../../utils/dateUtils';
-import { uploadAPI, authAPI, usersAPI } from '../../services/api';
-import { toast } from 'react-hot-toast';
-import EditProfileModal from './EditProfileModal';
-import rateLimiter from '../../utils/rateLimiter';
+import React, { useState, useEffect } from "react";
+import {
+  Camera,
+  MapPin,
+  Calendar,
+  Mail,
+  Github,
+  Twitter,
+  Linkedin,
+  Edit3,
+  UserCheck,
+  UserPlus,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button, Card, FollowButton } from "../ui";
+import { formatDate } from "../../utils/dateUtils";
+import { uploadAPI, authAPI, usersAPI } from "../../services/api";
+import { toast } from "react-hot-toast";
+import EditProfileModal from "./EditProfileModal";
+import rateLimiter from "../../utils/rateLimiter";
 
-const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFollowing, followStatusLoaded = false, onFollowStateChange, onOpenFollowModal }) => {
-  const [followersCount, setFollowersCount] = useState(user?.followersCount || 0);
-  const [followingCount, setFollowingCount] = useState(user?.followingCount || 0);
+const ProfileHeader = ({
+  user,
+  isOwnProfile,
+  onUserUpdate,
+  setUser,
+  initialIsFollowing,
+  followStatusLoaded = false,
+  onFollowStateChange,
+  onOpenFollowModal,
+}) => {
+  const [followersCount, setFollowersCount] = useState(
+    user?.followersCount || 0
+  );
+  const [followingCount, setFollowingCount] = useState(
+    user?.followingCount || 0
+  );
   const [snippetsCount, setSnippetsCount] = useState(user?.snippetsCount || 0);
   const [isUploading, setIsUploading] = useState(false);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);  // Load user statistics
+  const [showEditModal, setShowEditModal] = useState(false); // Load user statistics
   useEffect(() => {
     const loadUserStats = async () => {
       // Check rate limit
-      if (!rateLimiter.isAllowed('user-stats', user?.id)) {
-        console.warn('Rate limit exceeded for user stats');
+      if (!rateLimiter.isAllowed("user-stats", user?.id)) {
+        console.warn("Rate limit exceeded for user stats");
         // Use fallback values from user object
         setFollowersCount(user?.followersCount || 0);
         setFollowingCount(user?.followingCount || 0);
         setSnippetsCount(user?.snippetsCount || 0);
         return;
       }
-      
+
       try {
         setStatsLoading(true);
         let response;
-        
+
         if (isOwnProfile) {
           response = await usersAPI.getCurrentUserStats();
         } else {
           response = await usersAPI.getUserStats(user.id);
         }
-        
+
         const stats = response.data;
         setFollowersCount(stats.followersCount || 0);
         setFollowingCount(stats.followingCount || 0);
         setSnippetsCount(stats.snippetsCount || 0);
       } catch (error) {
-        console.error('Failed to load user stats:', error);
+        console.error("Failed to load user stats:", error);
         // Use fallback values from user object
         setFollowersCount(user?.followersCount || 0);
         setFollowingCount(user?.followingCount || 0);
         setSnippetsCount(user?.snippetsCount || 0);
-        
+
         // Don't show error toast for rate limiting
         if (error.response?.status !== 429) {
-          console.warn('Failed to load user stats:', error.message);
+          console.warn("Failed to load user stats:", error.message);
         }
       } finally {
         setStatsLoading(false);
@@ -61,7 +86,13 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
       const timeoutId = setTimeout(loadUserStats, 200);
       return () => clearTimeout(timeoutId);
     }
-  }, [user?.id, isOwnProfile, user?.followersCount, user?.followingCount, user?.snippetsCount]);
+  }, [
+    user?.id,
+    isOwnProfile,
+    user?.followersCount,
+    user?.followingCount,
+    user?.snippetsCount,
+  ]);
 
   const handleEditProfile = () => {
     setShowEditModal(true);
@@ -76,9 +107,14 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
 
   // Handle follow state change from FollowButton
   const handleFollowChange = (isFollowing, newFollowerCount) => {
-    console.log('ProfileHeader: Follow state changed:', isFollowing, 'new count:', newFollowerCount);
+    console.log(
+      "ProfileHeader: Follow state changed:",
+      isFollowing,
+      "new count:",
+      newFollowerCount
+    );
     setFollowersCount(newFollowerCount);
-    
+
     // Also notify parent Profile component
     if (onFollowStateChange) {
       onFollowStateChange(isFollowing, newFollowerCount);
@@ -90,32 +126,33 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
 
     try {
       // Validate file
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file');
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
         return;
       }
-      
-      if (file.size > 10 * 1024 * 1024) { // 10MB
-        toast.error('Image size must be less than 10MB');
+
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB
+        toast.error("Image size must be less than 10MB");
         return;
       }
 
       setIsUploading(true);
-      
+
       // Upload to Cloudinary
       const response = await uploadAPI.uploadAvatar(file);
       const imageUrl = response.data.imageUrl;
-      
+
       // Update user profile
       await authAPI.updateProfile({ avatarUrl: imageUrl });
-      
+
       // Update local state
-      setUser(prev => ({ ...prev, avatarUrl: imageUrl }));
-      
-      toast.success('Avatar updated successfully!');
+      setUser((prev) => ({ ...prev, avatarUrl: imageUrl }));
+
+      toast.success("Avatar updated successfully!");
     } catch (error) {
-      console.error('Failed to upload avatar:', error);
-      toast.error('Failed to upload avatar');
+      console.error("Failed to upload avatar:", error);
+      toast.error("Failed to upload avatar");
     } finally {
       setIsUploading(false);
     }
@@ -127,32 +164,33 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
 
     try {
       // Validate file
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file');
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
         return;
       }
-      
-      if (file.size > 10 * 1024 * 1024) { // 10MB
-        toast.error('Image size must be less than 10MB');
+
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB
+        toast.error("Image size must be less than 10MB");
         return;
       }
 
       setIsUploading(true);
-      
+
       // Upload to Cloudinary
       const response = await uploadAPI.uploadCoverPhoto(file);
       const imageUrl = response.data.imageUrl;
-      
+
       // Update user profile
       await authAPI.updateProfile({ coverPhotoUrl: imageUrl });
-      
+
       // Update local state
-      setUser(prev => ({ ...prev, coverPhotoUrl: imageUrl }));
-      
-      toast.success('Cover photo updated successfully!');
+      setUser((prev) => ({ ...prev, coverPhotoUrl: imageUrl }));
+
+      toast.success("Cover photo updated successfully!");
     } catch (error) {
-      console.error('Failed to upload cover photo:', error);
-      toast.error('Failed to upload cover photo');
+      console.error("Failed to upload cover photo:", error);
+      toast.error("Failed to upload cover photo");
     } finally {
       setIsUploading(false);
     }
@@ -162,15 +200,15 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
       {/* Cover Photo */}
       <div className="h-48 relative overflow-hidden">
         {user.coverPhotoUrl ? (
-          <img 
-            src={user.coverPhotoUrl} 
-            alt="Cover" 
+          <img
+            src={user.coverPhotoUrl}
+            alt="Cover"
             className="w-full h-full object-cover"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600" />
         )}
-        
+
         {isOwnProfile && (
           <label className="absolute top-4 right-4 bg-black/20 backdrop-blur-sm text-white p-2 rounded-lg hover:bg-black/30 transition-colors cursor-pointer">
             <Camera className="w-5 h-5" />
@@ -193,20 +231,20 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
             <div className="relative">
               <div className="w-32 h-32 rounded-full border-4 border-slate-800 bg-slate-700 overflow-hidden">
                 {user.avatarUrl ? (
-                  <img 
-                    src={user.avatarUrl} 
+                  <img
+                    src={user.avatarUrl}
                     alt={user.username}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-500 to-blue-600">
                     <span className="text-2xl font-bold text-white">
-                      {user.username?.charAt(0)?.toUpperCase() || 'U'}
+                      {user.username?.charAt(0)?.toUpperCase() || "U"}
                     </span>
                   </div>
                 )}
               </div>
-                {isOwnProfile && (
+              {isOwnProfile && (
                 <label className="absolute bottom-2 right-2 bg-cyan-500 hover:bg-cyan-600 text-white p-2 rounded-full cursor-pointer transition-colors disabled:opacity-50">
                   <Camera className="w-4 h-4" />
                   <input
@@ -232,13 +270,11 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
                   </div>
                 )}
               </div>
-              
+
               <p className="text-xl text-slate-400 mb-2">@{user.username}</p>
-              
+
               {user.bio && (
-                <p className="text-slate-300 mb-4 max-w-2xl">
-                  {user.bio}
-                </p>
+                <p className="text-slate-300 mb-4 max-w-2xl">{user.bio}</p>
               )}
 
               {/* Meta Info */}
@@ -249,7 +285,7 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
                     <span>{user.location}</span>
                   </div>
                 )}
-                
+
                 <div className="flex items-center space-x-1">
                   <Calendar className="w-4 h-4" />
                   <span>Joined {formatDate(user.createdAt)}</span>
@@ -276,7 +312,7 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
                       <Github className="w-5 h-5" />
                     </a>
                   )}
-                  
+
                   {user.twitterUrl && (
                     <a
                       href={user.twitterUrl}
@@ -287,7 +323,7 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
                       <Twitter className="w-5 h-5" />
                     </a>
                   )}
-                  
+
                   {user.linkedinUrl && (
                     <a
                       href={user.linkedinUrl}
@@ -304,15 +340,18 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center space-x-3 mt-4 sm:mt-0">            {isOwnProfile ? (
-              <Button 
-                variant="outline" 
+          <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+            {" "}
+            {isOwnProfile ? (
+              <Button
+                variant="outline"
                 className="flex items-center space-x-2"
                 onClick={handleEditProfile}
               >
                 <Edit3 className="w-4 h-4" />
                 <span>Edit Profile</span>
-              </Button>            ) : (
+              </Button>
+            ) : (
               <>
                 <FollowButton
                   userId={user.id}
@@ -323,41 +362,45 @@ const ProfileHeader = ({ user, isOwnProfile, onUserUpdate, setUser, initialIsFol
                   size="md"
                   variant="primary"
                 />
-                
-                <Button variant="ghost">
-                  Message
-                </Button>
+
+                <Button variant="ghost">Message</Button>
               </>
             )}
           </div>
-        </div>        {/* Followers/Following */}
+        </div>{" "}
+        {/* Followers/Following */}
         <div className="flex items-center space-x-6 mt-6 pt-6 border-t border-slate-700">
           <button
-            onClick={() => onOpenFollowModal && onOpenFollowModal('followers')}
+            onClick={() => onOpenFollowModal && onOpenFollowModal("followers")}
             className="text-center hover:bg-slate-800/50 rounded-lg p-2 transition-colors group"
           >
             <div className="text-2xl font-bold text-white group-hover:text-cyan-400">
-              {statsLoading ? '...' : followersCount}
+              {statsLoading ? "..." : followersCount}
             </div>
-            <div className="text-sm text-slate-400 group-hover:text-slate-300">Followers</div>
+            <div className="text-sm text-slate-400 group-hover:text-slate-300">
+              Followers
+            </div>
           </button>
-          
           <button
-            onClick={() => onOpenFollowModal && onOpenFollowModal('following')}
+            onClick={() => onOpenFollowModal && onOpenFollowModal("following")}
             className="text-center hover:bg-slate-800/50 rounded-lg p-2 transition-colors group"
           >
             <div className="text-2xl font-bold text-white group-hover:text-cyan-400">
-              {statsLoading ? '...' : followingCount}
+              {statsLoading ? "..." : followingCount}
             </div>
-            <div className="text-sm text-slate-400 group-hover:text-slate-300">Following</div>
+            <div className="text-sm text-slate-400 group-hover:text-slate-300">
+              Following
+            </div>
           </button>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white">
-              {statsLoading ? '...' : snippetsCount}
-            </div>
-            <div className="text-sm text-slate-400">Snippets</div>
-          </div>        </div>
+          <Link to={"/my-snippets"}>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">
+                {statsLoading ? "..." : snippetsCount}
+              </div>
+              <div className="text-sm text-slate-400">Snippets</div>
+            </div>{" "}
+          </Link>
+        </div>
       </div>
 
       {/* Edit Profile Modal */}

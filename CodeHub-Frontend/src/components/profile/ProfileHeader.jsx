@@ -18,6 +18,7 @@ import { uploadAPI, authAPI, usersAPI } from "../../services/api";
 import { toast } from "react-hot-toast";
 import EditProfileModal from "./EditProfileModal";
 import rateLimiter from "../../utils/rateLimiter";
+import ChatButton from "../chat/ChatButton";
 
 const ProfileHeader = ({
   user,
@@ -363,7 +364,11 @@ const ProfileHeader = ({
                   variant="primary"
                 />
 
-                <Button variant="ghost">Message</Button>
+                <ChatButton
+                  recipientId={user.id}
+                  recipientUsername={user.username}
+                  recipientName={user.fullName || user.username}
+                />
               </>
             )}
           </div>

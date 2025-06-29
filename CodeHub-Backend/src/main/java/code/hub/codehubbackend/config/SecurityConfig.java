@@ -79,13 +79,16 @@ public class SecurityConfig {
                     .requestMatchers("/api/users/stats/community").permitAll()
                     .requestMatchers("/api/users/username/**").permitAll()
                     .requestMatchers("/api/users/{id:[\\d+]}").permitAll()
+                    .requestMatchers("/ws/**").permitAll() // Allow WebSocket connections
                     .requestMatchers("/h2-console/**").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .anyRequest().authenticated()
             );
         
-        // Fix H2 console frame issues
-        http.headers(headers -> headers.frameOptions().disable());
+        // Configure frame options properly
+        http.headers(headers -> headers
+            .frameOptions(frameOptions -> frameOptions.deny())
+        );
         
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

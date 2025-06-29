@@ -47,6 +47,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+        
+        <!-- WebSocket for real-time messaging -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        
         <!-- Cloudinary cho lưu trữ hình ảnh -->
         <dependency>
             <groupId>com.cloudinary</groupId>

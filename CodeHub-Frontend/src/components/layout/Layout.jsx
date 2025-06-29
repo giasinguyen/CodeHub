@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 import ThemeToggle from '../ui/ThemeToggle';
+import ChatWindow from '../chat/ChatWindow';
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -69,6 +70,9 @@ const Layout = ({ children }) => {
       
       {/* Theme Toggle */}
       <ThemeToggle />
+      
+      {/* Chat Window */}
+      <ChatWindow />
     </div>
   );
 };

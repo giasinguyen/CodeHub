@@ -677,4 +677,55 @@ export const recentAPI = {
   }
 };
 
+// Chat API
+export const chatAPI = {
+  // Create private chat room
+  createPrivateChat: (participantUserId) => {
+    console.log('🌐 [API] Create Private Chat:', { participantUserId });
+    return apiClient.post('/chat/rooms', { participantUserId });
+  },
+
+  // Get user's chat rooms
+  getChatRooms: (page = 0, size = 20) => {
+    console.log('🌐 [API] Get Chat Rooms:', { page, size });
+    return apiClient.get('/chat/rooms', {
+      params: { page, size }
+    });
+  },
+
+  // Get specific chat room
+  getChatRoom: (chatId) => {
+    console.log('🌐 [API] Get Chat Room:', chatId);
+    return apiClient.get(`/chat/rooms/${chatId}`);
+  },
+
+  // Get chat messages
+  getChatMessages: (chatId, page = 0, size = 50) => {
+    console.log('🌐 [API] Get Chat Messages:', { chatId, page, size });
+    return apiClient.get(`/chat/rooms/${chatId}/messages`, {
+      params: { page, size }
+    });
+  },
+
+  // Send message (REST fallback)
+  sendMessage: (messageData) => {
+    console.log('🌐 [API] Send Message:', messageData);
+    return apiClient.post('/chat/messages', messageData);
+  },
+
+  // Mark messages as read
+  markAsRead: (chatId) => {
+    console.log('🌐 [API] Mark As Read:', chatId);
+    return apiClient.put(`/chat/rooms/${chatId}/read`);
+  },
+
+  // Search chat rooms
+  searchChatRooms: (searchTerm) => {
+    console.log('🌐 [API] Search Chat Rooms:', searchTerm);
+    return apiClient.get('/chat/rooms/search', {
+      params: { q: searchTerm }
+    });
+  }
+};
+
 export default apiClient;

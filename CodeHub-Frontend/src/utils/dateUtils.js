@@ -68,3 +68,41 @@ export const formatDateTime = (dateString) => {
     minute: '2-digit'
   });
 };
+
+export const formatTime = (dateString) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+  
+  // If less than a minute ago
+  if (diffInSeconds < 60) return 'now';
+  
+  // If less than an hour ago
+  if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes}m`;
+  }
+  
+  // If less than 24 hours ago
+  if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours}h`;
+  }
+  
+  // If same year, show month and day
+  if (date.getFullYear() === now.getFullYear()) {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+  
+  // Otherwise show year
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+};

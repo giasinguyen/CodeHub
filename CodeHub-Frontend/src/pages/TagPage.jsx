@@ -1033,7 +1033,7 @@ const TagPage = () => {
                               className="w-6 h-6 rounded-full"
                             />
                             <Link
-                              to={`/profile/${snippet.owner?.id}`}
+                              to={`/users/${snippet.owner?.username}`}
                               className="text-sm text-slate-300 hover:text-white transition-colors"
                             >
                               {snippet.owner?.username || "Anonymous"}

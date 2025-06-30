@@ -11,6 +11,7 @@ import {
   UserPlus, 
   Star 
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { notificationsAPI } from '../services/api';
 import { Button, Card, Loading } from '../components/ui';
@@ -19,6 +20,7 @@ import toast from 'react-hot-toast';
 
 const Notifications = () => {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ unreadCount: 0, totalCount: 0 });
@@ -203,6 +205,18 @@ const Notifications = () => {
     return true;
   });
 
+  // Handle notification click with navigation
+  const handleNotificationClick = (notification) => {
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+
+    // Navigate based on action URL
+    if (notification.actionUrl) {
+      navigate(notification.actionUrl);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
@@ -294,6 +308,7 @@ const Notifications = () => {
                   className={`p-4 hover:bg-slate-800/50 transition-colors cursor-pointer group ${
                     !notification.read ? 'bg-cyan-500/5 border-l-4 border-cyan-500' : ''
                   }`}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex space-x-4">
                     {/* Avatar & Icon */}

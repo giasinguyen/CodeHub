@@ -181,7 +181,7 @@ public class NotificationService {
     public void createUserFollowNotification(User followedUser, User follower) {
         String title = "New follower";
         String message = String.format("%s started following you", follower.getUsername());
-        String actionUrl = "/profile/" + follower.getUsername();
+        String actionUrl = "/users/" + follower.getUsername();
         
         createNotification(followedUser, follower, Notification.NotificationType.USER_FOLLOWED,
                 title, message, follower.getId(), "user", actionUrl, null);

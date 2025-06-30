@@ -597,7 +597,7 @@ const Trending = () => {
                       className="w-6 h-6 rounded-full"
                     />
                     <Link
-                      to={`/profile/${snippet.owner?.id}`}
+                      to={`/users/${snippet.owner?.username}`}
                       className="text-sm text-slate-300 hover:text-white transition-colors"
                     >
                       {snippet.owner?.username || "Anonymous"}
@@ -645,7 +645,7 @@ const Trending = () => {
 
                   <div className="flex-1">
                     <Link
-                      to={`/profile/${developer.id}`}
+                      to={`/users/${developer.username}`}
                       className="block hover:text-cyan-400 transition-colors"
                     >
                       <h3 className="text-lg font-semibold text-white dark:text-white light:text-gray-900">

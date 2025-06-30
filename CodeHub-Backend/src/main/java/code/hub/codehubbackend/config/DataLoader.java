@@ -351,7 +351,7 @@ public class DataLoader implements CommandLineRunner {    @Autowired
                 .message("sarah_dev started following you")
                 .targetId(users.get(3).getId())
                 .targetType("user")
-                .actionUrl("/profile/" + users.get(3).getUsername())
+                .actionUrl("/users/" + users.get(3).getUsername())
                 .read(true)
                 .createdAt(Instant.now().minus(2, ChronoUnit.HOURS))
                 .readAt(Instant.now().minus(1, ChronoUnit.HOURS))

@@ -50,4 +50,26 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     Page<ChatMessage> searchMessages(@Param("chatRoom") ChatRoom chatRoom, 
                                    @Param("searchTerm") String searchTerm, 
                                    Pageable pageable);
+    
+    // Chat History and Statistics queries
+    @Query("SELECT COUNT(cm) FROM ChatMessage cm WHERE cm.chatRoom = :chatRoom")
+    Long countMessagesByChatRoom(@Param("chatRoom") ChatRoom chatRoom);
+    
+    @Query("SELECT MIN(cm.createdAt) FROM ChatMessage cm WHERE cm.chatRoom = :chatRoom")
+    Optional<Instant> findFirstMessageTime(@Param("chatRoom") ChatRoom chatRoom);
+    
+    @Query("SELECT MAX(cm.createdAt) FROM ChatMessage cm WHERE cm.chatRoom = :chatRoom")
+    Optional<Instant> findLastMessageTime(@Param("chatRoom") ChatRoom chatRoom);
+    
+    @Query("SELECT COUNT(cm) FROM ChatMessage cm " +
+           "WHERE cm.sender = :user")
+    Long countMessagesByUser(@Param("user") User user);
+    
+    @Query("SELECT cm FROM ChatMessage cm " +
+           "WHERE cm.chatRoom IN :chatRooms " +
+           "AND cm.createdAt >= :fromDate " +
+           "ORDER BY cm.createdAt DESC")
+    Page<ChatMessage> findRecentMessagesInChatRooms(@Param("chatRooms") java.util.List<ChatRoom> chatRooms,
+                                                   @Param("fromDate") Instant fromDate,
+                                                   Pageable pageable);
 }

@@ -728,4 +728,51 @@ export const chatAPI = {
   }
 };
 
+// ============================
+// CHAT HISTORY API
+// ============================
+export const chatHistoryAPI = {
+  // Get all conversations
+  getConversations: (page = 0, size = 20) => {
+    const url = `/chat/history/conversations?page=${page}&size=${size}`;
+    console.log('🌐 [API] GET Conversations:', url);
+    return api.get(url);
+  },
+
+  // Get conversation history with specific user
+  getConversationHistory: (username) => {
+    const url = `/chat/history/conversations/${encodeURIComponent(username)}`;
+    console.log('🌐 [API] GET Conversation History:', url);
+    return api.get(url);
+  },
+
+  // Get conversation messages with specific user
+  getConversationMessages: (username, page = 0, size = 50) => {
+    const url = `/chat/history/conversations/${encodeURIComponent(username)}/messages?page=${page}&size=${size}`;
+    console.log('🌐 [API] GET Conversation Messages:', url);
+    return api.get(url);
+  },
+
+  // Get messages by chat room ID
+  getMessagesByChatId: (chatId, page = 0, size = 50) => {
+    const url = `/chat/history/chatrooms/${encodeURIComponent(chatId)}/messages?page=${page}&size=${size}`;
+    console.log('🌐 [API] GET Messages by Chat ID:', url);
+    return api.get(url);
+  },
+
+  // Search messages across all conversations
+  searchMessages: (searchTerm, page = 0, size = 20) => {
+    const url = `/chat/history/search?q=${encodeURIComponent(searchTerm)}&page=${page}&size=${size}`;
+    console.log('🌐 [API] Search Messages:', url);
+    return api.get(url);
+  },
+
+  // Get chat statistics
+  getChatStats: () => {
+    const url = '/chat/history/stats';
+    console.log('🌐 [API] GET Chat Stats:', url);
+    return api.get(url);
+  }
+};
+
 export default apiClient;

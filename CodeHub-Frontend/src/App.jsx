@@ -25,6 +25,7 @@ import {
   TagPage,
   Settings,
   Notifications,
+  Messages,
   Login,
   Register,
   Recent,
@@ -378,6 +379,26 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <Layout>
               <Notifications />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Messages />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/messages/:username"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Messages />
             </Layout>
           </ProtectedRoute>
         }

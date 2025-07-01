@@ -9,6 +9,7 @@ export { default as Modal } from './Modal';
 export { default as Loading } from './Loading';
 export { default as CodeEditor } from './CodeEditor';
 export { default as NotificationDropdown } from './NotificationDropdown';
+export { default as MessageDropdown } from './MessageDropdown';
 export { default as FollowButton } from './FollowButton';
 export { default as SmartSearch } from './SmartSearch';
 export { default as Avatar } from './Avatar';

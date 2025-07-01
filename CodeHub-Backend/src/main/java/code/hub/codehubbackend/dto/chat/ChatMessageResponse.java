@@ -25,4 +25,16 @@ public class ChatMessageResponse {
     private Boolean isEdited;
     private Instant createdAt;
     private Instant editedAt;
+    private SenderInfo sender;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SenderInfo {
+        private Long id;
+        private String username;
+        private String fullName;
+        private String avatarUrl;
+    }
 }

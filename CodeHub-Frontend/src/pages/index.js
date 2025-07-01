@@ -13,6 +13,7 @@ export { default as Settings } from "./Settings";
 export { default as Recent } from "./Recent";
 export { default as Search } from "./Search";
 export { default as Notifications } from "./Notifications";
+export { default as Messages } from "./Messages";
 export * from "./auth";
 export * from "./support";
 export * from "./legal";

@@ -40,4 +40,22 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
            "           AND LOWER(p2.user.username) LIKE LOWER(CONCAT('%', :searchTerm, '%')))) " +
            "ORDER BY cr.updatedAt DESC")
     List<ChatRoom> searchUserChatRooms(@Param("user") User user, @Param("searchTerm") String searchTerm);
+    
+    // Chat History queries
+    @Query("SELECT COUNT(cr) FROM ChatRoom cr " +
+           "JOIN cr.participants p " +
+           "WHERE p.user = :user AND p.isActive = true")
+    Long countActiveConversationsByUser(@Param("user") User user);
+    
+    @Query("SELECT COUNT(cr) FROM ChatRoom cr " +
+           "JOIN cr.participants p " +
+           "WHERE p.user = :user AND p.isActive = false")
+    Long countArchivedConversationsByUser(@Param("user") User user);
+    
+    @Query("SELECT cr FROM ChatRoom cr " +
+           "JOIN cr.participants p " +
+           "WHERE p.user = :user AND p.isActive = true " +
+           "AND EXISTS (SELECT cm FROM ChatMessage cm WHERE cm.chatRoom = cr) " +
+           "ORDER BY (SELECT MAX(cm.createdAt) FROM ChatMessage cm WHERE cm.chatRoom = cr) DESC")
+    Page<ChatRoom> findActiveConversationsWithMessagesOrderByLastMessage(@Param("user") User user, Pageable pageable);
 }

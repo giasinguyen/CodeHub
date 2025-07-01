@@ -20,6 +20,7 @@ import {
   Gamepad,
   Palette,
   Terminal,
+  MessageCircle,
 } from "lucide-react";
 
 const Sidebar = ({ className = "" }) => {
@@ -56,6 +57,7 @@ const Sidebar = ({ className = "" }) => {
       items: [
         { label: "My Snippets", path: "/my-snippets", icon: Code2 },
         { label: "Favorites", path: "/favorites", icon: Star },
+        { label: "Messages", path: "/messages", icon: MessageCircle },
         { label: "Recently Viewed", path: "/recent", icon: Clock },
       ],
     },

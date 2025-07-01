@@ -11,10 +11,11 @@ import {
   Code2,
   Bell,
   PlusCircle,
+  MessageCircle,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { notificationsAPI } from "../../services/api";
-import { Button, Input, NotificationDropdown, SmartSearch } from "../ui";
+import { notificationsAPI, chatHistoryAPI } from "../../services/api";
+import { Button, Input, NotificationDropdown, MessageDropdown, SmartSearch } from "../ui";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -38,7 +39,9 @@ const Navbar = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   // Load unread notifications count from API
   useEffect(() => {
     const loadUnreadCount = async () => {
@@ -69,8 +72,40 @@ const Navbar = () => {
       }
     };
 
-    loadUnreadCount();    // Optionally, poll for updates every minute
-    const interval = setInterval(loadUnreadCount, 60000);
+    const loadUnreadMessageCount = async () => {
+      if (isAuthenticated && user) {
+        try {
+          console.log("💬 [Navbar] Loading unread message count from API...");
+          const response = await chatHistoryAPI.getChatStats();
+
+          if (response && response.data) {
+            setUnreadMessageCount(response.data.unreadMessages || 0);
+            console.log(
+              "✅ [Navbar] Loaded unread message count:",
+              response.data.unreadMessages
+            );
+          }
+        } catch (error) {
+          console.warn(
+            "⚠️ [Navbar] API not available for unread message count:",
+            error.message
+          );
+          setUnreadMessageCount(0); // No fallback for messages
+        }
+      } else {
+        setUnreadMessageCount(0);
+      }
+    };
+
+    loadUnreadCount();
+    loadUnreadMessageCount();
+    
+    // Optionally, poll for updates every minute
+    const interval = setInterval(() => {
+      loadUnreadCount();
+      loadUnreadMessageCount();
+    }, 60000);
+    
     return () => clearInterval(interval);
   }, [isAuthenticated, user]);
 
@@ -156,6 +191,27 @@ const Navbar = () => {
                     isOpen={isNotificationOpen}
                     onToggle={() => setIsNotificationOpen(!isNotificationOpen)}
                     unreadCount={unreadCount}
+                  />
+                </div>
+
+                {/* Messages */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsMessageOpen(!isMessageOpen)}
+                    className="p-3 text-slate-400 dark:text-slate-400 light:text-gray-600 hover:text-white dark:hover:text-white light:hover:text-gray-900 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-gray-100 transition-all duration-200 relative"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    {/* Message badge */}
+                    {unreadMessageCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-cyan-500 rounded-full border-2 border-slate-900 dark:border-slate-900 light:border-white text-xs flex items-center justify-center text-white font-bold">
+                        {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
+                      </span>
+                    )}
+                  </button>
+                  <MessageDropdown
+                    isOpen={isMessageOpen}
+                    onToggle={setIsMessageOpen}
+                    unreadCount={unreadMessageCount}
                   />
                 </div>
 

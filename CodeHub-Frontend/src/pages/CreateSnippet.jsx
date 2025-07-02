@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { 
   Code2, 
   Save, 
   Eye, 
-  EyeOff, 
   Plus, 
   X, 
   Upload,
@@ -13,40 +12,50 @@ import {
   Globe,
   Lock,
   Users,
-  Copy,
-  Download,
   Settings,
-  Palette,
-  Monitor,
   Sparkles,
-  Zap,
-  Heart,
-  Star,
-  Layers,
   Terminal,
   Play,
   CheckCircle,
   AlertCircle,
-  Info,
   Lightbulb,
-  Code,
-  BookOpen,
   Tag,
   Hash,
-  Image,
-  Link,
   Share2,
+  ChevronDown,
+  Wand2,
+  Layout,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Workflow,
+  Braces,
+  Layers2,
+  Palette,
+  RotateCcw,
+  Zap,
+  Crown,
+  Target,
+  BookOpen,
+  Code,
+  Layers,
   GitBranch,
-  ChevronDown
+  Info,
+  Link,
+  Heart,
+  Star
 } from 'lucide-react';
-import { Button, Input, Card, CodeEditor } from '../components/ui';
+import { Button, Input, Card, VSCodeEditor } from '../components/ui';
 import { snippetsAPI } from '../services/api';
 import { useSnippet } from '../contexts/SnippetContext';
 import toast from 'react-hot-toast';
 
 const CreateSnippet = () => {
   const navigate = useNavigate();
-  const { createSnippet } = useSnippet();  const [formData, setFormData] = useState({
+  const { createSnippet } = useSnippet();
+  // const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // const [activeTab, setActiveTab] = useState('code');
+  
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     code: '',
@@ -55,6 +64,7 @@ const CreateSnippet = () => {
     tags: [],
     mediaUrls: []
   });
+  
   const [newTag, setNewTag] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -62,11 +72,20 @@ const CreateSnippet = () => {
   const [availableLanguages, setAvailableLanguages] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [createdSnippet, setCreatedSnippet] = useState(null);  const [isDragging, setIsDragging] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [createdSnippet, setCreatedSnippet] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [characterCount, setCharacterCount] = useState({ title: 0, description: 0, code: 0 });
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  
+  // Progress tracking
+  const [progress, setProgress] = useState(0);
+  
+  // Character counts
+  const [characterCount, setCharacterCount] = useState({ 
+    title: 0, 
+    description: 0, 
+    code: 0 
+  });
   // Load available languages and tags on component mount
   useEffect(() => {
     const loadData = async () => {
@@ -110,6 +129,12 @@ const CreateSnippet = () => {
   }, [formData]);
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Debug log for language changes
+    if (name === 'language') {
+      console.log('CreateSnippet language changed to:', value);
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -539,7 +564,7 @@ const CreateSnippet = () => {
                                 </div>
                               </div>
                             )}
-                            <CodeEditor
+                            <VSCodeEditor
                               value={formData.code}
                               onChange={handleChange}
                               language={formData.language}

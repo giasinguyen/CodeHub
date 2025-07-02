@@ -225,12 +225,12 @@ const ProfileHeader = ({
       </div>
 
       <div className="px-6 pb-6">
-        {/* Avatar and Basic Info */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-16 relative">
-          <div className="flex flex-col sm:flex-row sm:items-end space-y-4 sm:space-y-0 sm:space-x-6">
-            {/* Avatar */}
+        {/* Avatar and Basic Info - Improved Layout */}
+        <div className="relative">
+          {/* Avatar Section */}
+          <div className="flex justify-center sm:justify-start -mt-16 mb-6">
             <div className="relative">
-              <div className="w-32 h-32 rounded-full border-4 border-slate-800 bg-slate-700 overflow-hidden">
+              <div className="w-32 h-32 rounded-full border-4 border-slate-800 bg-slate-700 overflow-hidden shadow-2xl">
                 {user.avatarUrl ? (
                   <img
                     src={user.avatarUrl}
@@ -246,7 +246,7 @@ const ProfileHeader = ({
                 )}
               </div>
               {isOwnProfile && (
-                <label className="absolute bottom-2 right-2 bg-cyan-500 hover:bg-cyan-600 text-white p-2 rounded-full cursor-pointer transition-colors disabled:opacity-50">
+                <label className="absolute bottom-2 right-2 bg-cyan-500 hover:bg-cyan-600 text-white p-2 rounded-full cursor-pointer transition-colors disabled:opacity-50 shadow-lg">
                   <Camera className="w-4 h-4" />
                   <input
                     type="file"
@@ -258,153 +258,172 @@ const ProfileHeader = ({
                 </label>
               )}
             </div>
+          </div>
 
-            {/* User Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-3xl font-bold text-white truncate">
-                  {user.fullName || user.username}
-                </h1>
-                {user.isVerified && (
-                  <div className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                    Verified
+          {/* User Info Section - Improved */}
+          <div className="space-y-4">
+            {/* Name and Username */}
+            <div className="text-center sm:text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                <div className="space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                    <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
+                      {user.fullName || user.username}
+                    </h1>
+                    {user.isVerified && (
+                      <div className="inline-flex bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                        ✓ Verified
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-
-              <p className="text-xl text-slate-400 mb-2">@{user.username}</p>
-
-              {user.bio && (
-                <p className="text-slate-300 mb-4 max-w-2xl">{user.bio}</p>
-              )}
-
-              {/* Meta Info */}
-              <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400">
-                {user.location && (
-                  <div className="flex items-center space-x-1">
-                    <MapPin className="w-4 h-4" />
-                    <span>{user.location}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center space-x-1">
-                  <Calendar className="w-4 h-4" />
-                  <span>Joined {formatDate(user.createdAt)}</span>
+                  <p className="text-xl text-slate-400 font-medium">@{user.username}</p>
                 </div>
 
-                {user.email && isOwnProfile && (
-                  <div className="flex items-center space-x-1">
-                    <Mail className="w-4 h-4" />
-                    <span>{user.email}</span>
-                  </div>
-                )}
+                {/* Action Buttons - Moved to top right */}
+                <div className="flex items-center justify-center sm:justify-end space-x-3">
+                  {isOwnProfile ? (
+                    <Button
+                      variant="outline"
+                      className="flex items-center space-x-2 bg-slate-800/50 border-slate-600 hover:border-cyan-500 hover:bg-cyan-500/10 transition-all"
+                      onClick={handleEditProfile}
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      <span>Edit Profile</span>
+                    </Button>
+                  ) : (
+                    <>
+                      <FollowButton
+                        userId={user.id}
+                        username={user.username}
+                        initialIsFollowing={initialIsFollowing}
+                        followStatusLoaded={followStatusLoaded}
+                        onFollowChange={handleFollowChange}
+                        size="md"
+                        variant="primary"
+                      />
+
+                      <ChatButton
+                        recipientId={user.id}
+                        recipientUsername={user.username}
+                        recipientName={user.fullName || user.username}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Bio Section - Improved */}
+            {user.bio && (
+              <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
+                <p className="text-slate-200 leading-relaxed text-center sm:text-left">
+                  {user.bio}
+                </p>
+              </div>
+            )}
+
+            {/* Meta Info - Improved */}
+            <div className="flex flex-wrap justify-center sm:justify-start items-center gap-4 text-sm">
+              {user.location && (
+                <div className="flex items-center space-x-2 bg-slate-800/40 px-3 py-2 rounded-lg border border-slate-700/50">
+                  <MapPin className="w-4 h-4 text-cyan-400" />
+                  <span className="text-slate-300">{user.location}</span>
+                </div>
+              )}
+
+              <div className="flex items-center space-x-2 bg-slate-800/40 px-3 py-2 rounded-lg border border-slate-700/50">
+                <Calendar className="w-4 h-4 text-purple-400" />
+                <span className="text-slate-300">Joined {formatDate(user.createdAt)}</span>
               </div>
 
-              {/* Social Links */}
-              {(user.githubUrl || user.twitterUrl || user.linkedinUrl) && (
-                <div className="flex items-center space-x-3 mt-4">
-                  {user.githubUrl && (
-                    <a
-                      href={user.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-slate-400 hover:text-white transition-colors"
-                    >
-                      <Github className="w-5 h-5" />
-                    </a>
-                  )}
-
-                  {user.twitterUrl && (
-                    <a
-                      href={user.twitterUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-slate-400 hover:text-white transition-colors"
-                    >
-                      <Twitter className="w-5 h-5" />
-                    </a>
-                  )}
-
-                  {user.linkedinUrl && (
-                    <a
-                      href={user.linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-slate-400 hover:text-white transition-colors"
-                    >
-                      <Linkedin className="w-5 h-5" />
-                    </a>
-                  )}
+              {user.email && isOwnProfile && (
+                <div className="flex items-center space-x-2 bg-slate-800/40 px-3 py-2 rounded-lg border border-slate-700/50">
+                  <Mail className="w-4 h-4 text-green-400" />
+                  <span className="text-slate-300">{user.email}</span>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-3 mt-4 sm:mt-0">
-            {" "}
-            {isOwnProfile ? (
-              <Button
-                variant="outline"
-                className="flex items-center space-x-2"
-                onClick={handleEditProfile}
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>Edit Profile</span>
-              </Button>
-            ) : (
-              <>
-                <FollowButton
-                  userId={user.id}
-                  username={user.username}
-                  initialIsFollowing={initialIsFollowing}
-                  followStatusLoaded={followStatusLoaded}
-                  onFollowChange={handleFollowChange}
-                  size="md"
-                  variant="primary"
-                />
+            {/* Social Links - Improved */}
+            {(user.githubUrl || user.twitterUrl || user.linkedinUrl) && (
+              <div className="flex justify-center sm:justify-start items-center space-x-4">
+                {user.githubUrl && (
+                  <a
+                    href={user.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center w-10 h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-400 hover:text-white hover:border-cyan-500 hover:bg-cyan-500/10 transition-all"
+                    title="GitHub Profile"
+                  >
+                    <Github className="w-5 h-5" />
+                  </a>
+                )}
 
-                <ChatButton
-                  recipientId={user.id}
-                  recipientUsername={user.username}
-                  recipientName={user.fullName || user.username}
-                />
-              </>
+                {user.twitterUrl && (
+                  <a
+                    href={user.twitterUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center w-10 h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-400 hover:text-white hover:border-blue-500 hover:bg-blue-500/10 transition-all"
+                    title="Twitter Profile"
+                  >
+                    <Twitter className="w-5 h-5" />
+                  </a>
+                )}
+
+                {user.linkedinUrl && (
+                  <a
+                    href={user.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center w-10 h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg text-slate-400 hover:text-white hover:border-blue-600 hover:bg-blue-600/10 transition-all"
+                    title="LinkedIn Profile"
+                  >
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                )}
+              </div>
             )}
           </div>
-        </div>{" "}
-        {/* Followers/Following */}
-        <div className="flex items-center space-x-6 mt-6 pt-6 border-t border-slate-700">
-          <button
-            onClick={() => onOpenFollowModal && onOpenFollowModal("followers")}
-            className="text-center hover:bg-slate-800/50 rounded-lg p-2 transition-colors group"
-          >
-            <div className="text-2xl font-bold text-white group-hover:text-cyan-400">
-              {statsLoading ? "..." : followersCount}
-            </div>
-            <div className="text-sm text-slate-400 group-hover:text-slate-300">
-              Followers
-            </div>
-          </button>
-          <button
-            onClick={() => onOpenFollowModal && onOpenFollowModal("following")}
-            className="text-center hover:bg-slate-800/50 rounded-lg p-2 transition-colors group"
-          >
-            <div className="text-2xl font-bold text-white group-hover:text-cyan-400">
-              {statsLoading ? "..." : followingCount}
-            </div>
-            <div className="text-sm text-slate-400 group-hover:text-slate-300">
-              Following
-            </div>
-          </button>
-          <Link to={"/my-snippets"}>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-white">
-                {statsLoading ? "..." : snippetsCount}
+        </div>
+        {/* Followers/Following Stats - Improved */}
+        <div className="mt-8 pt-6 border-t border-slate-700/50">
+          <div className="flex items-center justify-center sm:justify-start space-x-8">
+            <button
+              onClick={() => onOpenFollowModal && onOpenFollowModal("followers")}
+              className="text-center hover:bg-slate-800/30 rounded-xl p-4 transition-all group border border-transparent hover:border-slate-600"
+            >
+              <div className="text-2xl sm:text-3xl font-bold text-white group-hover:text-cyan-400 transition-colors">
+                {statsLoading ? "..." : followersCount.toLocaleString()}
               </div>
-              <div className="text-sm text-slate-400">Snippets</div>
-            </div>{" "}
-          </Link>
+              <div className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors font-medium">
+                Followers
+              </div>
+            </button>
+            
+            <button
+              onClick={() => onOpenFollowModal && onOpenFollowModal("following")}
+              className="text-center hover:bg-slate-800/30 rounded-xl p-4 transition-all group border border-transparent hover:border-slate-600"
+            >
+              <div className="text-2xl sm:text-3xl font-bold text-white group-hover:text-cyan-400 transition-colors">
+                {statsLoading ? "..." : followingCount.toLocaleString()}
+              </div>
+              <div className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors font-medium">
+                Following
+              </div>
+            </button>
+            
+            <Link to={"/my-snippets"} className="block">
+              <div className="text-center hover:bg-slate-800/30 rounded-xl p-4 transition-all group border border-transparent hover:border-slate-600">
+                <div className="text-2xl sm:text-3xl font-bold text-white group-hover:text-cyan-400 transition-colors">
+                  {statsLoading ? "..." : snippetsCount.toLocaleString()}
+                </div>
+                <div className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors font-medium">
+                  Snippets
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
       </div>
 

@@ -74,7 +74,17 @@ public class DataLoader implements CommandLineRunner {    @Autowired
     }
 
     private List<User> createUsers() {
-        return Arrays.asList(            User.builder()
+        return Arrays.asList(
+            // Admin user for testing
+            User.builder()
+                .username("admin")
+                .email("admin@example.com")
+                .passwordHash(passwordEncoder.encode("admin123"))
+                .avatarUrl("https://api.dicebear.com/7.x/avataaars/svg?seed=admin")
+                .role(User.Role.ADMIN)
+                .build(),
+
+            User.builder()
                 .username("john_doe")
                 .email("john@example.com")
                 .passwordHash(passwordEncoder.encode("password123"))

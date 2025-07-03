@@ -30,6 +30,7 @@ import {
   Register,
   Recent,
   Search,
+  AdminDashboard,
   HelpCenter,
   ReportBug,
   Feedback,
@@ -70,6 +71,29 @@ const PublicRoute = ({ children }) => {
   }
 
   return !isAuthenticated ? children : <Navigate to="/" replace />;
+};
+
+// Admin Route Component (only for ADMIN role)
+const AdminRoute = ({ children }) => {
+  const { isLoading, isAuthenticated, user } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-cyan-500"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role !== 'ADMIN') {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 };
 
 const AppRoutes = () => {
@@ -268,45 +292,19 @@ const AppRoutes = () => {
           </Layout>
         }
       />
-      {/* Protected Routes - Only accessible when logged in */}
+      {/* Admin Dashboard - Only accessible by ADMIN role */}
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <Layout>
-              <div className="min-h-screen bg-slate-900 p-8">
-                <div className="max-w-7xl mx-auto">
-                  <h1 className="text-3xl font-bold text-white mb-8">
-                    Dashboard
-                  </h1>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-slate-800 p-6 rounded-lg">
-                      <h2 className="text-xl font-semibold text-white mb-2">
-                        My Snippets
-                      </h2>
-                      <p className="text-slate-400">
-                        Manage your code snippets
-                      </p>
-                    </div>
-                    <div className="bg-slate-800 p-6 rounded-lg">
-                      <h2 className="text-xl font-semibold text-white mb-2">
-                        Bookmarks
-                      </h2>
-                      <p className="text-slate-400">View saved snippets</p>
-                    </div>
-                    <div className="bg-slate-800 p-6 rounded-lg">
-                      <h2 className="text-xl font-semibold text-white mb-2">
-                        Analytics
-                      </h2>
-                      <p className="text-slate-400">Track your activity</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <AdminDashboard />
             </Layout>
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
+      
+      {/* Protected Routes - Only accessible when logged in */}
       <Route
         path="/create"
         element={

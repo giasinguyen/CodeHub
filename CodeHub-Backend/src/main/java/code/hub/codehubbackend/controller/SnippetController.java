@@ -61,7 +61,7 @@ public class SnippetController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Create new snippet with files", description = "Create a new code snippet with optional file attachments")
     public ResponseEntity<SnippetResponse> createSnippetWithFiles(
             @Parameter(description = "Snippet data") @Valid @RequestPart("snippet") SnippetCreateRequest request,
@@ -72,7 +72,7 @@ public class SnippetController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Create new snippet", description = "Create a new code snippet")
     public ResponseEntity<SnippetResponse> createSnippet(
             @Parameter(description = "Snippet data") @Valid @RequestBody SnippetCreateRequest request) {
@@ -82,7 +82,7 @@ public class SnippetController {
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Update snippet", description = "Update an existing code snippet")
     public ResponseEntity<SnippetResponse> updateSnippet(
             @PathVariable Long id,
@@ -94,7 +94,7 @@ public class SnippetController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Delete snippet", description = "Delete a code snippet")
     public ResponseEntity<Void> deleteSnippet(@PathVariable Long id) {
         snippetService.deleteSnippet(id);
@@ -109,7 +109,7 @@ public class SnippetController {
     }
 
     @PostMapping("/{id}/versions/{versionId}/revert")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Revert to version", description = "Revert snippet to a specific version")
     public ResponseEntity<SnippetResponse> revertToVersion(
             @PathVariable Long id,

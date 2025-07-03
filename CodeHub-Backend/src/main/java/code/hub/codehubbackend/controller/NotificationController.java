@@ -23,7 +23,7 @@ public class NotificationController {
     
     @GetMapping
     @Operation(summary = "Get user notifications", description = "Get paginated notifications for current user")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Page<NotificationResponse>> getUserNotifications(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size,
@@ -35,7 +35,7 @@ public class NotificationController {
     
     @GetMapping("/stats")
     @Operation(summary = "Get notification statistics", description = "Get notification counts and statistics")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<NotificationStatsResponse> getNotificationStats() {
         NotificationStatsResponse stats = notificationService.getNotificationStats();
         return ResponseEntity.ok(stats);
@@ -43,7 +43,7 @@ public class NotificationController {
     
     @PutMapping("/{id}/read")
     @Operation(summary = "Mark notification as read", description = "Mark a specific notification as read")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Void> markAsRead(
             @Parameter(description = "Notification ID") @PathVariable Long id
     ) {
@@ -53,7 +53,7 @@ public class NotificationController {
     
     @PutMapping("/read-all")
     @Operation(summary = "Mark all notifications as read", description = "Mark all notifications as read for current user")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Void> markAllAsRead() {
         notificationService.markAllAsRead();
         return ResponseEntity.ok().build();
@@ -61,7 +61,7 @@ public class NotificationController {
     
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete notification", description = "Delete a specific notification")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Void> deleteNotification(
             @Parameter(description = "Notification ID") @PathVariable Long id
     ) {

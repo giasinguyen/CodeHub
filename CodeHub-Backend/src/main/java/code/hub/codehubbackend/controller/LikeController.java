@@ -20,7 +20,7 @@ public class LikeController {
     private LikeService likeService;
     
     @PostMapping("/like")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Toggle like", description = "Like or unlike a snippet")
     public ResponseEntity<Map<String, Object>> toggleLike(@PathVariable Long snippetId) {
         boolean isLiked = likeService.toggleLike(snippetId);

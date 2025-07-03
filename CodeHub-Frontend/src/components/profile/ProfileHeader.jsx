@@ -270,8 +270,19 @@ const ProfileHeader = ({
                     <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
                       {user.fullName || user.username}
                     </h1>
+                    {/* Role Badge */}
+                    {user.role === 'ADMIN' && (
+                      <div className="inline-flex bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                        ADMIN
+                      </div>
+                    )}
+                    {user.role === 'USER' && (
+                      <div className="inline-flex bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                        USER
+                      </div>
+                    )}
                     {user.isVerified && (
-                      <div className="inline-flex bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                      <div className="inline-flex bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                         ✓ Verified
                       </div>
                     )}

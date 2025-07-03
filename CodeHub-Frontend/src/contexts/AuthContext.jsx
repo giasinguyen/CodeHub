@@ -89,10 +89,22 @@ export function AuthProvider({ children }) {
 
       // Verify token and get user info
       const response = await authAPI.getCurrentUser();
+      const userData = response.data;
+      const user = {
+        id: userData.id,
+        username: userData.username,
+        email: userData.email,
+        role: userData.role,
+        avatarUrl: userData.avatarUrl,
+        coverPhotoUrl: userData.coverPhotoUrl,
+        bio: userData.bio,
+        fullName: userData.fullName
+      };
+      
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: {
-          user: response.data,
+          user,
           token,
         },
       });
@@ -118,7 +130,18 @@ export function AuthProvider({ children }) {
         password: credentials.password
       });
       
-      const { token, user } = response.data;
+      const data = response.data;
+      const token = data.token;
+      const user = {
+        id: data.id,
+        username: data.username,
+        email: data.email,
+        role: data.role,
+        avatarUrl: data.avatarUrl,
+        coverPhotoUrl: data.coverPhotoUrl,
+        bio: data.bio,
+        fullName: data.fullName
+      };
 
       // Store token with different expiration based on rememberMe
       if (credentials.rememberMe) {
@@ -194,7 +217,18 @@ export function AuthProvider({ children }) {
     try {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
         const response = await authAPI.register(userData);
-      const { token, user } = response.data;
+      const data = response.data;
+      const token = data.token;
+      const user = {
+        id: data.id,
+        username: data.username,
+        email: data.email,
+        role: data.role,
+        avatarUrl: data.avatarUrl,
+        coverPhotoUrl: data.coverPhotoUrl,
+        bio: data.bio,
+        fullName: data.fullName
+      };
 
       // Store token
       localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);

@@ -14,6 +14,7 @@ export { default as Recent } from "./Recent";
 export { default as Search } from "./Search";
 export { default as Notifications } from "./Notifications";
 export { default as Messages } from "./Messages";
+export { default as AdminDashboard } from "./AdminDashboard";
 export * from "./auth";
 export * from "./support";
 export * from "./legal";

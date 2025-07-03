@@ -21,7 +21,7 @@ public class ChatHistoryController {
     private final ChatHistoryService chatHistoryService;
 
     @GetMapping("/conversations")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get all conversations", description = "Get paginated list of user's conversations ordered by latest activity")
     public ResponseEntity<Page<ConversationResponse>> getConversations(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
@@ -32,7 +32,7 @@ public class ChatHistoryController {
     }
 
     @GetMapping("/conversations/{username}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get conversation history", description = "Get conversation history with a specific user")
     public ResponseEntity<ChatHistoryResponse> getConversationHistory(@PathVariable String username) {
         ChatHistoryResponse history = chatHistoryService.getConversationHistory(username);
@@ -40,7 +40,7 @@ public class ChatHistoryController {
     }
 
     @GetMapping("/conversations/{username}/messages")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get conversation messages", description = "Get paginated messages from conversation with a specific user")
     public ResponseEntity<Page<ChatMessageResponse>> getConversationMessages(
             @PathVariable String username,
@@ -52,7 +52,7 @@ public class ChatHistoryController {
     }
 
     @GetMapping("/chatrooms/{chatId}/messages")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get chat messages by chat ID", description = "Get paginated messages from a specific chat room")
     public ResponseEntity<Page<ChatMessageResponse>> getConversationMessagesByChatId(
             @PathVariable String chatId,
@@ -64,7 +64,7 @@ public class ChatHistoryController {
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Search messages", description = "Search messages across all conversations")
     public ResponseEntity<Page<ChatMessageResponse>> searchMessages(
             @Parameter(description = "Search term") @RequestParam("q") String searchTerm,
@@ -76,7 +76,7 @@ public class ChatHistoryController {
     }
 
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get chat statistics", description = "Get user's chat statistics including total conversations, messages, and unread count")
     public ResponseEntity<ChatStatsResponse> getChatStats() {
         ChatStatsResponse stats = chatHistoryService.getChatStats();

@@ -24,7 +24,7 @@ public class ChatController {
     private final ChatService chatService;
 
     @PostMapping("/rooms")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Create private chat room", description = "Create a private chat room with another user")
     public ResponseEntity<ChatRoomResponse> createPrivateChat(@Valid @RequestBody CreateChatRoomRequest request) {
         ChatRoomResponse chatRoom = chatService.createPrivateChat(request);
@@ -32,7 +32,7 @@ public class ChatController {
     }
 
     @GetMapping("/rooms")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get user's chat rooms", description = "Get paginated list of user's chat rooms")
     public ResponseEntity<Page<ChatRoomResponse>> getUserChatRooms(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
@@ -43,7 +43,7 @@ public class ChatController {
     }
 
     @GetMapping("/rooms/{chatId}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get chat room details", description = "Get details of a specific chat room")
     public ResponseEntity<ChatRoomResponse> getChatRoom(@PathVariable String chatId) {
         ChatRoomResponse chatRoom = chatService.getChatRoom(chatId);
@@ -51,7 +51,7 @@ public class ChatController {
     }
 
     @GetMapping("/rooms/{chatId}/messages")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get chat messages", description = "Get paginated messages from a chat room")
     public ResponseEntity<Page<ChatMessageResponse>> getChatMessages(
             @PathVariable String chatId,
@@ -63,7 +63,7 @@ public class ChatController {
     }
 
     @PostMapping("/messages")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Send message", description = "Send a message to a chat room")
     public ResponseEntity<ChatMessageResponse> sendMessage(@Valid @RequestBody ChatMessageRequest request) {
         ChatMessageResponse message = chatService.sendMessage(request);
@@ -71,7 +71,7 @@ public class ChatController {
     }
 
     @PutMapping("/rooms/{chatId}/read")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Mark messages as read", description = "Mark all messages in a chat room as read")
     public ResponseEntity<Void> markMessagesAsRead(@PathVariable String chatId) {
         chatService.markMessagesAsRead(chatId);
@@ -79,7 +79,7 @@ public class ChatController {
     }
 
     @GetMapping("/rooms/search")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Search chat rooms", description = "Search user's chat rooms by name or participant")
     public ResponseEntity<List<ChatRoomResponse>> searchChatRooms(
             @Parameter(description = "Search term") @RequestParam("q") String searchTerm) {

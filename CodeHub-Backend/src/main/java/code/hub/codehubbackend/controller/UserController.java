@@ -31,7 +31,7 @@ public class UserController {
     private UserService userService;
     
     @GetMapping("/profile")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get current user profile", description = "Get the profile of the currently authenticated user")
     public ResponseEntity<UserProfileResponse> getCurrentUserProfile() {
         UserProfileResponse profile = userService.getCurrentUserProfile();
@@ -53,7 +53,7 @@ public class UserController {
     }
     
     @PutMapping("/profile")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Update user profile", description = "Update the current user's profile information")
     public ResponseEntity<UserProfileResponse> updateProfile(@Valid @RequestBody UserUpdateRequest request) {
         UserProfileResponse profile = userService.updateUserProfile(request);
@@ -71,7 +71,7 @@ public class UserController {
         return ResponseEntity.ok(snippets);
     }
       @GetMapping("/profile/snippets")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get current user's snippets", description = "Get all snippets created by the current user")
     public ResponseEntity<Page<SnippetResponse>> getCurrentUserSnippets(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
@@ -81,7 +81,7 @@ public class UserController {
         return ResponseEntity.ok(snippets);
     }
     @GetMapping("/profile/stats")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get current user statistics", description = "Get statistics for the currently authenticated user")
     public ResponseEntity<UserStatsResponse> getCurrentUserStats() {
         UserStatsResponse stats = userService.getCurrentUserStats();
@@ -96,7 +96,7 @@ public class UserController {
     }
     
     @PutMapping("/profile/password")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Change password", description = "Change the current user's password")
     public ResponseEntity<Void> changePassword(@Valid @RequestBody PasswordChangeRequest request) {
         userService.changePassword(request);

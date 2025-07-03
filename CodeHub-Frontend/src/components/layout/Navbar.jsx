@@ -12,6 +12,7 @@ import {
   Bell,
   PlusCircle,
   MessageCircle,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { notificationsAPI, chatHistoryAPI } from "../../services/api";
@@ -262,9 +263,21 @@ const Navbar = () => {
                       </div>
                     </div>
                     <div className="hidden lg:block text-left">
-                      <span className="text-white dark:text-white light:text-gray-900 text-sm font-medium">
-                        {user?.username}
-                      </span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-white dark:text-white light:text-gray-900 text-sm font-medium">
+                          {user?.username}
+                        </span>
+                        {user?.role === 'ADMIN' && (
+                          <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                            ADMIN
+                          </span>
+                        )}
+                        {user?.role === 'USER' && (
+                          <span className="px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded-full">
+                            USER
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-slate-400 dark:text-slate-400 light:text-gray-500">
                         {user?.email}
                       </div>
@@ -275,6 +288,17 @@ const Navbar = () => {
                   <AnimatePresence>
                     {isUserMenuOpen && (
                       <div className="absolute right-0 mt-2 w-48 bg-slate-800 dark:bg-slate-800 light:bg-white rounded-lg shadow-lg border border-slate-700 dark:border-slate-700 light:border-gray-200 py-1 z-50">
+                        {/* Admin Dashboard Link */}
+                        {user?.role === 'ADMIN' && (
+                          <Link
+                            to="/dashboard"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center space-x-2 px-4 py-2 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:bg-slate-700 dark:hover:bg-slate-700 light:hover:bg-gray-100 hover:text-white dark:hover:text-white light:hover:text-gray-900"
+                          >
+                            <Shield className="w-4 h-4" />
+                            <span>Admin Dashboard</span>
+                          </Link>
+                        )}
                         <Link
                           to="/profile"
                           onClick={() => setIsUserMenuOpen(false)}
@@ -398,6 +422,17 @@ const Navbar = () => {
                       <PlusCircle className="w-5 h-5" />
                       <span>Create Snippet</span>
                     </Link>
+                    {/* Admin Dashboard for Mobile */}
+                    {user?.role === 'ADMIN' && (
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center space-x-3 px-4 py-3 text-slate-300 dark:text-slate-300 light:text-gray-700 hover:text-white dark:hover:text-white light:hover:text-gray-900 hover:bg-slate-800/50 dark:hover:bg-slate-800/50 light:hover:bg-gray-100 rounded-xl transition-all duration-200 font-medium"
+                      >
+                        <Shield className="w-5 h-5" />
+                        <span>Admin Dashboard</span>
+                      </Link>
+                    )}
                     <Link
                       to="/profile"
                       onClick={() => setIsMobileMenuOpen(false)}

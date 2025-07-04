@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Chat History", description = "Chat history and conversation management APIs")
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RequiredArgsConstructor
+@Slf4j
 public class ChatHistoryController {
 
     private final ChatHistoryService chatHistoryService;
@@ -79,7 +81,9 @@ public class ChatHistoryController {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get chat statistics", description = "Get user's chat statistics including total conversations, messages, and unread count")
     public ResponseEntity<ChatStatsResponse> getChatStats() {
+        log.info("🔍 [ChatHistoryController] getChatStats called");
         ChatStatsResponse stats = chatHistoryService.getChatStats();
+        log.info("🔍 [ChatHistoryController] getChatStats returning: {}", stats);
         return ResponseEntity.ok(stats);
     }
 }

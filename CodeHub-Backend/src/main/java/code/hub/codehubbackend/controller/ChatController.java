@@ -7,18 +7,21 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
 @Tag(name = "Chat", description = "Chat and messaging APIs")
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RequiredArgsConstructor
+@Slf4j
 public class ChatController {
 
     private final ChatService chatService;
@@ -74,7 +77,9 @@ public class ChatController {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Mark messages as read", description = "Mark all messages in a chat room as read")
     public ResponseEntity<Void> markMessagesAsRead(@PathVariable String chatId) {
+        log.info("🔍 [ChatController] Received markMessagesAsRead request for chatId: {}", chatId);
         chatService.markMessagesAsRead(chatId);
+        log.info("🔍 [ChatController] Successfully marked messages as read for chatId: {}", chatId);
         return ResponseEntity.ok().build();
     }
 
@@ -86,5 +91,12 @@ public class ChatController {
         
         List<ChatRoomResponse> chatRooms = chatService.searchChatRooms(searchTerm);
         return ResponseEntity.ok(chatRooms);
+    }
+
+    @GetMapping("/debug/unread/{chatId}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @Operation(summary = "Debug unread messages", description = "Get detailed information about unread messages for debugging")
+    public ResponseEntity<Map<String, Object>> debugUnreadMessages(@PathVariable String chatId) {
+        return chatService.debugUnreadMessages(chatId);
     }
 }

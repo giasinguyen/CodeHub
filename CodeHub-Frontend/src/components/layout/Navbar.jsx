@@ -101,13 +101,25 @@ const Navbar = () => {
     loadUnreadCount();
     loadUnreadMessageCount();
     
+    // Listen for messages marked as read event
+    const handleMessagesMarkedAsRead = (event) => {
+      console.log("🔄 [Navbar] Messages marked as read event received:", event.detail);
+      console.log("🔄 [Navbar] Refreshing unread count...");
+      loadUnreadMessageCount();
+    };
+    
+    window.addEventListener('messagesMarkedAsRead', handleMessagesMarkedAsRead);
+    
     // Optionally, poll for updates every minute
     const interval = setInterval(() => {
       loadUnreadCount();
       loadUnreadMessageCount();
     }, 60000);
     
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('messagesMarkedAsRead', handleMessagesMarkedAsRead);
+    };
   }, [isAuthenticated, user]);
 
   const handleLogout = () => {

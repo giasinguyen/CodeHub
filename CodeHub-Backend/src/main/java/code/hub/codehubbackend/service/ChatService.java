@@ -15,11 +15,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -197,17 +205,29 @@ public class ChatService {
     public void markMessagesAsRead(String chatId) {
         User user = getCurrentUser();
         
+        log.info("🔍 [ChatService] markMessagesAsRead called for chatId: {} by user: {}", 
+                chatId, user.getUsername());
+        
         ChatRoom chatRoom = chatRoomRepository.findByChatId(chatId)
                 .orElseThrow(() -> new ResourceNotFoundException("Chat room not found"));
 
+        // Count unread messages before marking as read
+        Long unreadCountBefore = chatMessageRepository.countUnreadMessages(chatRoom, user);
+        log.info("🔍 [ChatService] User {} has {} unread messages in chat {} before marking as read", 
+                user.getUsername(), unreadCountBefore, chatId);
+
         // Update last read timestamp
-        chatParticipantRepository.updateLastReadAt(chatRoom, user, Instant.now());
+        int participantUpdated = chatParticipantRepository.updateLastReadAt(chatRoom, user, Instant.now());
+        log.info("🔍 [ChatService] Updated lastReadAt for {} participants in chat {}", participantUpdated, chatId);
 
         // Mark messages as read
         int updatedCount = chatMessageRepository.markMessagesAsRead(chatRoom, user);
         
-        log.info("Marked {} messages as read for user {} in chat {}", 
-                updatedCount, user.getUsername(), chatId);
+        // Count unread messages after marking as read
+        Long unreadCountAfter = chatMessageRepository.countUnreadMessages(chatRoom, user);
+        
+        log.info("🔍 [ChatService] Marked {} messages as read for user {} in chat {}. Unread count: {} -> {}", 
+                updatedCount, user.getUsername(), chatId, unreadCountBefore, unreadCountAfter);
     }
 
     @Transactional
@@ -252,6 +272,59 @@ public class ChatService {
         return convertToChatRoomResponse(chatRoom);
     }
 
+    public ResponseEntity<Map<String, Object>> debugUnreadMessages(String chatId) {
+        User user = getCurrentUser();
+        
+        ChatRoom chatRoom = chatRoomRepository.findByChatId(chatId)
+                .orElseThrow(() -> new ResourceNotFoundException("Chat room not found"));
+
+        // Get all messages in the chat room
+        List<ChatMessage> allMessages = chatMessageRepository.findByChatRoomOrderByCreatedAtDesc(chatRoom);
+        
+        // Get unread count using our query
+        Long unreadCount = chatMessageRepository.countUnreadMessages(chatRoom, user);
+        
+        // Get unread messages manually
+        List<ChatMessage> unreadMessages = allMessages.stream()
+            .filter(msg -> !msg.getSender().equals(user))
+            .filter(msg -> !msg.getIsRead())
+            .toList();
+            
+        // Get chat participant info
+        Optional<ChatParticipant> participant = chatParticipantRepository
+            .findByChatRoomAndUser(chatRoom, user);
+        
+        Map<String, Object> debugInfo = new HashMap<>();
+        debugInfo.put("chatId", chatId);
+        debugInfo.put("userId", user.getId());
+        debugInfo.put("username", user.getUsername());
+        debugInfo.put("totalMessages", allMessages.size());
+        debugInfo.put("unreadCountFromQuery", unreadCount);
+        debugInfo.put("unreadMessagesManual", unreadMessages.size());
+        debugInfo.put("participantExists", participant.isPresent());
+        debugInfo.put("lastReadAt", participant.map(ChatParticipant::getLastReadAt).orElse(null));
+        
+        // Add details about unread messages
+        List<Map<String, Object>> unreadDetails = unreadMessages.stream()
+            .limit(5) // Limit to first 5 for brevity
+            .map(msg -> {
+                Map<String, Object> msgInfo = new HashMap<>();
+                msgInfo.put("id", msg.getId());
+                msgInfo.put("content", msg.getContent().substring(0, Math.min(50, msg.getContent().length())));
+                msgInfo.put("sender", msg.getSender().getUsername());
+                msgInfo.put("isRead", msg.getIsRead());
+                msgInfo.put("createdAt", msg.getCreatedAt());
+                return msgInfo;
+            })
+            .toList();
+        debugInfo.put("unreadMessageDetails", unreadDetails);
+        
+        log.info("Debug unread messages for user {} in chat {}: {}", 
+                user.getUsername(), chatId, debugInfo);
+        
+        return ResponseEntity.ok(debugInfo);
+    }
+
     // Helper methods
     private void createParticipant(ChatRoom chatRoom, User user, ChatParticipant.ParticipantRole role) {
         ChatParticipant participant = ChatParticipant.builder()
@@ -284,7 +357,7 @@ public class ChatService {
 
         // Calculate unread count
         Long unreadCount = chatMessageRepository.countUnreadMessages(
-                chatRoom, currentUser, Instant.now().minusSeconds(86400 * 30)); // 30 days ago
+                chatRoom, currentUser);
 
         // For private chats, use the other participant's name as room name
         String displayName = chatRoom.getRoomName();

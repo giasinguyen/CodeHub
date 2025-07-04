@@ -12,12 +12,15 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     
     Page<ChatMessage> findByChatRoomOrderByCreatedAtDesc(ChatRoom chatRoom, Pageable pageable);
+    
+    List<ChatMessage> findByChatRoomOrderByCreatedAtDesc(ChatRoom chatRoom);
     
     @Query("SELECT cm FROM ChatMessage cm " +
            "WHERE cm.chatRoom = :chatRoom " +
@@ -29,11 +32,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     @Query("SELECT COUNT(cm) FROM ChatMessage cm " +
            "WHERE cm.chatRoom = :chatRoom " +
            "AND cm.sender != :user " +
-           "AND cm.createdAt > (SELECT COALESCE(p.lastReadAt, :defaultTime) FROM ChatParticipant p " +
-           "                   WHERE p.chatRoom = :chatRoom AND p.user = :user)")
+           "AND cm.isRead = false")
     Long countUnreadMessages(@Param("chatRoom") ChatRoom chatRoom, 
-                           @Param("user") User user, 
-                           @Param("defaultTime") Instant defaultTime);
+                           @Param("user") User user);
     
     @Modifying
     @Query("UPDATE ChatMessage cm SET cm.isRead = true " +

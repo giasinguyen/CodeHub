@@ -17,6 +17,7 @@ import {
 import { Button, Input } from '../ui';
 import { useChat } from '../../hooks/useChat';
 import { useAuth } from '../../contexts/AuthContext';
+import { chatHistoryAPI } from '../../services/api';
 import ChatMessage from './ChatMessage';
 import TypingIndicator from './TypingIndicator';
 import toast from 'react-hot-toast';
@@ -57,8 +58,37 @@ const ChatWindow = () => {
 
   // Mark messages as read when chat is opened
   useEffect(() => {
+    console.log('🐛 [ChatWindow] useEffect triggered with:', {
+      chatWindowOpen,
+      activeChat: activeChat?.chatId,
+      chatWindowMinimized
+    });
+    
     if (chatWindowOpen && activeChat && !chatWindowMinimized) {
-      markAsRead(activeChat.chatId);
+      console.log('🐛 [ChatWindow] Marking messages as read for chat:', activeChat.chatId);
+      
+      // Debug unread messages before marking as read
+      chatHistoryAPI.debugUnreadMessages(activeChat.chatId)
+        .then(response => {
+          console.log('🐛 [ChatWindow] Debug info BEFORE markAsRead:', response.data);
+        })
+        .catch(error => console.warn('Debug call failed:', error));
+      
+      markAsRead(activeChat.chatId).then(() => {
+        console.log('🐛 [ChatWindow] markAsRead completed successfully');
+        // Debug unread messages after marking as read
+        setTimeout(() => {
+          chatHistoryAPI.debugUnreadMessages(activeChat.chatId)
+            .then(response => {
+              console.log('🐛 [ChatWindow] Debug info AFTER markAsRead:', response.data);
+            })
+            .catch(error => console.warn('Debug call failed:', error));
+        }, 1000);
+      }).catch(error => {
+        console.error('🐛 [ChatWindow] markAsRead failed:', error);
+      });
+    } else {
+      console.log('🐛 [ChatWindow] Conditions not met for marking as read');
     }
   }, [chatWindowOpen, activeChat, chatWindowMinimized, markAsRead]);
 

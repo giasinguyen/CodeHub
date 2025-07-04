@@ -716,7 +716,14 @@ export const chatAPI = {
   // Mark messages as read
   markAsRead: (chatId) => {
     console.log('🌐 [API] Mark As Read:', chatId);
-    return apiClient.put(`/chat/rooms/${chatId}/read`);
+    console.log('🌐 [API] Making PUT request to:', `/chat/rooms/${chatId}/read`);
+    return apiClient.put(`/chat/rooms/${chatId}/read`).then(response => {
+      console.log('✅ [API] Mark As Read Response:', response);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] Mark As Read Error:', error);
+      throw error;
+    });
   },
 
   // Search chat rooms
@@ -771,7 +778,20 @@ export const chatHistoryAPI = {
   getChatStats: () => {
     const url = '/chat/history/stats';
     console.log('🌐 [API] GET Chat Stats:', url);
-    return api.get(url);
+    return api.get(url).then(response => {
+      console.log('✅ [API] Chat Stats Response:', response.data);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] Chat Stats Error:', error);
+      throw error;
+    });
+  },
+
+  // Debug unread messages
+  debugUnreadMessages: (chatId) => {
+    const url = `/chat/debug/unread/${chatId}`;
+    console.log('🐛 [API] Debug Unread Messages:', url);
+    return apiClient.get(url);
   }
 };
 

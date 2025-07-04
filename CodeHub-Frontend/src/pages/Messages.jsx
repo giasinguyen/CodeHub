@@ -20,7 +20,7 @@ const Messages = () => {
   const { username } = useParams(); // For direct message links like /messages/username
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { sendMessage } = useChat();
+  const { sendMessage, setActiveChat } = useChat();
   
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [chatStats, setChatStats] = useState(null);
@@ -83,8 +83,19 @@ const Messages = () => {
     }
   };
 
-  const handleSelectConversation = (conversation) => {
+  const handleSelectConversation = async (conversation) => {
+    console.log('🐛 [Messages] handleSelectConversation called with:', conversation);
     setSelectedConversation(conversation);
+    
+    // Set active chat to trigger markAsRead in ChatWindow
+    if (conversation) {
+      try {
+        await setActiveChat(conversation);
+        console.log('🐛 [Messages] setActiveChat completed for:', conversation.chatId);
+      } catch (error) {
+        console.error('🐛 [Messages] setActiveChat failed:', error);
+      }
+    }
     
     // Update URL for deep linking
     if (conversation.participantUsername) {

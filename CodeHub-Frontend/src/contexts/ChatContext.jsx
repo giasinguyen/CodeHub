@@ -196,41 +196,6 @@ export const ChatProvider = ({ children }) => {
   const [state, dispatch] = useReducer(chatReducer, initialState);
   const { user, isAuthenticated } = useAuth();
 
-  // Initialize WebSocket connection
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      initializeWebSocket();
-    } else {
-      disconnectWebSocket();
-    }
-
-    return () => {
-      disconnectWebSocket();
-    };
-  }, [isAuthenticated, user]);
-
-  // Initialize WebSocket
-  const initializeWebSocket = useCallback(async () => {
-    try {
-      await webSocketService.connect();
-      dispatch({ type: ActionTypes.SET_CONNECTED, payload: true });
-
-      // Subscribe to user's private messages
-      await webSocketService.subscribeToUserMessages(handleNewMessage);
-
-      console.log('✅ [Chat] WebSocket initialized');
-    } catch (error) {
-      console.error('❌ [Chat] WebSocket initialization failed:', error);
-      dispatch({ type: ActionTypes.SET_CONNECTED, payload: false });
-    }
-  }, []);
-
-  // Disconnect WebSocket
-  const disconnectWebSocket = useCallback(() => {
-    webSocketService.disconnect();
-    dispatch({ type: ActionTypes.SET_CONNECTED, payload: false });
-  }, []);
-
   // Handle new messages
   const handleNewMessage = useCallback((message) => {
     console.log('📨 [Chat] New message received:', message);
@@ -268,6 +233,41 @@ export const ChatProvider = ({ children }) => {
     });
   }, [state.typingUsers]);
 
+  // Initialize WebSocket
+  const initializeWebSocket = useCallback(async () => {
+    try {
+      await webSocketService.connect();
+      dispatch({ type: ActionTypes.SET_CONNECTED, payload: true });
+
+      // Subscribe to user's private messages
+      await webSocketService.subscribeToUserMessages(handleNewMessage);
+
+      console.log('✅ [Chat] WebSocket initialized');
+    } catch (error) {
+      console.error('❌ [Chat] WebSocket initialization failed:', error);
+      dispatch({ type: ActionTypes.SET_CONNECTED, payload: false });
+    }
+  }, [handleNewMessage]);
+
+  // Disconnect WebSocket
+  const disconnectWebSocket = useCallback(() => {
+    webSocketService.disconnect();
+    dispatch({ type: ActionTypes.SET_CONNECTED, payload: false });
+  }, []);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      initializeWebSocket();
+    } else {
+      disconnectWebSocket();
+    }
+
+    return () => {
+      disconnectWebSocket();
+    };
+  }, [isAuthenticated, user, initializeWebSocket, disconnectWebSocket]);
+
   // Load chat rooms
   const loadChatRooms = useCallback(async (page = 0, size = 20) => {
     dispatch({ type: ActionTypes.SET_LOADING, payload: true });
@@ -299,6 +299,39 @@ export const ChatProvider = ({ children }) => {
     }
   }, []);
 
+  // Load messages
+  const loadMessages = useCallback(async (chatId, page = 0, size = 50) => {
+    try {
+      const response = await chatAPI.getChatMessages(chatId, page, size);
+      const messages = response.data.content || [];
+      
+      dispatch({
+        type: ActionTypes.SET_MESSAGES,
+        payload: { chatId, messages: messages.reverse() }
+      });
+    } catch (error) {
+      console.error('❌ [Chat] Error loading messages:', error);
+      toast.error('Failed to load messages');
+    }
+  }, []);
+
+  // Mark messages as read
+  const markAsRead = useCallback(async (chatId) => {
+    try {
+      await chatAPI.markAsRead(chatId);
+      dispatch({ type: ActionTypes.MARK_MESSAGES_READ, payload: chatId });
+      
+      // Add a small delay to ensure backend operation is complete
+      setTimeout(() => {
+        // Trigger custom event to notify navbar to refresh unread count
+        window.dispatchEvent(new CustomEvent('messagesMarkedAsRead', { detail: { chatId } }));
+        console.log('🔄 [Chat] Triggered messagesMarkedAsRead event for chatId:', chatId);
+      }, 500);
+    } catch (error) {
+      console.error('❌ [Chat] Error marking messages as read:', error);
+    }
+  }, []);
+
   // Set active chat
   const setActiveChat = useCallback(async (chatRoom) => {
     dispatch({ type: ActionTypes.SET_ACTIVE_CHAT, payload: chatRoom });
@@ -316,23 +349,7 @@ export const ChatProvider = ({ children }) => {
       // Mark messages as read
       await markAsRead(chatRoom.chatId);
     }
-  }, [state.messages, handleNewMessage, handleTypingNotification]);
-
-  // Load messages
-  const loadMessages = useCallback(async (chatId, page = 0, size = 50) => {
-    try {
-      const response = await chatAPI.getChatMessages(chatId, page, size);
-      const messages = response.data.content || [];
-      
-      dispatch({
-        type: ActionTypes.SET_MESSAGES,
-        payload: { chatId, messages: messages.reverse() }
-      });
-    } catch (error) {
-      console.error('❌ [Chat] Error loading messages:', error);
-      toast.error('Failed to load messages');
-    }
-  }, []);
+  }, [state.messages, handleNewMessage, handleTypingNotification, loadMessages, markAsRead]);
 
   // Send message
   const sendMessage = useCallback(async (messageData) => {
@@ -351,16 +368,6 @@ export const ChatProvider = ({ children }) => {
       throw error;
     }
   }, [state.connected, handleNewMessage]);
-
-  // Mark messages as read
-  const markAsRead = useCallback(async (chatId) => {
-    try {
-      await chatAPI.markAsRead(chatId);
-      dispatch({ type: ActionTypes.MARK_MESSAGES_READ, payload: chatId });
-    } catch (error) {
-      console.error('❌ [Chat] Error marking messages as read:', error);
-    }
-  }, []);
 
   // Send typing notification
   const sendTypingNotification = useCallback(async (chatId, isTyping) => {

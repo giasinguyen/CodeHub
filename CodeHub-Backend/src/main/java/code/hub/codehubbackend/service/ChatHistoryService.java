@@ -119,6 +119,7 @@ public class ChatHistoryService {
     /**
      * Get chat statistics for the current user
      */
+    @Transactional(readOnly = false)
     public ChatStatsResponse getChatStats() {
         User currentUser = userService.getCurrentUser();
         
@@ -132,9 +133,17 @@ public class ChatHistoryService {
             .getContent();
         
         Long unreadMessages = userChatRooms.stream()
-            .mapToLong(chatRoom -> chatMessageRepository.countUnreadMessages(
-                chatRoom, currentUser, Instant.EPOCH))
+            .mapToLong(chatRoom -> {
+                Long unreadCount = chatMessageRepository.countUnreadMessages(
+                    chatRoom, currentUser);
+                log.info("🔍 [ChatHistoryService] Chat room {} has {} unread messages for user {}", 
+                    chatRoom.getChatId(), unreadCount, currentUser.getUsername());
+                return unreadCount;
+            })
             .sum();
+        
+        log.info("🔍 [ChatHistoryService] User {} has {} total unread messages across {} chat rooms", 
+            currentUser.getUsername(), unreadMessages, userChatRooms.size());
         
         return ChatStatsResponse.builder()
             .totalConversations(totalConversations)
@@ -158,7 +167,7 @@ public class ChatHistoryService {
             .orElse(null);
         
         // Count unread messages
-        Long unreadCount = chatMessageRepository.countUnreadMessages(chatRoom, currentUser, Instant.EPOCH);
+        Long unreadCount = chatMessageRepository.countUnreadMessages(chatRoom, currentUser);
         
         ConversationResponse.ConversationResponseBuilder builder = ConversationResponse.builder()
             .chatId(chatRoom.getChatId())
@@ -192,7 +201,7 @@ public class ChatHistoryService {
         Long totalMessages = chatMessageRepository.countMessagesByChatRoom(chatRoom);
         Instant firstMessageTime = chatMessageRepository.findFirstMessageTime(chatRoom).orElse(null);
         Instant lastMessageTime = chatMessageRepository.findLastMessageTime(chatRoom).orElse(null);
-        Long unreadCount = chatMessageRepository.countUnreadMessages(chatRoom, currentUser, Instant.EPOCH);
+        Long unreadCount = chatMessageRepository.countUnreadMessages(chatRoom, currentUser);
         
         // Get participant info
         ChatParticipant currentUserParticipant = chatRoom.getParticipants().stream()

@@ -48,4 +48,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u LEFT JOIN Snippet s ON s.owner.id = u.id GROUP BY u.id ORDER BY SUM(COALESCE(s.viewCount, 0)) DESC")
     List<User> findTopUsersByTotalContributions(Pageable pageable);    @Query("SELECT u FROM User u LEFT JOIN Snippet s ON s.owner.id = u.id GROUP BY u.id ORDER BY (COUNT(s) * 10 + SUM(COALESCE(s.likeCount, 0)) * 5 + SUM(COALESCE(s.viewCount, 0)) * 0.1) DESC")
     List<User> findTopUsersByOverallScore(Pageable pageable);
+    
+    // Admin methods
+    @Query("SELECT COUNT(u) FROM User u WHERE u.createdAt > :since")
+    Long countByCreatedAtAfter(@Param("since") java.time.Instant since);
+    
+    @Query("SELECT COUNT(u) FROM User u WHERE u.updatedAt > :since")
+    Long countActiveUsers(@Param("since") java.time.Instant since);
+    
+    @Query(value = "SELECT u.username FROM users u LEFT JOIN snippets s ON s.owner_id = u.id GROUP BY u.id ORDER BY COUNT(s.id) DESC LIMIT 1", nativeQuery = true)
+    Optional<String> findMostActiveUser();
+    
+    Page<User> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+            String username, String email, Pageable pageable);
+    
+    @Query("SELECT DATE(u.createdAt) as date, COUNT(u) as count FROM User u WHERE u.createdAt > :startDate GROUP BY DATE(u.createdAt) ORDER BY DATE(u.createdAt)")
+    List<java.util.Map<String, Object>> getUserAnalytics(@Param("startDate") java.time.Instant startDate, @Param("period") String period);
 }

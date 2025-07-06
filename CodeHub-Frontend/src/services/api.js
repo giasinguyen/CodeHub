@@ -796,3 +796,4 @@ export const chatHistoryAPI = {
 };
 
 export default apiClient;
+export { apiClient };

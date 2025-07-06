@@ -2,7 +2,9 @@ package code.hub.codehubbackend.repository;
 
 import code.hub.codehubbackend.entity.Like;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -16,4 +18,14 @@ public interface LikeRepository extends JpaRepository<Like, Like.LikeKey> {
     long countBySnippetId(Long snippetId);
     
     void deleteByUserIdAndSnippetId(Long userId, Long snippetId);
+    
+    // Admin methods
+    @Query("SELECT COUNT(l) FROM Like l WHERE l.user = :user")
+    Long countByUser(@Param("user") code.hub.codehubbackend.entity.User user);
+    
+    @Query("SELECT COUNT(l) FROM Like l WHERE l.snippet = :snippet")
+    Long countBySnippet(@Param("snippet") code.hub.codehubbackend.entity.Snippet snippet);
+    
+    @Query("SELECT COUNT(l) FROM Like l WHERE l.snippet.owner = :author")
+    Long countBySnippetAuthor(@Param("author") code.hub.codehubbackend.entity.User author);
 }

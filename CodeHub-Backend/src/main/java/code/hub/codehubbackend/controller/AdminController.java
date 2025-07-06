@@ -117,4 +117,37 @@ public class AdminController {
         SystemHealthResponse health = adminService.getSystemHealth();
         return ResponseEntity.ok(health);
     }
+
+    // Chart data endpoints
+    @GetMapping("/charts/top-languages")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get top languages chart data", description = "Get data for top programming languages chart")
+    public ResponseEntity<List<Map<String, Object>>> getTopLanguagesChart() {
+        List<Map<String, Object>> data = adminService.getTopLanguagesChart();
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/charts/snippets-created")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get snippets created chart data", description = "Get data for snippets created over time chart")
+    public ResponseEntity<List<Map<String, Object>>> getSnippetsCreatedChart() {
+        List<Map<String, Object>> data = adminService.getSnippetsCreatedChart();
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/charts/views")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get views chart data", description = "Get data for views over time chart")
+    public ResponseEntity<List<Map<String, Object>>> getViewsChart() {
+        List<Map<String, Object>> data = adminService.getViewsChart();
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/charts/snippets-by-hour")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get snippets by hour chart data", description = "Get data for snippets created by hour chart")
+    public ResponseEntity<List<Map<String, Object>>> getSnippetsByHourChart() {
+        List<Map<String, Object>> data = adminService.getSnippetsByHourChart();
+        return ResponseEntity.ok(data);
+    }
 }

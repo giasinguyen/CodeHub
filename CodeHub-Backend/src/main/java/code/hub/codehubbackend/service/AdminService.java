@@ -202,6 +202,59 @@ public class AdminService {
         return snippetRepository.getSnippetAnalytics(startDate, period);
     }
 
+    // Chart data methods
+    public List<Map<String, Object>> getTopLanguagesChart() {
+        log.info("Fetching top languages chart data");
+        List<Object[]> results = snippetRepository.getTopLanguagesData();
+        return results.stream()
+                .map(row -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("language", row[0]);
+                    map.put("count", row[1]);
+                    return map;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> getSnippetsCreatedChart() {
+        log.info("Fetching snippets created chart data");
+        List<Object[]> results = snippetRepository.getSnippetsCreatedLast30Days();
+        return results.stream()
+                .map(row -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("date", row[0]);
+                    map.put("count", row[1]);
+                    return map;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> getViewsChart() {
+        log.info("Fetching views chart data");
+        List<Object[]> results = snippetRepository.getViewsLast30Days();
+        return results.stream()
+                .map(row -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("date", row[0]);
+                    map.put("views", row[1]);
+                    return map;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> getSnippetsByHourChart() {
+        log.info("Fetching snippets by hour chart data");
+        List<Object[]> results = snippetRepository.getSnippetsByHourLast7Days();
+        return results.stream()
+                .map(row -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("hour", row[0]);
+                    map.put("count", row[1]);
+                    return map;
+                })
+                .collect(Collectors.toList());
+    }
+
     public Page<ActivityResponse> getRecentActivities(int page, int size) {
         log.info("Fetching recent activities - page: {}, size: {}", page, size);
         

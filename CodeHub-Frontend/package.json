@@ -29,6 +29,7 @@
     "react-hot-toast": "^2.5.2",
     "react-router-dom": "^7.6.2",
     "react-syntax-highlighter": "^15.6.1",
+    "recharts": "^3.0.2",
     "sockjs-client": "^1.6.1",
     "tailwindcss": "^4.1.8",
     "yup": "^1.6.1",

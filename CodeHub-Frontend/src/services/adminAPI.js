@@ -122,5 +122,50 @@ export const adminAPI = {
       console.error('❌ [API] System Health Error:', error);
       throw error;
     });
+  },
+
+  // Chart Data
+  getTopLanguagesChart: () => {
+    console.log('🌐 [API] Get Top Languages Chart');
+    return apiClient.get('/admin/charts/top-languages').then(response => {
+      console.log('✅ [API] Top Languages Chart Response:', response.data);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] Top Languages Chart Error:', error);
+      throw error;
+    });
+  },
+
+  getSnippetsCreatedChart: () => {
+    console.log('🌐 [API] Get Snippets Created Chart');
+    return apiClient.get('/admin/charts/snippets-created').then(response => {
+      console.log('✅ [API] Snippets Created Chart Response:', response.data);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] Snippets Created Chart Error:', error);
+      throw error;
+    });
+  },
+
+  getViewsChart: () => {
+    console.log('🌐 [API] Get Views Chart');
+    return apiClient.get('/admin/charts/views').then(response => {
+      console.log('✅ [API] Views Chart Response:', response.data);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] Views Chart Error:', error);
+      throw error;
+    });
+  },
+
+  getSnippetsByHourChart: () => {
+    console.log('🌐 [API] Get Snippets By Hour Chart');
+    return apiClient.get('/admin/charts/snippets-by-hour').then(response => {
+      console.log('✅ [API] Snippets By Hour Chart Response:', response.data);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] Snippets By Hour Chart Error:', error);
+      throw error;
+    });
   }
 };

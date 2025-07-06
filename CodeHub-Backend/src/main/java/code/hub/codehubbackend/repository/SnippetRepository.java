@@ -101,4 +101,17 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
 
   @Query("SELECT SUM(s.viewCount) FROM Snippet s WHERE s.owner = :author")
   Long getTotalViewsByAuthor(@Param("author") User author);
+
+  // Chart data queries
+  @Query(value = "SELECT s.language, COUNT(*) as count FROM snippets s WHERE s.language IS NOT NULL GROUP BY s.language ORDER BY count DESC LIMIT 10", nativeQuery = true)
+  List<Object[]> getTopLanguagesData();
+
+  @Query(value = "SELECT DATE(s.created_at) as date, COUNT(*) as count FROM snippets s WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(s.created_at) ORDER BY date", nativeQuery = true)
+  List<Object[]> getSnippetsCreatedLast30Days();
+
+  @Query(value = "SELECT DATE(s.created_at) as date, SUM(s.view_count) as views FROM snippets s WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(s.created_at) ORDER BY date", nativeQuery = true)
+  List<Object[]> getViewsLast30Days();
+
+  @Query(value = "SELECT HOUR(s.created_at) as hour, COUNT(*) as count FROM snippets s WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) GROUP BY HOUR(s.created_at) ORDER BY hour", nativeQuery = true)
+  List<Object[]> getSnippetsByHourLast7Days();
 }

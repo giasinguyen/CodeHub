@@ -23,7 +23,7 @@ public class UserFollowController {
     
     @PostMapping("/{userId}/follow")
     @Operation(summary = "Follow user", description = "Follow a user")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<String> followUser(
             @Parameter(description = "User ID to follow") @PathVariable Long userId
     ) {
@@ -34,7 +34,7 @@ public class UserFollowController {
     
     @DeleteMapping("/{userId}/follow")
     @Operation(summary = "Unfollow user", description = "Unfollow a user")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<String> unfollowUser(
             @Parameter(description = "User ID to unfollow") @PathVariable Long userId
     ) {
@@ -44,7 +44,7 @@ public class UserFollowController {
     
     @GetMapping("/{userId}/follow/status")
     @Operation(summary = "Get follow status", description = "Check if current user follows the specified user")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<FollowStatusResponse> getFollowStatus(
             @Parameter(description = "User ID to check") @PathVariable Long userId
     ) {
@@ -76,7 +76,7 @@ public class UserFollowController {
     
     @GetMapping("/profile/followers")
     @Operation(summary = "Get current user followers", description = "Get current user's followers")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Page<FollowResponse>> getCurrentUserFollowers(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size
@@ -87,7 +87,7 @@ public class UserFollowController {
     
     @GetMapping("/profile/following")
     @Operation(summary = "Get current user following", description = "Get users that current user follows")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Page<FollowResponse>> getCurrentUserFollowing(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size

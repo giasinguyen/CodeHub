@@ -21,7 +21,7 @@ public class RecentController {
     private final SnippetService snippetService;
     
     @GetMapping("/snippets")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get recently viewed snippets", description = "Get snippets recently viewed by current user")
     public ResponseEntity<Page<SnippetResponse>> getRecentlyViewedSnippets(
             @Parameter(description = "Page number (0-based)") 
@@ -34,7 +34,7 @@ public class RecentController {
     }
     
     @PostMapping("/snippets/{snippetId}/view")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Record snippet view", description = "Record that current user viewed a snippet")
     public ResponseEntity<Void> recordSnippetView(@PathVariable Long snippetId) {
         snippetService.recordSnippetView(snippetId);
@@ -42,7 +42,7 @@ public class RecentController {
     }
     
     @DeleteMapping("/snippets/{snippetId}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Remove from recently viewed", description = "Remove a snippet from recently viewed list")
     public ResponseEntity<Void> removeFromRecentlyViewed(@PathVariable Long snippetId) {
         snippetService.removeFromRecentlyViewed(snippetId);
@@ -50,7 +50,7 @@ public class RecentController {
     }
     
     @DeleteMapping("/snippets")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Clear recently viewed", description = "Clear all recently viewed snippets for current user")
     public ResponseEntity<Void> clearRecentlyViewed() {
         snippetService.clearRecentlyViewed();

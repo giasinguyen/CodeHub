@@ -21,7 +21,7 @@ public class ActivityController {
     private final ActivityService activityService;
     
     @GetMapping("/me")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Get current user activities", description = "Get paginated activities for the current user")
     public ResponseEntity<Page<ActivityResponse>> getCurrentUserActivities(
             @Parameter(description = "Filter by activity type: all, snippets, likes, comments, profile") 

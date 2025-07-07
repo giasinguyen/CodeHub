@@ -34,7 +34,7 @@ public class CommentController {
     }
     
     @PostMapping
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Create comment", description = "Add a new comment to a snippet")
     public ResponseEntity<CommentResponse> createComment(
             @PathVariable Long snippetId,
@@ -45,7 +45,7 @@ public class CommentController {
     }
     
     @DeleteMapping("/{commentId}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @Operation(summary = "Delete comment", description = "Delete a comment")
     public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);

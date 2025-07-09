@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MessageSquare, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { Button, Loading } from '../ui';
 import CommentForm from './CommentForm';
-import CommentItem from './CommentItem';
+import CommentThread from './CommentThread';
 import { useAuth } from '../../contexts/AuthContext';
 import { snippetsAPI } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -13,6 +13,7 @@ const CommentSection = ({ snippetId, initialCommentCount = 0 }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [commentCount, setCommentCount] = useState(initialCommentCount);
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
@@ -21,6 +22,71 @@ const CommentSection = ({ snippetId, initialCommentCount = 0 }) => {
     hasMore: false
   });
   const [expanded, setExpanded] = useState(false);
+
+  // Helper function to organize comments into threads
+  const organizeComments = (comments) => {
+    const threads = [];
+    const replyMap = new Map();
+
+    // First pass: identify main comments and group replies
+    comments.forEach(comment => {
+      if (comment.content.startsWith('@')) {
+        // Extract the mentioned username
+        const mentionMatch = comment.content.match(/^@(\w+)/);
+        if (mentionMatch) {
+          const mentionedUsername = mentionMatch[1];
+          
+          // Find the parent comment this is replying to
+          const parentComment = comments.find(c => 
+            c.author.username === mentionedUsername &&
+            c.createdAt < comment.createdAt
+          );
+          
+          if (parentComment) {
+            if (!replyMap.has(parentComment.id)) {
+              replyMap.set(parentComment.id, []);
+            }
+            replyMap.get(parentComment.id).push(comment);
+            return;
+          }
+        }
+      }
+      
+      // If no parent found, treat as main comment
+      threads.push(comment);
+    });
+
+    // Create thread structure
+    return threads.map(mainComment => ({
+      comment: mainComment,
+      replies: replyMap.get(mainComment.id) || []
+    }));
+  };
+
+  // Update comment count when initialCommentCount changes
+  useEffect(() => {
+    console.log('🔄 [CommentSection] Initial comment count changed:', initialCommentCount);
+    setCommentCount(initialCommentCount);
+  }, [initialCommentCount]);
+
+  // Load comment count when component mounts
+  useEffect(() => {
+    const loadCommentCount = async () => {
+      if (commentCount === 0) {
+        try {
+          console.log('🔄 [CommentSection] Loading comment count for snippet:', snippetId);
+          const response = await snippetsAPI.getComments(snippetId, 0, 1);
+          const totalCount = response.data.totalElements;
+          console.log('✅ [CommentSection] Comment count loaded:', totalCount);
+          setCommentCount(totalCount);
+        } catch (error) {
+          console.error('❌ [CommentSection] Failed to load comment count:', error);
+        }
+      }
+    };
+    
+    loadCommentCount();
+  }, [snippetId, commentCount]);
 
   // Load comments when component mounts or when expanded
   useEffect(() => {
@@ -55,6 +121,11 @@ const CommentSection = ({ snippetId, initialCommentCount = 0 }) => {
         totalPages: data.totalPages,
         hasMore: !data.last
       });
+      
+      // Update comment count if this is the first load
+      if (!append) {
+        setCommentCount(data.totalElements);
+      }
     } catch (error) {
       console.error('❌ [CommentSection] Failed to load comments:', error);
       setError('Failed to load comments');
@@ -88,6 +159,8 @@ const CommentSection = ({ snippetId, initialCommentCount = 0 }) => {
         return newComments;
       });
       
+      // Update counts
+      setCommentCount(prev => prev + 1);
       setPagination(prev => ({
         ...prev,
         totalElements: prev.totalElements + 1
@@ -110,6 +183,9 @@ const CommentSection = ({ snippetId, initialCommentCount = 0 }) => {
       
       // Remove comment from the list
       setComments(prev => prev.filter(comment => comment.id !== commentId));
+      
+      // Update counts
+      setCommentCount(prev => Math.max(0, prev - 1));
       setPagination(prev => ({
         ...prev,
         totalElements: Math.max(0, prev.totalElements - 1)
@@ -134,7 +210,7 @@ const CommentSection = ({ snippetId, initialCommentCount = 0 }) => {
     loadComments(0);
   };
 
-  const totalComments = pagination.totalElements || initialCommentCount;
+  const totalComments = commentCount;
 
   return (
     <div className="space-y-6">
@@ -247,12 +323,14 @@ const CommentSection = ({ snippetId, initialCommentCount = 0 }) => {
             </div>
           )}
 
-          {comments.map((comment) => (
-            <CommentItem
-              key={comment.id}
-              comment={comment}
+          {organizeComments(comments).map((thread) => (
+            <CommentThread
+              key={thread.comment.id}
+              comment={thread.comment}
+              replies={thread.replies}
               onDelete={handleDeleteComment}
               onEdit={handleEditComment}
+              onReply={handleAddComment}
             />
           ))}
 

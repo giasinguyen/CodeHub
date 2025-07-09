@@ -20,6 +20,7 @@ import {
   Bookmark
 } from 'lucide-react';
 import { Button, Card, Loading, FollowButton } from '../components/ui';
+import { CommentSection } from '../components/comments';
 import { useAuth } from '../contexts/AuthContext';
 import { snippetsAPI, favoritesAPI, usersAPI, recentAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -84,7 +85,6 @@ const SnippetDetail = () => {
               bookmarks: 0 // Not available in current API
             },
             languageColor: getLanguageColor(response.data.language),
-            comments: [], // TODO: Load comments separately
             relatedSnippets: [] // TODO: Load related snippets
           };          setSnippet(snippetData);
           
@@ -395,76 +395,10 @@ const SnippetDetail = () => {
               </div>            </div>
 
             {/* Comments */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-6 flex items-center">
-                <MessageSquare className="w-5 h-5 mr-2" />
-                Comments ({snippet.comments.length})
-              </h3>
-
-              {/* Add Comment */}
-              {user && (
-                <Card className="mb-6">
-                  <Card.Content>
-                    <div className="flex space-x-4">
-                      <img
-                        src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
-                        alt={user.username}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div className="flex-1">
-                        <textarea
-                          placeholder="Add a comment..."
-                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 resize-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                          rows="3"
-                        />
-                        <div className="flex justify-end mt-3">
-                          <Button size="sm">Post Comment</Button>
-                        </div>
-                      </div>
-                    </div>
-                  </Card.Content>
-                </Card>
-              )}
-
-              {/* Comments List */}
-              <div className="space-y-6">
-                {snippet.comments.map((comment) => (
-                  <Card key={comment.id}>
-                    <Card.Content>
-                      <div className="flex space-x-4">
-                        <img
-                          src={comment.author.avatar}
-                          alt={comment.author.username}
-                          className="w-10 h-10 rounded-full"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Link
-                              to={`/users/${comment.author.username}`}
-                              className="font-medium text-white hover:text-cyan-400 transition-colors"
-                            >
-                              {comment.author.username}
-                            </Link>
-                            <span className="text-slate-400 text-sm">
-                              {formatDate(comment.createdAt)}
-                            </span>
-                          </div>
-                          <p className="text-slate-300 mb-3">{comment.content}</p>
-                          <div className="flex items-center space-x-4">
-                            <button className="flex items-center space-x-1 text-slate-400 hover:text-red-400 transition-colors">
-                              <Heart className="w-4 h-4" />
-                              <span>{comment.likes}</span>
-                            </button>
-                            <button className="text-slate-400 hover:text-white transition-colors text-sm">
-                              Reply
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </Card.Content>
-                  </Card>                ))}
-              </div>
-            </div>
+            <CommentSection 
+              snippetId={id} 
+              initialCommentCount={snippet.commentCount || 0}
+            />
           </div>
 
           {/* Sidebar */}

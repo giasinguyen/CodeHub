@@ -27,40 +27,68 @@ const CommentSection = ({ snippetId, initialCommentCount = 0 }) => {
   const organizeComments = (comments) => {
     const threads = [];
     const replyMap = new Map();
+    const processedReplies = new Set();
+
+    // Sort comments by creation time to ensure proper ordering
+    const sortedComments = [...comments].sort((a, b) => 
+      new Date(a.createdAt) - new Date(b.createdAt)
+    );
 
     // First pass: identify main comments and group replies
-    comments.forEach(comment => {
+    sortedComments.forEach(comment => {
       if (comment.content.startsWith('@')) {
         // Extract the mentioned username
         const mentionMatch = comment.content.match(/^@(\w+)/);
         if (mentionMatch) {
           const mentionedUsername = mentionMatch[1];
           
-          // Find the parent comment this is replying to
-          const parentComment = comments.find(c => 
+          // Find the most recent parent comment this is replying to
+          // Look for comments from this user that were posted before this reply
+          const potentialParents = sortedComments.filter(c => 
             c.author.username === mentionedUsername &&
-            c.createdAt < comment.createdAt
+            new Date(c.createdAt) < new Date(comment.createdAt) &&
+            !processedReplies.has(c.id) // Don't reply to replies
           );
+          
+          // Get the most recent parent comment
+          const parentComment = potentialParents[potentialParents.length - 1];
           
           if (parentComment) {
             if (!replyMap.has(parentComment.id)) {
               replyMap.set(parentComment.id, []);
             }
             replyMap.get(parentComment.id).push(comment);
+            processedReplies.add(comment.id);
             return;
           }
         }
       }
       
       // If no parent found, treat as main comment
-      threads.push(comment);
+      if (!processedReplies.has(comment.id)) {
+        threads.push(comment);
+      }
     });
 
-    // Create thread structure
-    return threads.map(mainComment => ({
+    // Create thread structure with replies sorted by creation time
+    const result = threads.map(mainComment => ({
       comment: mainComment,
-      replies: replyMap.get(mainComment.id) || []
+      replies: (replyMap.get(mainComment.id) || []).sort((a, b) => 
+        new Date(a.createdAt) - new Date(b.createdAt)
+      )
     }));
+    
+    console.log('🔄 [CommentSection] Organized comments:', {
+      totalComments: comments.length,
+      mainThreads: result.length,
+      replyMap: Array.from(replyMap.entries()).map(([id, replies]) => ({
+        parentId: id,
+        replyCount: replies.length,
+        replies: replies.map(r => ({ id: r.id, content: r.content.substring(0, 50) }))
+      }))
+    });
+    
+    return result;
   };
 
   // Update comment count when initialCommentCount changes

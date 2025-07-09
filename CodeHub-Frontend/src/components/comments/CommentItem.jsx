@@ -15,11 +15,25 @@ const CommentItem = ({ comment, onDelete, onEdit, onReply }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
   const actionsRef = useRef(null);
 
   const isOwner = user && user.id === comment.author.id;
   const isAdmin = user && user.role === 'ADMIN';
   const canDelete = isOwner || isAdmin;
+
+  // Initialize like state from localStorage
+  useEffect(() => {
+    const likeKey = `comment_like_${comment.id}`;
+    const countKey = `comment_count_${comment.id}`;
+    
+    const savedLiked = localStorage.getItem(likeKey) === 'true';
+    const savedCount = parseInt(localStorage.getItem(countKey) || '0', 10);
+    
+    setLiked(savedLiked);
+    setLikeCount(savedCount);
+  }, [comment.id]);
 
   // Close actions menu when clicking outside
   useEffect(() => {
@@ -55,9 +69,43 @@ const CommentItem = ({ comment, onDelete, onEdit, onReply }) => {
   };
 
   const handleEdit = () => {
-    if (onEdit) {
-      onEdit(comment);
+    setEditing(true);
+    setEditContent(comment.content);
+    setShowActions(false);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editContent.trim() || editContent.trim() === comment.content) {
+      setEditing(false);
+      return;
     }
+
+    try {
+      setSubmitting(true);
+      
+      // Call the edit handler if available
+      if (onEdit) {
+        await onEdit(comment.id, { content: editContent.trim() });
+      } else {
+        // For now, just update locally until backend supports edit
+        comment.content = editContent.trim();
+        comment.updatedAt = new Date().toISOString();
+      }
+      
+      setEditing(false);
+      toast.success('Comment updated successfully!');
+    } catch (error) {
+      console.error('Failed to update comment:', error);
+      toast.error('Failed to update comment');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditing(false);
+    setEditContent(comment.content);
   };
 
   const handleReply = () => {
@@ -81,13 +129,40 @@ const CommentItem = ({ comment, onDelete, onEdit, onReply }) => {
     }
   };
 
-  const handleLike = () => {
+  const handleLike = async () => {
     if (!user) {
       toast.error('Please login to like comments');
       return;
     }
-    setLiked(!liked);
-    setLikeCount(prev => liked ? prev - 1 : prev + 1);
+    
+    const newLiked = !liked;
+    const newCount = newLiked ? likeCount + 1 : Math.max(0, likeCount - 1);
+    
+    // Optimistic update
+    setLiked(newLiked);
+    setLikeCount(newCount);
+    
+    // Save to localStorage for persistence
+    const likeKey = `comment_like_${comment.id}`;
+    const countKey = `comment_count_${comment.id}`;
+    
+    localStorage.setItem(likeKey, newLiked.toString());
+    localStorage.setItem(countKey, newCount.toString());
+    
+    // Show feedback toast
+    toast.success(newLiked ? '❤️ Comment liked!' : '💔 Comment unliked!');
+    
+    // TODO: Add API call when backend supports comment likes
+    // try {
+    //   await commentsAPI.toggleLike(comment.id);
+    // } catch (error) {
+    //   // Revert optimistic update on error
+    //   setLiked(liked);
+    //   setLikeCount(likeCount);
+    //   localStorage.setItem(likeKey, liked.toString());
+    //   localStorage.setItem(countKey, likeCount.toString());
+    //   toast.error('Failed to update like status');
+    // }
   };
 
   // Helper function to parse mentions in comment content
@@ -143,7 +218,7 @@ const CommentItem = ({ comment, onDelete, onEdit, onReply }) => {
                 </div>
 
                 {/* Actions Menu */}
-                {(canDelete || isOwner) && (
+                {(canDelete || isOwner) && !editing && (
                   <div className="relative" ref={actionsRef}>
                     <Button
                       variant="ghost"
@@ -181,6 +256,7 @@ const CommentItem = ({ comment, onDelete, onEdit, onReply }) => {
                               onClick={() => {
                                 // TODO: Implement report functionality
                                 console.log('Report comment:', comment.id);
+                                toast.info('Report functionality coming soon!');
                               }}
                               className="w-full text-left px-3 py-2 text-sm text-yellow-400 hover:bg-slate-700 flex items-center"
                             >
@@ -196,41 +272,88 @@ const CommentItem = ({ comment, onDelete, onEdit, onReply }) => {
               </div>
 
               {/* Comment Content */}
-              <div className="text-slate-300 whitespace-pre-wrap break-words mb-3">
-                {parseCommentContent(comment.content)}
-              </div>
+              {editing ? (
+                <div className="mb-3">
+                  <form onSubmit={handleEditSubmit} className="space-y-3">
+                    <textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 resize-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                      rows={3}
+                      maxLength={1000}
+                      autoFocus
+                      placeholder="Edit your comment..."
+                    />
+                    <div className="flex justify-between items-center">
+                      <span className={`text-xs ${
+                        editContent.length > 900 ? 'text-red-400' : 'text-slate-400'
+                      }`}>
+                        {editContent.length}/1000
+                      </span>
+                      <div className="flex space-x-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleEditCancel}
+                          disabled={submitting}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          size="sm"
+                          disabled={!editContent.trim() || editContent.trim() === comment.content || submitting}
+                          isLoading={submitting}
+                        >
+                          Save Changes
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                <div className="text-slate-300 whitespace-pre-wrap break-words mb-3">
+                  {parseCommentContent(comment.content)}
+                </div>
+              )}
 
               {/* Comment Actions */}
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={handleLike}
-                  className={`flex items-center space-x-1 text-sm transition-colors ${
-                    liked 
-                      ? 'text-red-400 hover:text-red-300' 
-                      : 'text-slate-400 hover:text-red-400'
-                  }`}
-                >
-                  <Heart className={`w-4 h-4 ${liked ? 'fill-current' : ''}`} />
-                  <span>{likeCount}</span>
-                </button>
-                
-                {user && (
+              {!editing && (
+                <div className="flex items-center space-x-4">
                   <button
-                    onClick={handleReply}
-                    className="flex items-center space-x-1 text-sm text-slate-400 hover:text-cyan-400 transition-colors"
+                    onClick={handleLike}
+                    className={`flex items-center space-x-1 text-sm transition-all duration-200 hover:scale-105 ${
+                      liked 
+                        ? 'text-red-400 hover:text-red-300' 
+                        : 'text-slate-400 hover:text-red-400'
+                    }`}
+                    disabled={!user}
                   >
-                    <Reply className="w-4 h-4" />
-                    <span>Reply</span>
+                    <Heart className={`w-4 h-4 transition-all duration-200 ${
+                      liked ? 'fill-current scale-110' : ''
+                    }`} />
+                    <span className="font-medium">{likeCount}</span>
                   </button>
-                )}
-              </div>
+                  
+                  {user && (
+                    <button
+                      onClick={handleReply}
+                      className="flex items-center space-x-1 text-sm text-slate-400 hover:text-cyan-400 transition-colors"
+                    >
+                      <Reply className="w-4 h-4" />
+                      <span>Reply</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </Card.Content>
       </Card>
 
       {/* Reply Form */}
-      {showReplyForm && (
+      {showReplyForm && !editing && (
         <ReplyForm
           replyToComment={comment}
           onSubmit={handleReplySubmit}

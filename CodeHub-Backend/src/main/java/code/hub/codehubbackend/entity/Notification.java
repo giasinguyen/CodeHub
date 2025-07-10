@@ -30,7 +30,7 @@ public class Notification {
     private User actor; // The user who performed the action
     
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private NotificationType type;
     
     @Column(nullable = false)
@@ -69,6 +69,7 @@ public class Notification {
         SNIPPET_STARRED,
         USER_FOLLOWED,
         COMMENT_REPLIED,
+        COMMENT_LIKED,
         SNIPPET_FORKED,
         MENTION,
         SYSTEM_ANNOUNCEMENT

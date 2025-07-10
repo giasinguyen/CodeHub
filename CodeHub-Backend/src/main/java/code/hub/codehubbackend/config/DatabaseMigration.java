@@ -25,6 +25,7 @@ public class DatabaseMigration {
                 
                 // Run migrations
                 migrateRecentlyViewedTable();
+                migrateNotificationTypeColumn();
                 
                 log.info("✅ Database migration completed successfully!");
                 
@@ -201,6 +202,75 @@ public class DatabaseMigration {
             
         } catch (Exception e) {
             log.warn("Failed to create unique index {} on table {}: {}", indexName, tableName, e.getMessage());
+        }
+    }
+    
+    private void migrateNotificationTypeColumn() {
+        String migrationName = "notification_type_column_length";
+        
+        try {
+            // Check if migration already ran
+            Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM migration_history WHERE migration_name = ?",
+                Integer.class, migrationName
+            );
+            
+            if (count != null && count > 0) {
+                log.info("Migration '{}' already executed, skipping", migrationName);
+                return;
+            }
+            
+        } catch (Exception e) {
+            log.debug("Migration table check failed, proceeding with migration: {}", e.getMessage());
+        }
+
+        try {
+            log.info("🔧 Migrating notification type column length...");
+            
+            // Check current column definition
+            String checkColumnSql = """
+                SELECT CHARACTER_MAXIMUM_LENGTH 
+                FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA = DATABASE() 
+                AND TABLE_NAME = 'notifications' 
+                AND COLUMN_NAME = 'type'
+                """;
+            
+            Integer currentLength = jdbcTemplate.queryForObject(checkColumnSql, Integer.class);
+            
+            if (currentLength == null || currentLength < 50) {
+                // Alter the type column to accommodate longer enum values
+                String alterSql = "ALTER TABLE notifications MODIFY COLUMN type VARCHAR(50) NOT NULL";
+                jdbcTemplate.execute(alterSql);
+                log.info("✅ Updated notification type column length to VARCHAR(50)");
+            } else {
+                log.info("Notification type column already has sufficient length: {}", currentLength);
+            }
+            
+            // Record successful migration
+            try {
+                jdbcTemplate.update(
+                    "INSERT INTO migration_history (migration_name, success) VALUES (?, ?)",
+                    migrationName, true
+                );
+            } catch (Exception e) {
+                log.debug("Failed to record migration: {}", e.getMessage());
+            }
+            
+            log.info("✅ Notification type column migration completed");
+            
+        } catch (Exception e) {
+            log.error("❌ Failed to migrate notification type column: {}", e.getMessage());
+            
+            // Record failed migration
+            try {
+                jdbcTemplate.update(
+                    "INSERT INTO migration_history (migration_name, success) VALUES (?, ?)",
+                    migrationName, false
+                );
+            } catch (Exception recordError) {
+                log.debug("Failed to record migration failure: {}", recordError.getMessage());
+            }
         }
     }
 }

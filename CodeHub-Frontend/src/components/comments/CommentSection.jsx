@@ -227,10 +227,27 @@ const CommentSection = ({ snippetId, initialCommentCount = 0 }) => {
     }
   };
 
-  const handleEditComment = (comment) => {
-    // TODO: Implement edit functionality
-    console.log('Edit comment:', comment);
-    toast.info('Edit functionality coming soon!');
+  const handleEditComment = async (commentId, updateData) => {
+    try {
+      console.log('🔄 [CommentSection] Editing comment:', commentId, updateData);
+      
+      // Call the backend API to update the comment
+      const response = await snippetsAPI.updateComment(snippetId, commentId, updateData);
+      console.log('✅ [CommentSection] Comment updated successfully:', response.data);
+      
+      // Update the comment in the local state
+      setComments(prev => prev.map(comment => 
+        comment.id === commentId 
+          ? { ...comment, ...response.data, updatedAt: new Date().toISOString() }
+          : comment
+      ));
+      
+      toast.success('Comment updated successfully!');
+    } catch (error) {
+      console.error('❌ [CommentSection] Failed to edit comment:', error);
+      toast.error('Failed to update comment');
+      throw error;
+    }
   };
 
   const refreshComments = () => {
@@ -359,6 +376,7 @@ const CommentSection = ({ snippetId, initialCommentCount = 0 }) => {
               onDelete={handleDeleteComment}
               onEdit={handleEditComment}
               onReply={handleAddComment}
+              snippetId={snippetId}
             />
           ))}
 

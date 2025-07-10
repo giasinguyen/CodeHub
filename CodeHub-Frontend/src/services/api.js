@@ -284,9 +284,18 @@ export const snippetsAPI = {
   
   // Add comment
   addComment: (id, commentData) => api.post(`/snippets/${id}/comments`, commentData),
-    // Delete comment
+  
+  // Update comment
+  updateComment: (snippetId, commentId, commentData) => 
+    api.put(`/snippets/${snippetId}/comments/${commentId}`, commentData),
+    
+  // Delete comment
   deleteComment: (snippetId, commentId) => 
     api.delete(`/snippets/${snippetId}/comments/${commentId}`),
+  
+  // Comment like operations
+  toggleCommentLike: (snippetId, commentId) => api.post(`/snippets/${snippetId}/comments/${commentId}/like`),
+  getCommentLikeStatus: (snippetId, commentId) => api.get(`/snippets/${snippetId}/comments/${commentId}/like-status`),
   
   // Get available tags
   getTags: () => api.get('/snippets/tags'),

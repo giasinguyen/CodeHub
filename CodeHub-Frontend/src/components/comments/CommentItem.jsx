@@ -5,16 +5,17 @@ import { Button, Card } from '../ui';
 import ReplyForm from './ReplyForm';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatDate } from '../../utils/dateUtils';
+import { snippetsAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
-const CommentItem = ({ comment, onDelete, onEdit, onReply }) => {
+const CommentItem = ({ comment, onDelete, onEdit, onReply, snippetId }) => {
   const { user } = useAuth();
   const [showActions, setShowActions] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
+  const [liked, setLiked] = useState(comment.isLiked || false);
+  const [likeCount, setLikeCount] = useState(comment.likeCount || 0);
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const actionsRef = useRef(null);
@@ -23,17 +24,11 @@ const CommentItem = ({ comment, onDelete, onEdit, onReply }) => {
   const isAdmin = user && user.role === 'ADMIN';
   const canDelete = isOwner || isAdmin;
 
-  // Initialize like state from localStorage
+  // Initialize like state from backend response
   useEffect(() => {
-    const likeKey = `comment_like_${comment.id}`;
-    const countKey = `comment_count_${comment.id}`;
-    
-    const savedLiked = localStorage.getItem(likeKey) === 'true';
-    const savedCount = parseInt(localStorage.getItem(countKey) || '0', 10);
-    
-    setLiked(savedLiked);
-    setLikeCount(savedCount);
-  }, [comment.id]);
+    setLiked(comment.isLiked || false);
+    setLikeCount(comment.likeCount || 0);
+  }, [comment.isLiked, comment.likeCount]);
 
   // Close actions menu when clicking outside
   useEffect(() => {
@@ -84,13 +79,8 @@ const CommentItem = ({ comment, onDelete, onEdit, onReply }) => {
     try {
       setSubmitting(true);
       
-      // Call the edit handler if available
       if (onEdit) {
         await onEdit(comment.id, { content: editContent.trim() });
-      } else {
-        // For now, just update locally until backend supports edit
-        comment.content = editContent.trim();
-        comment.updatedAt = new Date().toISOString();
       }
       
       setEditing(false);
@@ -135,34 +125,19 @@ const CommentItem = ({ comment, onDelete, onEdit, onReply }) => {
       return;
     }
     
-    const newLiked = !liked;
-    const newCount = newLiked ? likeCount + 1 : Math.max(0, likeCount - 1);
-    
-    // Optimistic update
-    setLiked(newLiked);
-    setLikeCount(newCount);
-    
-    // Save to localStorage for persistence
-    const likeKey = `comment_like_${comment.id}`;
-    const countKey = `comment_count_${comment.id}`;
-    
-    localStorage.setItem(likeKey, newLiked.toString());
-    localStorage.setItem(countKey, newCount.toString());
-    
-    // Show feedback toast
-    toast.success(newLiked ? '❤️ Comment liked!' : '💔 Comment unliked!');
-    
-    // TODO: Add API call when backend supports comment likes
-    // try {
-    //   await commentsAPI.toggleLike(comment.id);
-    // } catch (error) {
-    //   // Revert optimistic update on error
-    //   setLiked(liked);
-    //   setLikeCount(likeCount);
-    //   localStorage.setItem(likeKey, liked.toString());
-    //   localStorage.setItem(countKey, likeCount.toString());
-    //   toast.error('Failed to update like status');
-    // }
+    try {
+      const response = await snippetsAPI.toggleCommentLike(snippetId, comment.id);
+      const { liked: newLiked, likeCount: newCount } = response.data;
+      
+      // Update state with response from server
+      setLiked(newLiked);
+      setLikeCount(newCount);
+      
+      toast.success(newLiked ? '❤️ Comment liked!' : '💔 Comment unliked!');
+    } catch (error) {
+      console.error('Failed to toggle comment like:', error);
+      toast.error('Failed to update like status');
+    }
   };
 
   // Helper function to parse mentions in comment content

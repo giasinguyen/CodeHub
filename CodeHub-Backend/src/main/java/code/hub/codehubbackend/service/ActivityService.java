@@ -2,6 +2,7 @@ package code.hub.codehubbackend.service;
 
 import code.hub.codehubbackend.dto.activity.ActivityResponse;
 import code.hub.codehubbackend.entity.Activity;
+import code.hub.codehubbackend.entity.Comment;
 import code.hub.codehubbackend.entity.Snippet;
 import code.hub.codehubbackend.entity.User;
 import code.hub.codehubbackend.repository.ActivityRepository;
@@ -342,5 +343,40 @@ public class ActivityService {
             throw new RuntimeException("No authenticated user found");
         }
         return (User) authentication.getPrincipal();
+    }
+
+    /**
+     * Create activity for comment like/unlike
+     */
+    @Transactional
+    public void createCommentLikeActivity(Comment comment, boolean isLike) {
+        try {
+            User currentUser = getCurrentUser();
+            
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("comment", Map.of(
+                "id", comment.getId(),
+                "content", comment.getContent().length() > 100 ? comment.getContent().substring(0, 100) + "..." : comment.getContent(),
+                "author", comment.getAuthor().getUsername()
+            ));
+            metadata.put("snippet", Map.of(
+                "id", comment.getSnippet().getId(),
+                "title", comment.getSnippet().getTitle()
+            ));
+            
+            Activity activity = Activity.builder()
+                    .user(currentUser)
+                    .type(isLike ? Activity.ActivityType.COMMENT_LIKED : Activity.ActivityType.COMMENT_UNLIKED)
+                    .targetId(comment.getId())
+                    .targetType("comment")
+                    .metadata(objectMapper.writeValueAsString(metadata))
+                    .build();
+            
+            activityRepository.save(activity);
+            log.info("Created {} activity for comment: {}", isLike ? "LIKE" : "UNLIKE", comment.getId());
+        } catch (Exception e) {
+            log.error("Error creating comment like activity: {}", e.getMessage());
+            // Don't throw the error to prevent breaking the main functionality
+        }
     }
 }

@@ -3,7 +3,7 @@ import CommentItem from './CommentItem';
 import { Button } from '../ui';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-const CommentThread = ({ comment, onDelete, onEdit, onReply, replies = [] }) => {
+const CommentThread = ({ comment, onDelete, onEdit, onReply, replies = [], snippetId }) => {
   const [showReplies, setShowReplies] = useState(false);
 
   return (
@@ -14,6 +14,7 @@ const CommentThread = ({ comment, onDelete, onEdit, onReply, replies = [] }) => 
         onDelete={onDelete}
         onEdit={onEdit}
         onReply={onReply}
+        snippetId={snippetId}
       />
 
       {/* Replies Toggle */}
@@ -50,6 +51,7 @@ const CommentThread = ({ comment, onDelete, onEdit, onReply, replies = [] }) => 
               onDelete={onDelete}
               onEdit={onEdit}
               onReply={onReply}
+              snippetId={snippetId}
             />
           ))}
         </div>

@@ -35,6 +35,7 @@ public class User implements UserDetails {
     private String passwordHash;
     
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     @Builder.Default
     private Role role = Role.USER;
       private String avatarUrl;

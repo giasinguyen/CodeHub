@@ -206,6 +206,92 @@ public class NotificationService {
     }
     
     /**
+     * Create notification for comment like
+     */
+    @Transactional
+    public void createCommentLikeNotification(Comment comment, User liker) {
+        try {
+            // Don't create notification if user likes their own comment
+            if (comment.getAuthor().getId().equals(liker.getId())) {
+                return;
+            }
+            
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("comment", Map.of(
+                "id", comment.getId(),
+                "content", comment.getContent().length() > 100 ? comment.getContent().substring(0, 100) + "..." : comment.getContent()
+            ));
+            metadata.put("snippet", Map.of(
+                "id", comment.getSnippet().getId(),
+                "title", comment.getSnippet().getTitle()
+            ));
+            metadata.put("liker", Map.of(
+                "id", liker.getId(),
+                "username", liker.getUsername(),
+                "fullName", liker.getFullName() != null ? liker.getFullName() : liker.getUsername()
+            ));
+            
+            Notification notification = Notification.builder()
+                    .recipient(comment.getAuthor())
+                    .type(Notification.NotificationType.COMMENT_LIKED)
+                    .title(liker.getUsername() + " liked your comment")
+                    .message("Your comment on \"" + comment.getSnippet().getTitle() + "\" was liked by " + liker.getUsername())
+                    .metadata(objectMapper.writeValueAsString(metadata))
+                    .build();
+            
+            notificationRepository.save(notification);
+            log.info("Created comment like notification for user: {}", comment.getAuthor().getId());
+        } catch (JsonProcessingException e) {
+            log.error("Error creating comment like notification", e);
+        }
+    }
+
+    /**
+     * Create notification for comment reply
+     */
+    @Transactional
+    public void createCommentReplyNotification(Comment parentComment, Comment reply, User replier) {
+        try {
+            // Don't create notification if user replies to their own comment
+            if (parentComment.getAuthor().getId().equals(replier.getId())) {
+                return;
+            }
+            
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("parentComment", Map.of(
+                "id", parentComment.getId(),
+                "content", parentComment.getContent().length() > 100 ? parentComment.getContent().substring(0, 100) + "..." : parentComment.getContent()
+            ));
+            metadata.put("reply", Map.of(
+                "id", reply.getId(),
+                "content", reply.getContent().length() > 100 ? reply.getContent().substring(0, 100) + "..." : reply.getContent()
+            ));
+            metadata.put("snippet", Map.of(
+                "id", parentComment.getSnippet().getId(),
+                "title", parentComment.getSnippet().getTitle()
+            ));
+            metadata.put("replier", Map.of(
+                "id", replier.getId(),
+                "username", replier.getUsername(),
+                "fullName", replier.getFullName() != null ? replier.getFullName() : replier.getUsername()
+            ));
+            
+            Notification notification = Notification.builder()
+                    .recipient(parentComment.getAuthor())
+                    .type(Notification.NotificationType.COMMENT_REPLIED)
+                    .title(replier.getUsername() + " replied to your comment")
+                    .message(replier.getUsername() + " replied to your comment on \"" + parentComment.getSnippet().getTitle() + "\"")
+                    .metadata(objectMapper.writeValueAsString(metadata))
+                    .build();
+            
+            notificationRepository.save(notification);
+            log.info("Created comment reply notification for user: {}", parentComment.getAuthor().getId());
+        } catch (JsonProcessingException e) {
+            log.error("Error creating comment reply notification", e);
+        }
+    }
+
+    /**
      * Generic method to create notification
      */
     private void createNotification(User recipient, User actor, Notification.NotificationType type,

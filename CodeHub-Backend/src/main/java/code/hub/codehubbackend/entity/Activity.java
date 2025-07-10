@@ -48,6 +48,8 @@ public class Activity {
         SNIPPET_VIEWED,
         COMMENT_ADDED,
         COMMENT_DELETED,
+        COMMENT_LIKED,
+        COMMENT_UNLIKED,
         USER_FOLLOWED,
         USER_UNFOLLOWED,
         PROFILE_UPDATED

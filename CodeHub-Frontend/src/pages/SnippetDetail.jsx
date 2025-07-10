@@ -150,6 +150,47 @@ const SnippetDetail = () => {
     loadAuthorStats();
   }, [snippet?.author?.id]);
   
+  // Handle anchor links to scroll to specific comments
+  useEffect(() => {
+    const handleScrollToComment = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#comment-')) {
+        const commentId = hash.replace('#comment-', '');
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        
+        if (commentElement) {
+          // Wait a bit for the page to fully render
+          setTimeout(() => {
+            commentElement.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center' 
+            });
+            
+            // Add a subtle highlight effect
+            commentElement.style.backgroundColor = 'rgba(6, 182, 212, 0.1)';
+            commentElement.style.borderColor = 'rgba(6, 182, 212, 0.3)';
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+              commentElement.style.backgroundColor = '';
+              commentElement.style.borderColor = '';
+            }, 3000);
+          }, 500);
+        }
+      }
+    };
+
+    // Handle scroll when page loads
+    handleScrollToComment();
+    
+    // Also listen for hash changes
+    window.addEventListener('hashchange', handleScrollToComment);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleScrollToComment);
+    };
+  }, [snippet]); // Re-run when snippet changes
+  
   const handleCopyCode = async () => {
     try {
       await navigator.clipboard.writeText(snippet.code);
@@ -217,6 +258,47 @@ const SnippetDetail = () => {
       minute: '2-digit'
     });
   };
+
+  // Handle anchor links to scroll to specific comments
+  useEffect(() => {
+    const handleScrollToComment = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#comment-')) {
+        const commentId = hash.replace('#comment-', '');
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        
+        if (commentElement) {
+          // Wait a bit for the page to fully render
+          setTimeout(() => {
+            commentElement.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center' 
+            });
+            
+            // Add a subtle highlight effect
+            commentElement.style.backgroundColor = 'rgba(6, 182, 212, 0.1)';
+            commentElement.style.borderColor = 'rgba(6, 182, 212, 0.3)';
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+              commentElement.style.backgroundColor = '';
+              commentElement.style.borderColor = '';
+            }, 3000);
+          }, 500);
+        }
+      }
+    };
+
+    // Handle scroll when page loads
+    handleScrollToComment();
+    
+    // Also listen for hash changes
+    window.addEventListener('hashchange', handleScrollToComment);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleScrollToComment);
+    };
+  }, [snippet]); // Re-run when snippet changes
 
   if (loading) {
     return <Loading type="spinner" size="lg" text="Loading snippet..." />;

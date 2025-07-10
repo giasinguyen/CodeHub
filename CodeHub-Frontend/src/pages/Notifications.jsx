@@ -127,6 +127,8 @@ const Notifications = () => {
     switch (type) {
       case 'snippet_liked': return Heart;
       case 'snippet_commented': return MessageSquare;
+      case 'comment_liked': return Heart;
+      case 'comment_replied': return MessageSquare;
       case 'user_followed': return UserPlus;
       case 'snippet_starred': return Star;
       default: return Bell;
@@ -138,6 +140,8 @@ const Notifications = () => {
     switch (type) {
       case 'snippet_liked': return 'text-red-500';
       case 'snippet_commented': return 'text-blue-500';
+      case 'comment_liked': return 'text-pink-500';
+      case 'comment_replied': return 'text-green-500';
       case 'user_followed': return 'text-green-500';
       case 'snippet_starred': return 'text-yellow-500';
       default: return 'text-gray-500';

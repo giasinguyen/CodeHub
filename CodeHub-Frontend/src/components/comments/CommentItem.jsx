@@ -164,7 +164,7 @@ const CommentItem = ({ comment, onDelete, onEdit, onReply, snippetId }) => {
 
   return (
     <>
-      <Card className="relative">
+      <Card className="relative" id={`comment-${comment.id}`}>
         <Card.Content>
           <div className="flex space-x-4">
             {/* Author Avatar */}

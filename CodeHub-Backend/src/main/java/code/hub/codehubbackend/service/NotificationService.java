@@ -236,6 +236,7 @@ public class NotificationService {
                     .type(Notification.NotificationType.COMMENT_LIKED)
                     .title(liker.getUsername() + " liked your comment")
                     .message("Your comment on \"" + comment.getSnippet().getTitle() + "\" was liked by " + liker.getUsername())
+                    .actionUrl("/snippets/" + comment.getSnippet().getId() + "#comment-" + comment.getId())
                     .metadata(objectMapper.writeValueAsString(metadata))
                     .build();
             
@@ -281,6 +282,7 @@ public class NotificationService {
                     .type(Notification.NotificationType.COMMENT_REPLIED)
                     .title(replier.getUsername() + " replied to your comment")
                     .message(replier.getUsername() + " replied to your comment on \"" + parentComment.getSnippet().getTitle() + "\"")
+                    .actionUrl("/snippets/" + parentComment.getSnippet().getId() + "#comment-" + reply.getId())
                     .metadata(objectMapper.writeValueAsString(metadata))
                     .build();
             

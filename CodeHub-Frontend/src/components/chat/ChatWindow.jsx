@@ -44,9 +44,12 @@ const ChatWindow = () => {
   const [messageText, setMessageText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const emojiPickerRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const chatMessages = useMemo(() => {
     const msgs = activeChat ? (messages[activeChat.chatId] || []) : [];
@@ -221,6 +224,62 @@ const ChatWindow = () => {
     console.log('🎭 [ChatWindow] showEmojiPicker state changed to:', showEmojiPicker);
   }, [showEmojiPicker]);
 
+  // File upload handlers
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !activeChat) return;
+
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    setIsUploading(true);
+
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('roomId', activeChat.chatId); // Use roomId instead of chatId
+      formData.append('messageType', 'FILE'); // Add required messageType parameter
+
+      console.log('📎 [ChatWindow] Uploading file:', file.name, 'Size:', file.size, 'ChatId:', activeChat.chatId);
+      
+      // Send file message
+      await chatHistoryAPI.sendFileMessage(formData);
+      
+      toast.success('File uploaded successfully');
+      console.log('✅ [ChatWindow] File uploaded successfully');
+      
+      // Clear file selection
+      setSelectedFile(null);
+      e.target.value = '';
+      
+    } catch (error) {
+      console.error('❌ [ChatWindow] Error uploading file:', error);
+      toast.error('Failed to upload file');
+      setSelectedFile(null);
+      e.target.value = '';
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   if (!chatWindowOpen) return null;
 
   return (
@@ -321,6 +380,24 @@ const ChatWindow = () => {
             {/* Message Input */}
             {activeChat && (
               <div className="p-4 border-t border-slate-700 bg-slate-800/90 backdrop-blur-sm">
+                {/* File Upload Progress */}
+                {isUploading && selectedFile && (
+                  <div className="mb-3 p-3 bg-slate-700 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <File className="w-5 h-5 text-blue-400" />
+                      <div className="flex-1">
+                        <p className="text-sm text-white font-medium">{selectedFile.name}</p>
+                        <p className="text-xs text-slate-400">{formatFileSize(selectedFile.size)}</p>
+                      </div>
+                      <div className="animate-spin w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></div>
+                    </div>
+                    <div className="mt-2 w-full bg-slate-600 rounded-full h-2">
+                      <div className="bg-blue-400 h-2 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+                    </div>
+                    <p className="text-xs text-blue-400 mt-1">Uploading...</p>
+                  </div>
+                )}
+
                 <form onSubmit={handleSendMessage} className="flex items-end space-x-2">
                   <div className="flex-1 relative">
                     <Input
@@ -329,7 +406,7 @@ const ChatWindow = () => {
                       onKeyPress={handleKeyPress}
                       placeholder="Type a message..."
                       className="pr-20 resize-none"
-                      disabled={!connected}
+                      disabled={!connected || isUploading}
                     />
                     
                     {/* Emoji Picker */}
@@ -348,6 +425,7 @@ const ChatWindow = () => {
                         onClick={toggleEmojiPicker}
                         className="p-1 h-auto text-slate-400 hover:text-white bg-transparent border-none cursor-pointer"
                         style={{ background: 'none', border: 'none' }}
+                        disabled={isUploading}
                       >
                         <Smile className="w-4 h-4" />
                       </button>
@@ -356,15 +434,26 @@ const ChatWindow = () => {
                         variant="ghost"
                         size="sm"
                         className="p-1 h-auto"
+                        onClick={handleFileSelect}
+                        disabled={isUploading}
                       >
                         <Paperclip className="w-4 h-4" />
                       </Button>
+
+                      {/* Hidden file input */}
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept="*/*"
+                      />
                     </div>
                   </div>
                   
                   <Button
                     type="submit"
-                    disabled={!messageText.trim() || !connected}
+                    disabled={!messageText.trim() || !connected || isUploading}
                     size="sm"
                     className="px-3 py-2"
                   >
@@ -375,6 +464,12 @@ const ChatWindow = () => {
                 {!connected && (
                   <p className="text-xs text-amber-400 mt-2">
                     Connection lost. Messages will be sent when reconnected.
+                  </p>
+                )}
+                
+                {isUploading && (
+                  <p className="text-xs text-blue-400 mt-2">
+                    Uploading file... Please wait.
                   </p>
                 )}
               </div>

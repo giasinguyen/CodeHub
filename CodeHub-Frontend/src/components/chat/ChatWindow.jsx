@@ -20,6 +20,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { chatHistoryAPI } from '../../services/api';
 import ChatMessage from './ChatMessage';
 import TypingIndicator from './TypingIndicator';
+import EmojiPicker from './EmojiPicker';
 import toast from 'react-hot-toast';
 
 const ChatWindow = () => {
@@ -45,6 +46,7 @@ const ChatWindow = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const emojiPickerRef = useRef(null);
 
   const chatMessages = useMemo(() => {
     const msgs = activeChat ? (messages[activeChat.chatId] || []) : [];
@@ -165,6 +167,24 @@ const ChatWindow = () => {
     }
   };
 
+  // Emoji handlers
+  const handleEmojiSelect = (emoji) => {
+    console.log('✅ [ChatWindow] Emoji selected:', emoji);
+    setMessageText(prevText => {
+      const newText = prevText + emoji;
+      console.log('📝 [ChatWindow] Message text updated:', newText);
+      return newText;
+    });
+    setShowEmojiPicker(false);
+    console.log('🎭 [ChatWindow] Emoji picker closed');
+  };
+
+  const toggleEmojiPicker = () => {
+    console.log('🎭 [ChatWindow] Toggle emoji picker clicked. Current state:', showEmojiPicker);
+    setShowEmojiPicker(!showEmojiPicker);
+    console.log('🎭 [ChatWindow] New state will be:', !showEmojiPicker);
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -195,6 +215,11 @@ const ChatWindow = () => {
   };
 
   const otherParticipant = getOtherParticipant();
+
+  // Debug emoji picker state changes
+  useEffect(() => {
+    console.log('🎭 [ChatWindow] showEmojiPicker state changed to:', showEmojiPicker);
+  }, [showEmojiPicker]);
 
   if (!chatWindowOpen) return null;
 
@@ -307,16 +332,25 @@ const ChatWindow = () => {
                       disabled={!connected}
                     />
                     
+                    {/* Emoji Picker */}
+                    {showEmojiPicker && (
+                      <div 
+                        ref={emojiPickerRef}
+                        className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50 w-80"
+                      >
+                        <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+                      </div>
+                    )}
+                    
                     <div className="absolute right-2 bottom-2 flex items-center space-x-1">
-                      <Button
+                      <button
                         type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="p-1 h-auto"
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        onClick={toggleEmojiPicker}
+                        className="p-1 h-auto text-slate-400 hover:text-white bg-transparent border-none cursor-pointer"
+                        style={{ background: 'none', border: 'none' }}
                       >
                         <Smile className="w-4 h-4" />
-                      </Button>
+                      </button>
                       <Button
                         type="button"
                         variant="ghost"

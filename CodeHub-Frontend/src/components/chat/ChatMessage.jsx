@@ -26,11 +26,23 @@ const ChatMessage = ({ message, isOwnMessage = false, showAvatar = true, showTim
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
-  // Format message content with basic markdown-like support
+  // Format message content with basic markdown-like support and emoji
   const formatMessageContent = (content) => {
     if (!content) return '';
     
     let formatted = content;
+    
+    // Preserve emojis by replacing them with placeholders temporarily
+    const emojiMap = new Map();
+    let emojiCounter = 0;
+    
+    // Match Unicode emojis and replace with placeholders
+    formatted = formatted.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, (match) => {
+      const placeholder = `__EMOJI_${emojiCounter}__`;
+      emojiMap.set(placeholder, match);
+      emojiCounter++;
+      return placeholder;
+    });
     
     // Convert URLs to links
     formatted = formatted.replace(
@@ -49,6 +61,11 @@ const ChatMessage = ({ message, isOwnMessage = false, showAvatar = true, showTim
     
     // Convert line breaks
     formatted = formatted.replace(/\n/g, '<br>');
+    
+    // Restore emojis with proper styling
+    emojiMap.forEach((emoji, placeholder) => {
+      formatted = formatted.replace(placeholder, `<span class="emoji" style="font-size: 1.2em; line-height: 1;">${emoji}</span>`);
+    });
     
     return formatted;
   };
@@ -102,7 +119,7 @@ const ChatMessage = ({ message, isOwnMessage = false, showAvatar = true, showTim
             }
           `}
         >
-          {/* Message content with proper word wrapping */}
+          {/* Message content with proper word wrapping and emoji support */}
           <div 
             className="text-sm leading-relaxed break-words"
             style={{ 

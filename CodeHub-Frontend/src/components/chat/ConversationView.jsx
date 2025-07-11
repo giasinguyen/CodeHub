@@ -16,6 +16,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { chatHistoryAPI } from '../../services/api';
 import { Button, Input } from '../ui';
 import ChatMessage from './ChatMessage';
+import EmojiPicker from './EmojiPicker';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -31,6 +32,7 @@ const ConversationView = ({
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
 
@@ -115,6 +117,33 @@ const ConversationView = ({
       container.scrollTop = container.scrollHeight;
     }
   };
+
+  // Toggle emoji picker
+  const toggleEmojiPicker = () => {
+    console.log('ConversationView: toggleEmojiPicker called, current state:', showEmojiPicker);
+    setShowEmojiPicker(prev => !prev);
+  };
+
+  // Handle emoji selection
+  const handleEmojiSelect = (emoji) => {
+    console.log('ConversationView: emoji selected:', emoji);
+    setMessageText(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  };
+
+  // Handle click outside to close emoji picker
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showEmojiPicker && !event.target.closest('.emoji-picker-container')) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -225,7 +254,7 @@ const ConversationView = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-800 h-full">
+    <div className="flex-1 flex flex-col bg-slate-800 h-full relative">
       {/* Header - Fixed height */}
       <div className="h-16 p-4 border-b border-slate-700 bg-slate-900 flex-shrink-0">
         <div className="flex items-center justify-between h-full">
@@ -370,7 +399,13 @@ const ConversationView = ({
             />
           </div>
           
-          <Button variant="ghost" size="sm" type="button">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            type="button" 
+            onClick={toggleEmojiPicker}
+            className={`${showEmojiPicker ? 'bg-slate-600' : ''}`}
+          >
             <Smile className="w-4 h-4" />
           </Button>
           
@@ -388,6 +423,16 @@ const ConversationView = ({
           </Button>
         </form>
       </div>
+
+      {/* Emoji Picker - Conditional rendering */}
+      {showEmojiPicker && (
+        <div className="absolute bottom-20 right-4 z-20 emoji-picker-container">
+          <EmojiPicker 
+            onEmojiSelect={handleEmojiSelect} 
+            className="shadow-lg border border-slate-600"
+          />
+        </div>
+      )}
     </div>
   );
 };

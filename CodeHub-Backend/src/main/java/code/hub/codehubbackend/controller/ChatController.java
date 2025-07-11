@@ -1,7 +1,17 @@
 package code.hub.codehubbackend.controller;
 
 import code.hub.codehubbackend.dto.chat.*;
+import code.hub.codehubbackend.entity.ChatMessage;
+import code.hub.codehubbackend.entity.ChatParticipant;
+import code.hub.codehubbackend.entity.ChatRoom;
+import code.hub.codehubbackend.entity.User;
+import code.hub.codehubbackend.exception.ResourceNotFoundException;
+import code.hub.codehubbackend.exception.UnauthorizedException;
+import code.hub.codehubbackend.repository.ChatParticipantRepository;
+import code.hub.codehubbackend.repository.ChatRoomRepository;
+import code.hub.codehubbackend.repository.UserRepository;
 import code.hub.codehubbackend.service.ChatService;
+import code.hub.codehubbackend.service.CloudinaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,10 +21,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -25,6 +39,10 @@ import java.util.Map;
 public class ChatController {
 
     private final ChatService chatService;
+    private final CloudinaryService cloudinaryService;
+    private final UserRepository userRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatParticipantRepository chatParticipantRepository;
 
     @PostMapping("/rooms")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
@@ -98,5 +116,118 @@ public class ChatController {
     @Operation(summary = "Debug unread messages", description = "Get detailed information about unread messages for debugging")
     public ResponseEntity<Map<String, Object>> debugUnreadMessages(@PathVariable String chatId) {
         return chatService.debugUnreadMessages(chatId);
+    }
+
+    @PostMapping("/send-file")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @Operation(summary = "Send file message", description = "Upload and send a file in chat")
+    public ResponseEntity<Map<String, Object>> sendFileMessage(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "recipientUsername", required = false) String recipientUsername,
+            @RequestParam(value = "roomId", required = false) String roomId,
+            @RequestParam("messageType") String messageType,
+            Authentication authentication) {
+        
+        try {
+            log.info("📎 [ChatController] Received file upload request - file: {}, size: {}, recipient: {}, roomId: {}", 
+                     file.getOriginalFilename(), file.getSize(), recipientUsername, roomId);
+            
+            // Validate file
+            if (file.isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "File is empty");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Check file size (10MB limit)
+            long maxFileSize = 10 * 1024 * 1024; // 10MB
+            if (file.getSize() > maxFileSize) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "File size exceeds 10MB limit");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Upload file to Cloudinary
+            String fileUrl = cloudinaryService.uploadFile(file, "chat-files");
+            log.info("📎 [ChatController] File uploaded successfully to: {}", fileUrl);
+            
+            // Determine chat ID - either from direct roomId or create/find private chat
+            String chatId = roomId;
+            if (chatId == null && recipientUsername != null) {
+                // For direct messages, find or create private chat
+                User currentUser = userRepository.findByUsername(authentication.getName())
+                        .orElseThrow(() -> new UnauthorizedException("User not found"));
+                User recipient = userRepository.findByUsername(recipientUsername)
+                        .orElseThrow(() -> new ResourceNotFoundException("Recipient not found"));
+                
+                // Find existing private chat or create new one
+                ChatRoom existingChat = chatRoomRepository.findPrivateChatBetweenUsers(currentUser, recipient)
+                        .orElse(null);
+                
+                if (existingChat != null) {
+                    chatId = existingChat.getChatId();
+                } else {
+                    // Create new private chat room
+                    ChatRoom newChatRoom = ChatRoom.builder()
+                            .chatId(UUID.randomUUID().toString())
+                            .roomType(ChatRoom.RoomType.PRIVATE)
+                            .roomName(null)
+                            .isActive(true)
+                            .build();
+                    newChatRoom = chatRoomRepository.save(newChatRoom);
+                    chatId = newChatRoom.getChatId();
+                    
+                    // Add participants
+                    chatParticipantRepository.save(ChatParticipant.builder()
+                            .chatRoom(newChatRoom)
+                            .user(currentUser)
+                            .isActive(true)
+                            .build());
+                    
+                    chatParticipantRepository.save(ChatParticipant.builder()
+                            .chatRoom(newChatRoom)
+                            .user(recipient)
+                            .isActive(true)
+                            .build());
+                }
+            }
+            
+            if (chatId == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Either roomId or recipientUsername must be provided");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Create file message
+            ChatMessageRequest messageRequest = new ChatMessageRequest();
+            messageRequest.setContent(file.getOriginalFilename());
+            messageRequest.setMessageType(ChatMessage.MessageType.valueOf(messageType));
+            messageRequest.setChatId(chatId);
+            messageRequest.setFileUrl(fileUrl);
+            messageRequest.setFileName(file.getOriginalFilename());
+            messageRequest.setFileSize(file.getSize());
+            
+            // Send message through chat service
+            ChatMessageResponse messageResponse = chatService.sendMessage(messageRequest, authentication.getName());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "File sent successfully");
+            response.put("data", messageResponse);
+            response.put("fileUrl", fileUrl);
+            
+            log.info("📎 [ChatController] File message sent successfully");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("❌ [ChatController] Error sending file message", e);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to send file: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 }

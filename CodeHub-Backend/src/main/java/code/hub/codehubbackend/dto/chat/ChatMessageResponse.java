@@ -26,6 +26,11 @@ public class ChatMessageResponse {
     private Instant createdAt;
     private Instant editedAt;
     private SenderInfo sender;
+    
+    // File-related fields
+    private String fileUrl;
+    private String fileName;
+    private Long fileSize;
 
     @Data
     @Builder

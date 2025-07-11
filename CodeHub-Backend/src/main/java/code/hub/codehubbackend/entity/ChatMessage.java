@@ -51,6 +51,16 @@ public class ChatMessage {
 
     @Column
     private Instant editedAt;
+    
+    // File-related fields
+    @Column
+    private String fileUrl;
+    
+    @Column
+    private String fileName;
+    
+    @Column
+    private Long fileSize;
 
     public enum MessageType {
         TEXT, IMAGE, FILE, SYSTEM

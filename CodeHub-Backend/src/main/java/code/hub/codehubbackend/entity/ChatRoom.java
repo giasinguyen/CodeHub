@@ -47,6 +47,10 @@ public class ChatRoom {
     @UpdateTimestamp
     private Instant updatedAt;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
+
     public enum RoomType {
         PRIVATE, GROUP
     }

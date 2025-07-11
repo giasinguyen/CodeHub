@@ -29,8 +29,10 @@ public class CloudinaryService {
             throw new IllegalArgumentException("File cannot be null or empty");
         }
 
-        validateImageFile(file);        String publicId = "avatars/" + userId + "_" + UUID.randomUUID().toString();
-        
+        validateImageFile(file);
+        String publicId = "avatars/" + userId + "_" + UUID.randomUUID().toString();
+
+        @SuppressWarnings("unchecked")
         Map<String, Object> uploadParams = ObjectUtils.asMap(
                 "public_id", publicId,
                 "folder", "codehub/avatars",
@@ -41,12 +43,11 @@ public class CloudinaryService {
                 "quality", "auto",
                 "format", "webp",
                 "overwrite", true,
-                "resource_type", "image"
-        );
+                "resource_type", "image");
 
         Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
         String imageUrl = (String) uploadResult.get("secure_url");
-        
+
         log.info("Avatar uploaded successfully for user {}: {}", userId, imageUrl);
         return imageUrl;
     }
@@ -59,8 +60,10 @@ public class CloudinaryService {
             throw new IllegalArgumentException("File cannot be null or empty");
         }
 
-        validateImageFile(file);        String publicId = "covers/" + userId + "_" + UUID.randomUUID().toString();
-        
+        validateImageFile(file);
+        String publicId = "covers/" + userId + "_" + UUID.randomUUID().toString();
+
+        @SuppressWarnings("unchecked")
         Map<String, Object> uploadParams = ObjectUtils.asMap(
                 "public_id", publicId,
                 "folder", "codehub/covers",
@@ -70,12 +73,11 @@ public class CloudinaryService {
                 "quality", "auto",
                 "format", "webp",
                 "overwrite", true,
-                "resource_type", "image"
-        );
+                "resource_type", "image");
 
         Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
         String imageUrl = (String) uploadResult.get("secure_url");
-        
+
         log.info("Cover photo uploaded successfully for user {}: {}", userId, imageUrl);
         return imageUrl;
     }
@@ -88,20 +90,21 @@ public class CloudinaryService {
             throw new IllegalArgumentException("File cannot be null or empty");
         }
 
-        validateImageFile(file);        String publicId = folder + "/" + UUID.randomUUID().toString();
-        
+        validateImageFile(file);
+        String publicId = folder + "/" + UUID.randomUUID().toString();
+
+        @SuppressWarnings("unchecked")
         Map<String, Object> uploadParams = ObjectUtils.asMap(
                 "public_id", publicId,
                 "folder", "codehub/" + folder,
                 "quality", "auto",
                 "format", "webp",
                 "overwrite", true,
-                "resource_type", "image"
-        );
+                "resource_type", "image");
 
         Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
         String imageUrl = (String) uploadResult.get("secure_url");
-        
+
         log.info("Image uploaded successfully to folder {}: {}", folder, imageUrl);
         return imageUrl;
     }
@@ -142,7 +145,7 @@ public class CloudinaryService {
         }
 
         // Check supported formats
-        String[] supportedFormats = {"image/jpeg", "image/png", "image/gif", "image/webp"};
+        String[] supportedFormats = { "image/jpeg", "image/png", "image/gif", "image/webp" };
         boolean isSupported = false;
         for (String format : supportedFormats) {
             if (format.equals(contentType)) {
@@ -150,10 +153,41 @@ public class CloudinaryService {
                 break;
             }
         }
-        
+
         if (!isSupported) {
             throw new IllegalArgumentException("Unsupported image format. Supported formats: JPEG, PNG, GIF, WebP");
         }
+    }
+
+    /**
+     * Upload general file (documents, archives, etc.)
+     */
+    public String uploadFile(MultipartFile file, String folder) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be null or empty");
+        }
+
+        // Validate file size (10MB limit)
+        long maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.getSize() > maxSize) {
+            throw new IllegalArgumentException("File size exceeds 10MB limit");
+        }
+
+        // Generate unique public ID
+        String publicId = folder + "/" + UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> uploadParams = ObjectUtils.asMap(
+                "public_id", publicId,
+                "folder", "codehub/" + folder,
+                "resource_type", "auto", // Auto-detect resource type
+                "overwrite", false);
+
+        Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
+        String fileUrl = (String) uploadResult.get("secure_url");
+
+        log.info("File uploaded successfully: {} -> {}", file.getOriginalFilename(), fileUrl);
+        return fileUrl;
     }
 
     /**
@@ -164,12 +198,13 @@ public class CloudinaryService {
             if (imageUrl == null || !imageUrl.contains("cloudinary.com")) {
                 return null;
             }
-            
-            // Example URL: https://res.cloudinary.com/dqmlxcbxt/image/upload/v1234567890/codehub/avatars/user123_uuid.webp
+
+            // Example URL:
+            // https://res.cloudinary.com/dqmlxcbxt/image/upload/v1234567890/codehub/avatars/user123_uuid.webp
             int lastSlash = imageUrl.lastIndexOf('/');
             int secondLastSlash = imageUrl.lastIndexOf('/', lastSlash - 1);
             int thirdLastSlash = imageUrl.lastIndexOf('/', secondLastSlash - 1);
-            
+
             if (thirdLastSlash > 0) {
                 String publicId = imageUrl.substring(thirdLastSlash + 1);
                 // Remove file extension
@@ -179,7 +214,7 @@ public class CloudinaryService {
                 }
                 return publicId;
             }
-            
+
             return null;
         } catch (Exception e) {
             log.error("Error extracting public ID from URL: {}", imageUrl, e);

@@ -9,8 +9,9 @@ import {
   Send,
   Smile,
   Paperclip,
-  Image as ImageIcon,
-  User
+  User,
+  Download,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { chatHistoryAPI } from '../../services/api';
@@ -33,8 +34,11 @@ const ConversationView = ({
   const [hasMore, setHasMore] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const loadMessages = useCallback(async (pageNum = 0, append = false) => {
     if (!conversation) return;
@@ -131,19 +135,91 @@ const ConversationView = ({
     setShowEmojiPicker(false);
   };
 
-  // Handle click outside to close emoji picker
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showEmojiPicker && !event.target.closest('.emoji-picker-container')) {
-        setShowEmojiPicker(false);
-      }
-    };
+  // Handle file selection
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showEmojiPicker]);
+  // Handle file change
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Check file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error('File không được lớn hơn 10MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    setUploadingFile(true);
+
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('messageType', 'FILE');
+      
+      if (conversation.participantUsername) {
+        formData.append('recipientUsername', conversation.participantUsername);
+      } else if (conversation.roomId) {
+        formData.append('roomId', conversation.roomId);
+      }
+
+      // Upload file and send message
+      const response = await chatHistoryAPI.sendFileMessage(formData);
+      
+      if (response.success) {
+        // Add file message to local state
+        const fileMessage = {
+          id: Date.now().toString(),
+          content: file.name,
+          messageType: 'FILE',
+          fileName: file.name,
+          fileSize: file.size,
+          fileUrl: response.data.fileUrl,
+          sender: { 
+            id: user.id, 
+            username: user.username, 
+            fullName: user.fullName 
+          },
+          createdAt: new Date().toISOString(),
+          timestamp: Date.now()
+        };
+
+        setMessages(prev => [...prev, fileMessage]);
+        
+        // Call parent onSendMessage if provided
+        if (onSendMessage) {
+          onSendMessage(fileMessage);
+        }
+
+        toast.success('File đã được gửi thành công');
+      } else {
+        toast.error('Lỗi khi gửi file');
+      }
+    } catch (error) {
+      console.error('Error sending file:', error);
+      toast.error('Lỗi khi gửi file');
+    } finally {
+      setUploadingFile(false);
+      setSelectedFile(null);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Format file size
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -381,12 +457,30 @@ const ConversationView = ({
 
       {/* Message Input - Fixed height */}
       <div className="h-16 p-4 border-t border-slate-700 bg-slate-900 flex-shrink-0">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          onChange={handleFileChange}
+          className="hidden"
+          accept=".pdf,.doc,.docx,.txt,.zip,.rar,.7z,.tar,.gz,.xlsx,.xls,.pptx,.ppt,.csv,.json,.xml,.md"
+        />
+        
         <form onSubmit={handleSendMessage} className="flex items-center space-x-3 h-full">
-          <Button variant="ghost" size="sm" type="button">
-            <Paperclip className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm" type="button">
-            <ImageIcon className="w-4 h-4" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            type="button"
+            onClick={handleFileSelect}
+            title="Gửi file"
+            disabled={uploadingFile}
+            className={uploadingFile ? 'opacity-50' : ''}
+          >
+            {uploadingFile ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-400"></div>
+            ) : (
+              <Paperclip className="w-4 h-4" />
+            )}
           </Button>
           
           <div className="flex-1">
@@ -421,6 +515,15 @@ const ConversationView = ({
               <Send className="w-4 h-4" />
             )}
           </Button>
+
+          {/* Hidden file input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept="image/*,video/*,application/pdf"
+          />
         </form>
       </div>
 

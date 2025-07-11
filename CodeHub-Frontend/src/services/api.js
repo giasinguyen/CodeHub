@@ -801,6 +801,26 @@ export const chatHistoryAPI = {
     const url = `/chat/debug/unread/${chatId}`;
     console.log('🐛 [API] Debug Unread Messages:', url);
     return apiClient.get(url);
+  },
+
+  // Send file message
+  sendFileMessage: (formData) => {
+    const url = '/chat/send-file';
+    console.log('📎 [API] Send File Message:', url);
+    
+    // Create axios instance for file upload with multipart/form-data
+    return apiClient.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 30000, // 30 seconds for file upload
+    }).then(response => {
+      console.log('✅ [API] File Message Response:', response.data);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] File Message Error:', error);
+      throw error;
+    });
   }
 };
 

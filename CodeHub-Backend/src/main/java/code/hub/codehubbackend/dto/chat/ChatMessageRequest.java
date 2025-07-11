@@ -23,4 +23,13 @@ public class ChatMessageRequest {
 
     @NotBlank(message = "Chat room ID is required")
     private String chatId;
+    
+    // File-related fields
+    private String fileUrl;
+    private String fileName;
+    private Long fileSize;
+    
+    // For direct messaging
+    private String recipientUsername;
+    private String roomId;
 }

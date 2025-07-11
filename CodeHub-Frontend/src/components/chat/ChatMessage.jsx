@@ -1,5 +1,5 @@
 import React from 'react';
-import { User } from 'lucide-react';
+import { User, Download, FileText } from 'lucide-react';
 import { formatTime } from '../../utils/dateUtils';
 
 const ChatMessage = ({ message, isOwnMessage = false, showAvatar = true, showTimestamp = false }) => {
@@ -24,6 +24,92 @@ const ChatMessage = ({ message, isOwnMessage = false, showAvatar = true, showTim
   const getInitials = () => {
     const name = getSenderName();
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+  };
+
+  // Format file size
+  const formatFileSize = (bytes) => {
+    if (!bytes || bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  // Handle file download
+  const handleFileDownload = async () => {
+    console.log('🔽 [ChatMessage] Download clicked for message:', message);
+    console.log('🔽 [ChatMessage] File URL:', message.fileUrl);
+    console.log('🔽 [ChatMessage] File name:', message.fileName);
+    
+    if (!message.fileUrl) {
+      console.error('❌ [ChatMessage] No fileUrl found in message');
+      alert('File URL not found. Cannot download file.');
+      return;
+    }
+
+    try {
+      // Method 1: Try with fetch API (handles CORS better)
+      console.log('🔽 [ChatMessage] Attempting download with fetch API...');
+      
+      const response = await fetch(message.fileUrl, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = message.fileName || message.content || 'download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up blob URL
+      window.URL.revokeObjectURL(url);
+      
+      console.log('✅ [ChatMessage] Download completed successfully with fetch API');
+      
+    } catch (fetchError) {
+      console.error('❌ [ChatMessage] Fetch download failed:', fetchError);
+      
+      // Fallback Method 2: Direct link download
+      try {
+        console.log('� [ChatMessage] Trying direct link download...');
+        
+        const link = document.createElement('a');
+        link.href = message.fileUrl;
+        link.download = message.fileName || message.content || 'download';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('✅ [ChatMessage] Direct download triggered');
+        
+      } catch (directError) {
+        console.error('❌ [ChatMessage] Direct download failed:', directError);
+        
+        // Fallback Method 3: Open in new tab
+        try {
+          console.log('🔄 [ChatMessage] Opening file in new tab...');
+          window.open(message.fileUrl, '_blank', 'noopener,noreferrer');
+          console.log('✅ [ChatMessage] File opened in new tab');
+        } catch (tabError) {
+          console.error('❌ [ChatMessage] All download methods failed:', tabError);
+          alert('Unable to download file. Please copy the file URL and download manually.');
+        }
+      }
+    }
   };
 
   // Format message content with basic markdown-like support and emoji
@@ -119,18 +205,47 @@ const ChatMessage = ({ message, isOwnMessage = false, showAvatar = true, showTim
             }
           `}
         >
-          {/* Message content with proper word wrapping and emoji support */}
-          <div 
-            className="text-sm leading-relaxed break-words"
-            style={{ 
-              wordWrap: 'break-word', 
-              overflowWrap: 'break-word',
-              whiteSpace: 'pre-wrap'
-            }}
-            dangerouslySetInnerHTML={{ 
-              __html: formatMessageContent(message.content) 
-            }}
-          />
+          {/* File message rendering */}
+          {message.messageType === 'FILE' ? (
+            <div className="flex items-center space-x-3 min-w-[200px]">
+              <div className="flex-shrink-0">
+                <FileText className="w-8 h-8 text-slate-300" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate">
+                  {message.fileName || message.content}
+                </div>
+                <div className="text-xs opacity-75">
+                  {formatFileSize(message.fileSize)}
+                </div>
+                {/* Debug info - remove in production */}
+                <div className="text-xs text-yellow-400 mt-1">
+                  URL: {message.fileUrl ? '✅ Available' : '❌ Missing'}
+                </div>
+              </div>
+              <button
+                onClick={handleFileDownload}
+                className="flex-shrink-0 p-1 rounded hover:bg-slate-600 transition-colors disabled:opacity-50"
+                title="Tải xuống"
+                disabled={!message.fileUrl}
+              >
+                <Download className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            /* Text message content with proper word wrapping and emoji support */
+            <div 
+              className="text-sm leading-relaxed break-words"
+              style={{ 
+                wordWrap: 'break-word', 
+                overflowWrap: 'break-word',
+                whiteSpace: 'pre-wrap'
+              }}
+              dangerouslySetInnerHTML={{ 
+                __html: formatMessageContent(message.content) 
+              }}
+            />
+          )}
           
           {/* Message type indicator for non-text messages */}
           {message.messageType && message.messageType !== 'TEXT' && (

@@ -354,9 +354,35 @@ export const ChatProvider = ({ children }) => {
   // Send message
   const sendMessage = useCallback(async (messageData) => {
     try {
+      dispatch({ type: ActionTypes.SET_LOADING, payload: true });
+      
       if (state.connected) {
         // Send via WebSocket
         await webSocketService.sendChatMessage(messageData);
+        
+        // Add optimistic message to local state
+        const optimisticMessage = {
+          id: `temp-${Date.now()}`,
+          chatId: messageData.chatId,
+          senderId: user?.id,
+          senderUsername: user?.username,
+          content: messageData.content,
+          messageType: messageData.messageType || 'TEXT',
+          createdAt: new Date().toISOString(),
+          isRead: false,
+          isEdited: false,
+          sender: {
+            id: user?.id,
+            username: user?.username,
+            fullName: user?.fullName,
+            avatarUrl: user?.avatarUrl
+          }
+        };
+        
+        dispatch({ 
+          type: ActionTypes.ADD_MESSAGE, 
+          payload: { ...optimisticMessage, chatId: messageData.chatId }
+        });
       } else {
         // Fallback to REST API
         const response = await chatAPI.sendMessage(messageData);
@@ -366,8 +392,10 @@ export const ChatProvider = ({ children }) => {
       console.error('❌ [Chat] Error sending message:', error);
       toast.error('Failed to send message');
       throw error;
+    } finally {
+      dispatch({ type: ActionTypes.SET_LOADING, payload: false });
     }
-  }, [state.connected, handleNewMessage]);
+  }, [state.connected, handleNewMessage, user]);
 
   // Send typing notification
   const sendTypingNotification = useCallback(async (chatId, isTyping) => {

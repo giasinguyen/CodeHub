@@ -26,6 +26,33 @@ const ChatMessage = ({ message, isOwnMessage = false, showAvatar = true, showTim
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
+  // Format message content with basic markdown-like support
+  const formatMessageContent = (content) => {
+    if (!content) return '';
+    
+    let formatted = content;
+    
+    // Convert URLs to links
+    formatted = formatted.replace(
+      /(https?:\/\/[^\s]+)/g,
+      '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline break-all">$1</a>'
+    );
+    
+    // Convert **bold** to bold
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert *italic* to italic
+    formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Convert `code` to code
+    formatted = formatted.replace(/`(.*?)`/g, '<code class="bg-slate-600 px-1 py-0.5 rounded text-sm">$1</code>');
+    
+    // Convert line breaks
+    formatted = formatted.replace(/\n/g, '<br>');
+    
+    return formatted;
+  };
+
   return (
     <div className={`flex ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'} items-start gap-3 mb-4 px-4`}>
       {/* Avatar - Fixed position */}
@@ -83,9 +110,10 @@ const ChatMessage = ({ message, isOwnMessage = false, showAvatar = true, showTim
               overflowWrap: 'break-word',
               whiteSpace: 'pre-wrap'
             }}
-          >
-            {message.content}
-          </div>
+            dangerouslySetInnerHTML={{ 
+              __html: formatMessageContent(message.content) 
+            }}
+          />
           
           {/* Message type indicator for non-text messages */}
           {message.messageType && message.messageType !== 'TEXT' && (

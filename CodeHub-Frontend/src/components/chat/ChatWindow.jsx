@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import {
   X,
   Send,
@@ -35,7 +35,8 @@ const ChatWindow = () => {
     chatWindowMinimized,
     closeChatWindow,
     minimizeChatWindow,
-    maximizeChatWindow
+    maximizeChatWindow,
+    loadMessages
   } = useChat();
   
   const { user: currentUser } = useAuth();
@@ -45,9 +46,11 @@ const ChatWindow = () => {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
-  const chatMessages = useMemo(() => 
-    activeChat ? (messages[activeChat.chatId] || []) : []
-  , [activeChat, messages]);
+  const chatMessages = useMemo(() => {
+    const msgs = activeChat ? (messages[activeChat.chatId] || []) : [];
+    console.log('🔍 [ChatWindow] Chat messages for', activeChat?.chatId, ':', msgs);
+    return msgs;
+  }, [activeChat, messages]);
   const currentTypingUsers = activeChat ? (typingUsers[activeChat.chatId] || []) : [];
   const otherTypingUsers = currentTypingUsers.filter(username => username !== currentUser?.username);
 
@@ -55,6 +58,14 @@ const ChatWindow = () => {
   useEffect(() => {
     scrollToBottom();
   }, [chatMessages]);
+
+  // Load messages when activeChat changes
+  useEffect(() => {
+    if (activeChat && activeChat.chatId) {
+      console.log('🔄 [ChatWindow] Loading messages for chat:', activeChat.chatId);
+      loadMessages(activeChat.chatId, 0);
+    }
+  }, [activeChat, loadMessages]);
 
   // Mark messages as read when chat is opened
   useEffect(() => {
@@ -101,17 +112,23 @@ const ChatWindow = () => {
     
     if (!messageText.trim() || !activeChat) return;
 
+    const messageToSend = messageText.trim();
+    setMessageText(''); // Clear input immediately for better UX
+    stopTyping();
+
     try {
       await sendMessage({
-        content: messageText.trim(),
+        content: messageToSend,
         messageType: 'TEXT',
         chatId: activeChat.chatId
       });
 
-      setMessageText('');
-      stopTyping();
+      console.log('✅ [ChatWindow] Message sent successfully');
     } catch (error) {
       console.error('❌ [ChatWindow] Error sending message:', error);
+      // Restore message text on error
+      setMessageText(messageToSend);
+      toast.error('Failed to send message');
     }
   };
 
@@ -156,11 +173,25 @@ const ChatWindow = () => {
   };
 
   const getOtherParticipant = () => {
-    if (!activeChat || !activeChat.participants) return null;
+    if (!activeChat) return null;
     
-    return activeChat.participants.find(
-      participant => participant.userId !== currentUser?.id
-    );
+    // Handle different participant data structures
+    if (activeChat.participantUsername) {
+      return {
+        username: activeChat.participantUsername,
+        fullName: activeChat.participantFullName,
+        avatarUrl: activeChat.participantAvatarUrl,
+        isOnline: activeChat.isOnline
+      };
+    }
+    
+    if (activeChat.participants) {
+      return activeChat.participants.find(
+        participant => participant.userId !== currentUser?.id
+      );
+    }
+    
+    return null;
   };
 
   const otherParticipant = getOtherParticipant();
@@ -169,16 +200,8 @@ const ChatWindow = () => {
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ 
-          opacity: 1, 
-          scale: 1, 
-          y: 0,
-          height: chatWindowMinimized ? 'auto' : '600px'
-        }}
-        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className={`fixed bottom-4 right-4 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-50 ${
+      <div
+        className={`fixed bottom-4 right-4 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-50 transition-all duration-300 ${
           chatWindowMinimized ? 'w-80 h-auto' : 'w-96 h-[600px]'
         } flex flex-col overflow-hidden`}
       >
@@ -251,11 +274,12 @@ const ChatWindow = () => {
                     <ChatMessage
                       key={message.id}
                       message={message}
-                      isOwn={message.senderId === currentUser?.id}
+                      isOwnMessage={message.senderId === currentUser?.id}
                       showAvatar={
                         index === 0 ||
                         chatMessages[index - 1]?.senderId !== message.senderId
                       }
+                      showTimestamp={true}
                     />
                   ))}
                   
@@ -323,7 +347,7 @@ const ChatWindow = () => {
             )}
           </>
         )}
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 };

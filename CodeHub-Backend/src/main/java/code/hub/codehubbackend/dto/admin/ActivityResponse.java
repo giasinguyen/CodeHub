@@ -13,10 +13,13 @@ import java.time.Instant;
 @AllArgsConstructor
 public class ActivityResponse {
     private Long id;
+    private Long userId;
+    private String username;
     private String type;
     private String description;
     private String userUsername;
     private String userEmail;
+    private String activityType;
     private Instant timestamp;
     private String details;
     private String ipAddress;

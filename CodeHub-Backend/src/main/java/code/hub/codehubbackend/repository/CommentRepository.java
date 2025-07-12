@@ -29,6 +29,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.snippet.id = :snippetId AND c.isDeleted = false")
     long countBySnippetIdAndNotDeleted(@Param("snippetId") Long snippetId);
     
+    // Count comments by user
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.author.id = :userId AND c.isDeleted = false")
+    Long countByUserId(@Param("userId") Long userId);
+
     long countBySnippetId(Long snippetId);
 
     // Admin methods

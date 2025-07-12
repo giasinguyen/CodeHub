@@ -53,6 +53,39 @@ public class AdminController {
         return ResponseEntity.ok(user);
     }
 
+    @GetMapping("/users/{userId}/stats")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get user statistics", description = "Get statistics for a specific user")
+    public ResponseEntity<UserStatsResponse> getUserStats(@PathVariable Long userId) {
+        log.info("Admin getting user stats for user ID: {}", userId);
+        UserStatsResponse stats = adminService.getUserStats(userId);
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/users/{userId}/snippets")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get user snippets", description = "Get paginated list of snippets for a specific user")
+    public ResponseEntity<Page<SnippetModerationResponse>> getUserSnippets(
+            @PathVariable Long userId,
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size) {
+        log.info("Admin getting snippets for user ID: {} (page: {}, size: {})", userId, page, size);
+        Page<SnippetModerationResponse> snippets = adminService.getUserSnippets(userId, page, size);
+        return ResponseEntity.ok(snippets);
+    }
+
+    @GetMapping("/users/{userId}/activities")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get user activities", description = "Get paginated list of activities for a specific user")
+    public ResponseEntity<Page<ActivityResponse>> getUserActivities(
+            @PathVariable Long userId,
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size) {
+        log.info("Admin getting activities for user ID: {} (page: {}, size: {})", userId, page, size);
+        Page<ActivityResponse> activities = adminService.getUserActivities(userId, page, size);
+        return ResponseEntity.ok(activities);
+    }
+
     @PutMapping("/users/{userId}/status")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update user status", description = "Enable or disable a user account")

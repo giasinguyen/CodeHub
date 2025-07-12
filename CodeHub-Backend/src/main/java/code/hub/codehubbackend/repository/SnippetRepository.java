@@ -64,6 +64,9 @@ public interface SnippetRepository extends JpaRepository<Snippet, Long> {
   @Query("SELECT s FROM Snippet s WHERE s.owner.id = :authorId")
   List<Snippet> findByAuthorId(@Param("authorId") Long authorId);
 
+  @Query("SELECT s FROM Snippet s WHERE s.owner.id = :authorId")
+  Page<Snippet> findByAuthorId(@Param("authorId") Long authorId, Pageable pageable);
+
   @Query("SELECT COALESCE(SUM(s.likeCount), 0) FROM Snippet s WHERE s.owner = :user")
   Long sumLikesByOwner(@Param("user") User user);
 

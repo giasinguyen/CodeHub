@@ -40,6 +40,7 @@ import {
   CookiePolicy,
   Licenses,
 } from "./pages";
+import UserDetail from "./components/admin/UserDetail";
 import { About, Blog, Careers, Contact } from "./pages/company";
 import "./App.css";
 
@@ -300,6 +301,16 @@ const AppRoutes = () => {
             <Layout>
               <AdminDashboard />
             </Layout>
+          </AdminRoute>
+        }
+      />
+      
+      {/* Admin User Detail - Only accessible by ADMIN role */}
+      <Route
+        path="/admin/users/:userId"
+        element={
+          <AdminRoute>
+            <UserDetail />
           </AdminRoute>
         }
       />

@@ -28,4 +28,12 @@ public interface LikeRepository extends JpaRepository<Like, Like.LikeKey> {
     
     @Query("SELECT COUNT(l) FROM Like l WHERE l.snippet.owner = :author")
     Long countBySnippetAuthor(@Param("author") code.hub.codehubbackend.entity.User author);
+    
+    // Count likes by user ID
+    @Query("SELECT COUNT(l) FROM Like l WHERE l.user.id = :userId")
+    Long countByUserId(@Param("userId") Long userId);
+    
+    // Count likes received by user's snippets
+    @Query("SELECT COUNT(l) FROM Like l WHERE l.snippet.owner.id = :authorId")
+    Long countBySnippetAuthorId(@Param("authorId") Long authorId);
 }

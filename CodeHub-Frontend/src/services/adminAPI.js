@@ -167,5 +167,63 @@ export const adminAPI = {
       console.error('❌ [API] Snippets By Hour Chart Error:', error);
       throw error;
     });
-  }
+  },
+
+  // User Detail Page
+  getUserById: (userId) => {
+    console.log('🌐 [API] Get User By ID:', userId);
+    return apiClient.get(`/admin/users/${userId}`).then(response => {
+      console.log('✅ [API] User By ID Response:', response.data);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] User By ID Error:', error);
+      throw error;
+    });
+  },
+
+  getUserStats: (userId) => {
+    console.log('🌐 [API] Get User Stats:', userId);
+    return apiClient.get(`/admin/users/${userId}/stats`).then(response => {
+      console.log('✅ [API] User Stats Response:', response.data);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] User Stats Error:', error);
+      throw error;
+    });
+  },
+
+  getUserSnippets: (userId, page = 0, size = 20) => {
+    const params = new URLSearchParams({ page: page.toString(), size: size.toString() });
+    console.log('🌐 [API] Get User Snippets:', { userId, page, size });
+    return apiClient.get(`/admin/users/${userId}/snippets?${params}`).then(response => {
+      console.log('✅ [API] User Snippets Response:', response.data);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] User Snippets Error:', error);
+      throw error;
+    });
+  },
+
+  getUserActivities: (userId, page = 0, size = 20) => {
+    const params = new URLSearchParams({ page: page.toString(), size: size.toString() });
+    console.log('🌐 [API] Get User Activities:', { userId, page, size });
+    return apiClient.get(`/admin/users/${userId}/activities?${params}`).then(response => {
+      console.log('✅ [API] User Activities Response:', response.data);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] User Activities Error:', error);
+      throw error;
+    });
+  },
+
+  deleteUser: (userId) => {
+    console.log('🌐 [API] Delete User:', userId);
+    return apiClient.delete(`/admin/users/${userId}`).then(response => {
+      console.log('✅ [API] Delete User Response:', response);
+      return response;
+    }).catch(error => {
+      console.error('❌ [API] Delete User Error:', error);
+      throw error;
+    });
+  },
 };

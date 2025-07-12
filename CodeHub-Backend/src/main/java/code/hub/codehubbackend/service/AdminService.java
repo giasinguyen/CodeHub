@@ -314,6 +314,77 @@ public class AdminService {
                 .build();
     }
 
+    public UserStatsResponse getUserStats(Long userId) {
+        log.info("Fetching stats for user ID: {}", userId);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        
+        Long totalSnippets = snippetRepository.countByAuthorId(userId);
+        Long totalComments = commentRepository.countByUserId(userId);
+        Long totalLikes = likeRepository.countByUserId(userId);
+        Long likesReceived = likeRepository.countBySnippetAuthorId(userId);
+        Long profileViews = 0L; // User entity doesn't have profileViews field yet
+        
+        return UserStatsResponse.builder()
+                .userId(userId)
+                .totalSnippets(totalSnippets)
+                .totalComments(totalComments)
+                .totalLikes(totalLikes)
+                .likesReceived(likesReceived)
+                .profileViews(profileViews)
+                .build();
+    }
+
+    public Page<SnippetModerationResponse> getUserSnippets(Long userId, int page, int size) {
+        log.info("Fetching snippets for user ID: {} (page: {}, size: {})", userId, page, size);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Snippet> snippets = snippetRepository.findByAuthorId(userId, pageable);
+        
+        return snippets.map(snippet -> SnippetModerationResponse.builder()
+                .id(snippet.getId())
+                .title(snippet.getTitle())
+                .description(snippet.getDescription())
+                .language(snippet.getLanguage())
+                .authorUsername(snippet.getOwner().getUsername())
+                .authorEmail(snippet.getOwner().getEmail())
+                .createdAt(snippet.getCreatedAt())
+                .updatedAt(snippet.getUpdatedAt())
+                .isPublic(true) // Default to public since Snippet entity doesn't have isPublic field
+                .likesCount(snippet.getLikes() != null ? (long) snippet.getLikes().size() : 0L)
+                .commentsCount(snippet.getComments() != null ? (long) snippet.getComments().size() : 0L)
+                .viewsCount(snippet.getViewCount())
+                .flagged(false)
+                .flagReason(null)
+                .codePreview(snippet.getCode() != null && snippet.getCode().length() > 200 
+                    ? snippet.getCode().substring(0, 200) + "..." 
+                    : snippet.getCode())
+                .build());
+    }
+
+    public Page<ActivityResponse> getUserActivities(Long userId, int page, int size) {
+        log.info("Fetching activities for user ID: {} (page: {}, size: {})", userId, page, size);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Activity> activities = activityRepository.findByUserId(userId, pageable);
+        
+        return activities.map(activity -> ActivityResponse.builder()
+                .id(activity.getId())
+                .userId(activity.getUser().getId())
+                .username(activity.getUser().getUsername())
+                .description("Activity: " + activity.getType().toString())
+                .activityType(activity.getType().toString())
+                .timestamp(activity.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant())
+                .build());
+    }
+
     private UserManagementResponse mapToUserManagementResponse(User user) {
         Long snippetsCount = snippetRepository.countByAuthor(user);
         Long commentsCount = commentRepository.countByAuthor(user);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { adminAPI } from '../services/adminAPI';
 import { 
@@ -28,6 +29,7 @@ import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -607,6 +609,12 @@ const AdminDashboard = () => {
                             </td>
                             <td className="p-4">
                               <div className="flex items-center space-x-2">
+                                <Button
+                                  onClick={() => navigate(`/admin/users/${user.id}`)}
+                                  className="text-xs bg-cyan-600 hover:bg-cyan-700"
+                                >
+                                  View Details
+                                </Button>
                                 <Button
                                   onClick={() => handleUserStatusUpdate(user.id, !user.enabled)}
                                   className={`text-xs ${

@@ -61,11 +61,25 @@ const AdminDashboard = () => {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
+      console.log('📊 [AdminDashboard] Loading dashboard stats...');
       const response = await adminAPI.getDashboardStats();
+      console.log('✅ [AdminDashboard] Dashboard stats loaded:', response.data);
       setDashboardStats(response.data);
     } catch (error) {
+      console.error('❌ [AdminDashboard] Failed to load dashboard stats:', error);
       toast.error('Failed to load dashboard stats');
-      console.error('Dashboard stats error:', error);
+      
+      // Set fallback data to show something
+      setDashboardStats({
+        totalUsers: 0,
+        newUsersToday: 0,
+        totalSnippets: 0,
+        newSnippetsToday: 0,
+        totalComments: 0,
+        newCommentsToday: 0,
+        totalLikes: 0,
+        totalViews: 0
+      });
     } finally {
       setLoading(false);
     }
@@ -246,7 +260,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
-      <div className="bg-slate-800 border-b border-slate-700 sticky top-0 z-40">
+      <div className="bg-slate-800 border-b border-slate-700">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -310,14 +324,26 @@ const AdminDashboard = () => {
               </div>
             </Card>
 
-            {/* Mock Stats Cards */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card className="bg-slate-800 border-slate-700 p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-gray-400 text-sm">Total Users</p>
-                    <p className="text-3xl font-bold text-white">1,247</p>
-                    <p className="text-green-400 text-sm">+23 today</p>
+                    {loading ? (
+                      <div className="animate-pulse">
+                        <div className="h-8 bg-slate-600 rounded w-20 mb-2"></div>
+                        <div className="h-4 bg-slate-600 rounded w-16"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-3xl font-bold text-white">
+                          {dashboardStats?.totalUsers?.toLocaleString() || '0'}
+                        </p>                    <p className="text-green-400 text-sm">
+                      +{dashboardStats?.newUsersToday || 0} today
+                    </p>
+                      </>
+                    )}
                   </div>
                   <Users className="w-12 h-12 text-blue-400" />
                 </div>
@@ -327,8 +353,20 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-gray-400 text-sm">Total Snippets</p>
-                    <p className="text-3xl font-bold text-white">5,832</p>
-                    <p className="text-green-400 text-sm">+89 today</p>
+                    {loading ? (
+                      <div className="animate-pulse">
+                        <div className="h-8 bg-slate-600 rounded w-20 mb-2"></div>
+                        <div className="h-4 bg-slate-600 rounded w-16"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-3xl font-bold text-white">
+                          {dashboardStats?.totalSnippets?.toLocaleString() || '0'}
+                        </p>                    <p className="text-green-400 text-sm">
+                      +{dashboardStats?.newSnippetsToday || 0} today
+                    </p>
+                      </>
+                    )}
                   </div>
                   <FileText className="w-12 h-12 text-green-400" />
                 </div>
@@ -338,8 +376,20 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-gray-400 text-sm">Total Comments</p>
-                    <p className="text-3xl font-bold text-white">12,456</p>
-                    <p className="text-green-400 text-sm">+156 today</p>
+                    {loading ? (
+                      <div className="animate-pulse">
+                        <div className="h-8 bg-slate-600 rounded w-20 mb-2"></div>
+                        <div className="h-4 bg-slate-600 rounded w-16"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-3xl font-bold text-white">
+                          {dashboardStats?.totalComments?.toLocaleString() || '0'}
+                        </p>                    <p className="text-green-400 text-sm">
+                      +{dashboardStats?.newCommentsToday || 0} today
+                    </p>
+                      </>
+                    )}
                   </div>
                   <MessageSquare className="w-12 h-12 text-purple-400" />
                 </div>
@@ -349,8 +399,21 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-gray-400 text-sm">Total Likes</p>
-                    <p className="text-3xl font-bold text-white">28,392</p>
-                    <p className="text-gray-400 text-sm">45.2K views</p>
+                    {loading ? (
+                      <div className="animate-pulse">
+                        <div className="h-8 bg-slate-600 rounded w-20 mb-2"></div>
+                        <div className="h-4 bg-slate-600 rounded w-16"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-3xl font-bold text-white">
+                          {dashboardStats?.totalLikes?.toLocaleString() || '0'}
+                        </p>
+                        <p className="text-gray-400 text-sm">
+                          {dashboardStats?.totalViews ? `${(dashboardStats.totalViews / 1000).toFixed(1)}K views` : '0 views'}
+                        </p>
+                      </>
+                    )}
                   </div>
                   <Heart className="w-12 h-12 text-red-400" />
                 </div>

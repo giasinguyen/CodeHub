@@ -97,6 +97,294 @@ const UserDetail = () => {
     });
   };
 
+  const viewActivityDetails = (activity) => {
+    const details = {
+      id: activity.id,
+      activityType: activity.activityType,
+      description: activity.description,
+      timestamp: activity.timestamp,
+      userId: activity.userId,
+      userEmail: user?.email,
+      userUsername: user?.username,
+      ipAddress: activity.ipAddress,
+      userAgent: activity.userAgent,
+      details: activity.details
+    };
+
+    const detailsWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+    detailsWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Activity Details - ${user?.username || 'User'}</title>
+          <style>
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              background: linear-gradient(135deg, #1e293b, #334155);
+              color: #e2e8f0;
+              margin: 0;
+              padding: 20px;
+              min-height: 100vh;
+            }
+            .container { 
+              max-width: 800px; 
+              margin: 0 auto; 
+              background: rgba(30, 41, 59, 0.8);
+              backdrop-filter: blur(10px);
+              border-radius: 16px;
+              padding: 30px;
+              box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+              border: 1px solid rgba(148, 163, 184, 0.1);
+            }
+            .header { 
+              border-bottom: 2px solid #334155; 
+              padding-bottom: 20px; 
+              margin-bottom: 30px;
+              text-align: center;
+            }
+            .header h1 { 
+              color: #38bdf8; 
+              margin: 0; 
+              font-size: 28px;
+              font-weight: 700;
+            }
+            .user-info {
+              background: rgba(51, 65, 85, 0.6);
+              padding: 15px;
+              border-radius: 12px;
+              margin-bottom: 20px;
+              border: 1px solid rgba(148, 163, 184, 0.1);
+            }
+            .section { 
+              margin-bottom: 25px; 
+              background: rgba(51, 65, 85, 0.6);
+              padding: 20px;
+              border-radius: 12px;
+              border: 1px solid rgba(148, 163, 184, 0.1);
+            }
+            .section h3 { 
+              color: #06b6d4; 
+              margin-top: 0; 
+              margin-bottom: 15px;
+              font-size: 18px;
+              font-weight: 600;
+            }
+            .field { 
+              margin-bottom: 15px; 
+            }
+            .field-label { 
+              font-weight: 600; 
+              color: #94a3b8; 
+              display: inline-block; 
+              width: 120px;
+              font-size: 14px;
+            }
+            .field-value { 
+              color: #e2e8f0;
+              font-family: 'Courier New', monospace;
+              background: rgba(15, 23, 42, 0.8);
+              padding: 8px 12px;
+              border-radius: 6px;
+              border: 1px solid rgba(148, 163, 184, 0.2);
+              display: inline-block;
+              min-width: 200px;
+            }
+            .activity-type {
+              display: inline-block;
+              padding: 6px 12px;
+              border-radius: 20px;
+              font-size: 12px;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .type-snippet { background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; }
+            .type-comment { background: linear-gradient(135deg, #10b981, #047857); color: white; }
+            .type-like { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; }
+            .type-view { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+            .type-user { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
+            .type-default { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; }
+            .json-container { 
+              background: rgba(15, 23, 42, 0.9); 
+              padding: 20px; 
+              border-radius: 8px; 
+              border: 1px solid rgba(148, 163, 184, 0.2);
+              font-family: 'Courier New', monospace; 
+              white-space: pre-wrap; 
+              overflow-x: auto;
+              color: #38bdf8;
+              font-size: 13px;
+              line-height: 1.5;
+            }
+            .btn { 
+              background: linear-gradient(135deg, #06b6d4, #0891b2); 
+              color: white; 
+              border: none; 
+              padding: 12px 24px; 
+              border-radius: 8px; 
+              cursor: pointer; 
+              font-weight: 600;
+              font-size: 14px;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+              margin-right: 10px;
+            }
+            .btn:hover { 
+              background: linear-gradient(135deg, #0891b2, #0e7490);
+              transform: translateY(-2px);
+              box-shadow: 0 6px 16px rgba(6, 182, 212, 0.4);
+            }
+            .btn-danger {
+              background: linear-gradient(135deg, #ef4444, #dc2626);
+              box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            }
+            .btn-danger:hover {
+              background: linear-gradient(135deg, #dc2626, #b91c1c);
+              box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+            }
+            .actions { 
+              text-align: center; 
+              margin-top: 30px; 
+              padding-top: 20px;
+              border-top: 1px solid #334155;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔍 User Activity Details</h1>
+              <div class="user-info">
+                <strong>👤 User:</strong> ${user?.username || 'Unknown'} (${user?.email || 'No email'})
+              </div>
+            </div>
+            
+            <div class="section">
+              <h3>📋 Activity Information</h3>
+              <div class="field">
+                <span class="field-label">Activity ID:</span>
+                <span class="field-value">${details.id || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Type:</span>
+                <span class="activity-type ${
+                  details.activityType?.includes('SNIPPET') ? 'type-snippet' :
+                  details.activityType?.includes('COMMENT') ? 'type-comment' :
+                  details.activityType?.includes('LIKE') ? 'type-like' :
+                  details.activityType?.includes('VIEW') ? 'type-view' :
+                  details.activityType?.includes('USER') ? 'type-user' :
+                  'type-default'
+                }">${details.activityType || 'Unknown'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Description:</span>
+                <span class="field-value">${details.description || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Timestamp:</span>
+                <span class="field-value">${new Date(details.timestamp).toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <h3>👤 User Information</h3>
+              <div class="field">
+                <span class="field-label">User ID:</span>
+                <span class="field-value">${details.userId || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Username:</span>
+                <span class="field-value">${details.userUsername || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Email:</span>
+                <span class="field-value">${details.userEmail || 'N/A'}</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <h3>🌐 Session Information</h3>
+              <div class="field">
+                <span class="field-label">IP Address:</span>
+                <span class="field-value">${details.ipAddress || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">User Agent:</span>
+                <span class="field-value">${details.userAgent ? details.userAgent.substring(0, 100) + '...' : 'N/A'}</span>
+              </div>
+            </div>
+
+            ${details.details ? `
+            <div class="section">
+              <h3>📊 Additional Details</h3>
+              <div class="json-container">${typeof details.details === 'object' ? JSON.stringify(details.details, null, 2) : details.details}</div>
+            </div>
+            ` : ''}
+
+            <div class="actions">
+              <button class="btn" onclick="window.print()">🖨️ Print Details</button>
+              <button class="btn btn-danger" onclick="window.close()">❌ Close</button>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+    detailsWindow.document.close();
+  };
+
+  const exportUserActivities = async () => {
+    try {
+      toast.loading('Exporting user activities...');
+      
+      // Prepare CSV data for user activities
+      const csvHeaders = [
+        'Activity ID',
+        'Type', 
+        'Description',
+        'Timestamp',
+        'User ID',
+        'Username',
+        'Email',
+        'Details'
+      ];
+      
+      const csvData = userActivities.map(activity => [
+        activity.id || '',
+        activity.activityType || '',
+        activity.description || '',
+        activity.timestamp || '',
+        activity.userId || '',
+        user?.username || '',
+        user?.email || '',
+        activity.details ? (typeof activity.details === 'object' ? JSON.stringify(activity.details) : activity.details) : ''
+      ]);
+      
+      // Create CSV content
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvData.map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+      
+      // Create download link
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${user?.username || 'user'}-activities-${new Date().toISOString().split('T')[0]}.csv`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.dismiss();
+      toast.success(`Successfully exported ${userActivities.length} activities for ${user?.username || 'user'}`);
+      
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Failed to export user activities');
+      console.error('Export error:', error);
+    }
+  };
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: User },
     { id: 'snippets', label: 'Snippets', icon: FileText },
@@ -526,7 +814,10 @@ const UserDetail = () => {
                 <span className="text-sm text-gray-400">
                   Total: {userActivities.length} activities
                 </span>
-                <Button className="bg-slate-700 hover:bg-slate-600 text-sm">
+                <Button 
+                  onClick={exportUserActivities}
+                  className="bg-slate-700 hover:bg-slate-600 text-sm"
+                >
                   <Activity className="w-4 h-4 mr-2" />
                   Export
                 </Button>
@@ -661,7 +952,10 @@ const UserDetail = () => {
                           </div>
                           
                           <div className="flex items-center space-x-3 ml-6">
-                            <Button className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-sm px-4 py-2 font-medium shadow-md transition-all duration-200">
+                            <Button 
+                              onClick={() => viewActivityDetails(activity)}
+                              className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-sm px-4 py-2 font-medium shadow-md transition-all duration-200"
+                            >
                               <Eye className="w-4 h-4 mr-2" />
                               View Details
                             </Button>

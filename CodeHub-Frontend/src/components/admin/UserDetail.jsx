@@ -365,22 +365,88 @@ const UserDetail = () => {
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
                 <Activity className="w-5 h-5 mr-2" />
                 Recent Activity
+                {userActivities.length > 0 && (
+                  <span className="ml-auto text-sm text-gray-400">
+                    Showing {Math.min(5, userActivities.length)} of {userActivities.length} activities
+                  </span>
+                )}
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {userActivities.length > 0 ? (
                   userActivities.slice(0, 5).map((activity, index) => (
-                    <div key={index} className="flex items-center space-x-4 p-3 bg-slate-700 rounded-lg">
-                      <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                        <Activity className="w-4 h-4 text-white" />
+                    <div key={index} className="flex items-start space-x-4 p-4 bg-gradient-to-r from-slate-700 to-slate-600 rounded-lg hover:from-slate-600 hover:to-slate-500 transition-all duration-200 border border-slate-600">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
+                           style={{
+                             background: activity.activityType === 'SNIPPET_CREATED' ? 'linear-gradient(135deg, #3b82f6, #1e40af)' :
+                                        activity.activityType === 'COMMENT_CREATED' ? 'linear-gradient(135deg, #10b981, #047857)' :
+                                        activity.activityType === 'LIKE_CREATED' ? 'linear-gradient(135deg, #ef4444, #b91c1c)' :
+                                        activity.activityType === 'USER_REGISTERED' ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' :
+                                        activity.activityType === 'SNIPPET_VIEWED' ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                                        'linear-gradient(135deg, #06b6d4, #0891b2)'
+                           }}>
+                        {activity.activityType === 'SNIPPET_CREATED' && <FileText className="w-6 h-6 text-white" />}
+                        {activity.activityType === 'COMMENT_CREATED' && <MessageSquare className="w-6 h-6 text-white" />}
+                        {activity.activityType === 'LIKE_CREATED' && <Heart className="w-6 h-6 text-white" />}
+                        {activity.activityType === 'USER_REGISTERED' && <User className="w-6 h-6 text-white" />}
+                        {activity.activityType === 'SNIPPET_VIEWED' && <Eye className="w-6 h-6 text-white" />}
+                        {!['SNIPPET_CREATED', 'COMMENT_CREATED', 'LIKE_CREATED', 'USER_REGISTERED', 'SNIPPET_VIEWED'].includes(activity.activityType) && 
+                          <Activity className="w-6 h-6 text-white" />}
                       </div>
-                      <div className="flex-1">
-                        <p className="text-white text-sm">{activity.description}</p>
-                        <p className="text-gray-400 text-xs">{formatDate(activity.timestamp)}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-white text-sm font-semibold mb-2 leading-relaxed">{activity.description}</p>
+                            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-300">
+                              <div className="flex items-center space-x-1 bg-slate-600 px-2 py-1 rounded-full">
+                                <Clock className="w-3 h-3" />
+                                <span>{formatDate(activity.timestamp)}</span>
+                              </div>
+                              {activity.activityType && (
+                                <div className="flex items-center space-x-1 bg-cyan-600 px-2 py-1 rounded-full">
+                                  <Tag className="w-3 h-3" />
+                                  <span className="font-medium">
+                                    {activity.activityType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                                  </span>
+                                </div>
+                              )}
+                              {activity.userId && (
+                                <div className="flex items-center space-x-1 bg-blue-600 px-2 py-1 rounded-full">
+                                  <User className="w-3 h-3" />
+                                  <span>ID: {activity.userId}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-400">No recent activity</p>
+                  <div className="text-center py-12 bg-gradient-to-br from-slate-700 to-slate-600 rounded-xl border border-slate-600">
+                    <div className="w-16 h-16 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Activity className="w-8 h-8 text-white" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-white mb-2">No Recent Activity</h4>
+                    <p className="text-gray-300 text-sm mb-4">User activities will appear here when they interact with the platform</p>
+                    <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-400">
+                      <span className="bg-slate-600 px-3 py-1 rounded-full">Creating snippets</span>
+                      <span className="bg-slate-600 px-3 py-1 rounded-full">Writing comments</span>
+                      <span className="bg-slate-600 px-3 py-1 rounded-full">Liking content</span>
+                      <span className="bg-slate-600 px-3 py-1 rounded-full">Viewing snippets</span>
+                    </div>
+                  </div>
+                )}
+                
+                {userActivities.length > 5 && (
+                  <div className="text-center pt-4 border-t border-slate-600">
+                    <Button 
+                      onClick={() => setActiveTab('activities')}
+                      className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-sm font-medium px-6 py-2 shadow-lg transition-all duration-200"
+                    >
+                      <Activity className="w-4 h-4 mr-2" />
+                      View All Activities ({userActivities.length})
+                    </Button>
+                  </div>
                 )}
               </div>
             </Card>
@@ -454,26 +520,185 @@ const UserDetail = () => {
         {/* Activities Tab */}
         {activeTab === 'activities' && (
           <div className="space-y-6">
-            <h3 className="text-xl font-bold text-white">Activity History</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-white">Activity History</h3>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-400">
+                  Total: {userActivities.length} activities
+                </span>
+                <Button className="bg-slate-700 hover:bg-slate-600 text-sm">
+                  <Activity className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+              </div>
+            </div>
+            
+            {/* Activity Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card className="bg-slate-800 border-slate-700 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Snippets</p>
+                    <p className="text-white font-semibold">
+                      {userActivities.filter(a => a.activityType?.includes('SNIPPET')).length}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+              
+              <Card className="bg-slate-800 border-slate-700 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Comments</p>
+                    <p className="text-white font-semibold">
+                      {userActivities.filter(a => a.activityType?.includes('COMMENT')).length}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+              
+              <Card className="bg-slate-800 border-slate-700 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+                    <Heart className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Likes</p>
+                    <p className="text-white font-semibold">
+                      {userActivities.filter(a => a.activityType?.includes('LIKE')).length}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+              
+              <Card className="bg-slate-800 border-slate-700 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                    <Eye className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Views</p>
+                    <p className="text-white font-semibold">
+                      {userActivities.filter(a => a.activityType?.includes('VIEW')).length}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Activity List */}
             <div className="space-y-4">
               {userActivities.length > 0 ? (
                 userActivities.map((activity, index) => (
-                  <Card key={index} className="bg-slate-800 border-slate-700 p-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                        <Activity className="w-5 h-5 text-white" />
+                  <Card key={index} className="bg-gradient-to-r from-slate-800 to-slate-700 border-slate-600 p-6 hover:from-slate-700 hover:to-slate-600 transition-all duration-300 shadow-lg">
+                    <div className="flex items-start space-x-5">
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
+                           style={{
+                             background: activity.activityType?.includes('SNIPPET') ? 'linear-gradient(135deg, #3b82f6, #1e40af)' :
+                                        activity.activityType?.includes('COMMENT') ? 'linear-gradient(135deg, #10b981, #047857)' :
+                                        activity.activityType?.includes('LIKE') ? 'linear-gradient(135deg, #ef4444, #b91c1c)' :
+                                        activity.activityType?.includes('VIEW') ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                                        activity.activityType?.includes('USER') ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' :
+                                        'linear-gradient(135deg, #06b6d4, #0891b2)'
+                           }}>
+                        {activity.activityType?.includes('SNIPPET') && <FileText className="w-7 h-7 text-white" />}
+                        {activity.activityType?.includes('COMMENT') && <MessageSquare className="w-7 h-7 text-white" />}
+                        {activity.activityType?.includes('LIKE') && <Heart className="w-7 h-7 text-white" />}
+                        {activity.activityType?.includes('VIEW') && <Eye className="w-7 h-7 text-white" />}
+                        {activity.activityType?.includes('USER') && <User className="w-7 h-7 text-white" />}
+                        {!['SNIPPET', 'COMMENT', 'LIKE', 'VIEW', 'USER'].some(type => activity.activityType?.includes(type)) && 
+                          <Activity className="w-7 h-7 text-white" />}
                       </div>
-                      <div className="flex-1">
-                        <p className="text-white">{activity.description}</p>
-                        <p className="text-gray-400 text-sm">{formatDate(activity.timestamp)}</p>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="text-white font-semibold text-lg mb-3">{activity.description}</h4>
+                            
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300 mb-4">
+                              <div className="flex items-center space-x-2 bg-slate-600 px-3 py-1.5 rounded-full">
+                                <Clock className="w-4 h-4" />
+                                <span className="font-medium">{formatDate(activity.timestamp)}</span>
+                              </div>
+                              
+                              {activity.activityType && (
+                                <div className="flex items-center space-x-2 bg-cyan-600 px-3 py-1.5 rounded-full">
+                                  <Tag className="w-4 h-4" />
+                                  <span className="font-semibold">
+                                    {activity.activityType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {activity.userId && (
+                                <div className="flex items-center space-x-2 bg-blue-600 px-3 py-1.5 rounded-full">
+                                  <User className="w-4 h-4" />
+                                  <span className="font-medium">User ID: {activity.userId}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Additional Activity Details */}
+                            {activity.details && (
+                              <div className="bg-slate-700 rounded-xl p-4 border border-slate-600">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                                  <p className="text-gray-300 font-medium text-sm">Additional Details</p>
+                                </div>
+                                <pre className="text-gray-400 text-xs overflow-x-auto bg-slate-800 p-3 rounded-lg border border-slate-600">
+                                  {typeof activity.details === 'object' ? 
+                                    JSON.stringify(activity.details, null, 2) : 
+                                    activity.details}
+                                </pre>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center space-x-3 ml-6">
+                            <Button className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-sm px-4 py-2 font-medium shadow-md transition-all duration-200">
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </Card>
                 ))
               ) : (
-                <Card className="bg-slate-800 border-slate-700 p-8 text-center">
-                  <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-400">No activity history available.</p>
+                <Card className="bg-gradient-to-br from-slate-800 to-slate-700 border-slate-600 p-16 text-center shadow-xl">
+                  <div className="w-20 h-20 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <Activity className="w-10 h-10 text-white" />
+                  </div>
+                  <h4 className="text-xl font-bold text-white mb-3">No Activity History</h4>
+                  <p className="text-gray-300 mb-6 text-lg">This user hasn't performed any tracked activities yet.</p>
+                  <div className="bg-slate-700 rounded-xl p-6 border border-slate-600">
+                    <p className="text-gray-300 font-medium mb-4">Activities that will be tracked include:</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="flex items-center space-x-2 bg-slate-600 px-3 py-2 rounded-full">
+                        <FileText className="w-4 h-4 text-blue-400" />
+                        <span className="text-sm text-gray-200">Creating snippets</span>
+                      </div>
+                      <div className="flex items-center space-x-2 bg-slate-600 px-3 py-2 rounded-full">
+                        <MessageSquare className="w-4 h-4 text-green-400" />
+                        <span className="text-sm text-gray-200">Writing comments</span>
+                      </div>
+                      <div className="flex items-center space-x-2 bg-slate-600 px-3 py-2 rounded-full">
+                        <Heart className="w-4 h-4 text-red-400" />
+                        <span className="text-sm text-gray-200">Liking content</span>
+                      </div>
+                      <div className="flex items-center space-x-2 bg-slate-600 px-3 py-2 rounded-full">
+                        <Eye className="w-4 h-4 text-purple-400" />
+                        <span className="text-sm text-gray-200">Viewing snippets</span>
+                      </div>
+                    </div>
+                  </div>
                 </Card>
               )}
             </div>

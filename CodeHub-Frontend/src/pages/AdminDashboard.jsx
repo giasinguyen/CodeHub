@@ -228,6 +228,255 @@ const AdminDashboard = () => {
     }
   };
 
+  // New functions for activity management
+  const viewActivityDetails = (activity) => {
+    const details = {
+      id: activity.id,
+      type: activity.type,
+      description: activity.description,
+      timestamp: activity.timestamp,
+      userUsername: activity.userUsername,
+      userEmail: activity.userEmail,
+      ipAddress: activity.ipAddress,
+      userAgent: activity.userAgent,
+      details: activity.details
+    };
+
+    const detailsWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+    detailsWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Activity Details - ${activity.id}</title>
+          <style>
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              background: linear-gradient(135deg, #1e293b, #334155);
+              color: #e2e8f0;
+              margin: 0;
+              padding: 20px;
+              min-height: 100vh;
+            }
+            .container { 
+              max-width: 800px; 
+              margin: 0 auto; 
+              background: rgba(30, 41, 59, 0.8);
+              backdrop-filter: blur(10px);
+              border-radius: 16px;
+              padding: 30px;
+              box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+              border: 1px solid rgba(148, 163, 184, 0.1);
+            }
+            .header { 
+              border-bottom: 2px solid #334155; 
+              padding-bottom: 20px; 
+              margin-bottom: 30px;
+              text-align: center;
+            }
+            .header h1 { 
+              color: #38bdf8; 
+              margin: 0; 
+              font-size: 28px;
+              font-weight: 700;
+            }
+            .section { 
+              margin-bottom: 25px; 
+              background: rgba(51, 65, 85, 0.6);
+              padding: 20px;
+              border-radius: 12px;
+              border: 1px solid rgba(148, 163, 184, 0.1);
+            }
+            .section h3 { 
+              color: #06b6d4; 
+              margin-top: 0; 
+              margin-bottom: 15px;
+              font-size: 18px;
+              font-weight: 600;
+            }
+            .field { 
+              margin-bottom: 15px; 
+            }
+            .field-label { 
+              font-weight: 600; 
+              color: #94a3b8; 
+              display: inline-block; 
+              width: 120px;
+              font-size: 14px;
+            }
+            .field-value { 
+              color: #e2e8f0;
+              font-family: 'Courier New', monospace;
+              background: rgba(15, 23, 42, 0.8);
+              padding: 8px 12px;
+              border-radius: 6px;
+              border: 1px solid rgba(148, 163, 184, 0.2);
+              display: inline-block;
+              min-width: 200px;
+            }
+            .json-container { 
+              background: rgba(15, 23, 42, 0.9); 
+              padding: 20px; 
+              border-radius: 8px; 
+              border: 1px solid rgba(148, 163, 184, 0.2);
+              font-family: 'Courier New', monospace; 
+              white-space: pre-wrap; 
+              overflow-x: auto;
+              color: #38bdf8;
+              font-size: 13px;
+              line-height: 1.5;
+            }
+            .btn { 
+              background: linear-gradient(135deg, #06b6d4, #0891b2); 
+              color: white; 
+              border: none; 
+              padding: 12px 24px; 
+              border-radius: 8px; 
+              cursor: pointer; 
+              font-weight: 600;
+              font-size: 14px;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+            }
+            .btn:hover { 
+              background: linear-gradient(135deg, #0891b2, #0e7490);
+              transform: translateY(-2px);
+              box-shadow: 0 6px 16px rgba(6, 182, 212, 0.4);
+            }
+            .actions { 
+              text-align: center; 
+              margin-top: 30px; 
+              padding-top: 20px;
+              border-top: 1px solid #334155;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔍 Activity Details</h1>
+            </div>
+            
+            <div class="section">
+              <h3>📋 Basic Information</h3>
+              <div class="field">
+                <span class="field-label">ID:</span>
+                <span class="field-value">${details.id || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Type:</span>
+                <span class="field-value">${details.type || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Description:</span>
+                <span class="field-value">${details.description || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Timestamp:</span>
+                <span class="field-value">${new Date(details.timestamp).toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <h3>👤 User Information</h3>
+              <div class="field">
+                <span class="field-label">Username:</span>
+                <span class="field-value">${details.userUsername || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Email:</span>
+                <span class="field-value">${details.userEmail || 'N/A'}</span>
+              </div>
+            </div>
+
+            <div class="section">
+              <h3>🌐 Session Information</h3>
+              <div class="field">
+                <span class="field-label">IP Address:</span>
+                <span class="field-value">${details.ipAddress || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">User Agent:</span>
+                <span class="field-value">${details.userAgent ? details.userAgent.substring(0, 100) + '...' : 'N/A'}</span>
+              </div>
+            </div>
+
+            ${details.details ? `
+            <div class="section">
+              <h3>📊 Additional Details</h3>
+              <div class="json-container">${typeof details.details === 'object' ? JSON.stringify(details.details, null, 2) : details.details}</div>
+            </div>
+            ` : ''}
+
+            <div class="actions">
+              <button class="btn" onclick="window.print()">🖨️ Print Details</button>
+              <button class="btn" onclick="window.close()" style="margin-left: 10px; background: linear-gradient(135deg, #ef4444, #dc2626);">❌ Close</button>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+    detailsWindow.document.close();
+  };
+
+  const exportActivities = async () => {
+    try {
+      toast.loading('Exporting activities...');
+      
+      // Get all activities (not just current page)
+      const allActivitiesResponse = await adminAPI.getRecentActivities(0, 1000);
+      const allActivities = allActivitiesResponse.data.content;
+      
+      // Prepare CSV data
+      const csvHeaders = [
+        'ID',
+        'Type', 
+        'Description',
+        'Timestamp',
+        'Username',
+        'Email',
+        'IP Address',
+        'User Agent',
+        'Details'
+      ];
+      
+      const csvData = allActivities.map(activity => [
+        activity.id || '',
+        activity.type || '',
+        activity.description || '',
+        activity.timestamp || '',
+        activity.userUsername || '',
+        activity.userEmail || '',
+        activity.ipAddress || '',
+        activity.userAgent || '',
+        activity.details ? (typeof activity.details === 'object' ? JSON.stringify(activity.details) : activity.details) : ''
+      ]);
+      
+      // Create CSV content
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvData.map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+      
+      // Create download link
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `codehub-activities-${new Date().toISOString().split('T')[0]}.csv`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.dismiss();
+      toast.success(`Successfully exported ${allActivities.length} activities to CSV`);
+      
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Failed to export activities');
+      console.error('Export error:', error);
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -874,40 +1123,255 @@ const AdminDashboard = () => {
             {/* Activities Tab */}
             {activeTab === 'activities' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-white">Recent Activities</h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-white">System Activities</h2>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm text-gray-400">
+                      Total: {activities.totalElements} activities
+                    </span>
+                    <Button 
+                      onClick={() => exportActivities()}
+                      className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-sm font-medium px-4 py-2 shadow-lg transition-all duration-200"
+                    >
+                      <Activity className="w-4 h-4 mr-2" />
+                      Export Activities
+                    </Button>
+                    <Button
+                      onClick={refreshData}
+                      disabled={refreshing}
+                      className="bg-slate-700 hover:bg-slate-600"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </div>
+                </div>
                 
+                {/* Activity Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <Card className="bg-slate-800 border-slate-700 p-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-sm">Snippet Activities</p>
+                        <p className="text-white font-semibold">
+                          {activities.content.filter(a => a.type?.includes('SNIPPET') || a.description?.toLowerCase().includes('snippet')).length}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                  
+                  <Card className="bg-slate-800 border-slate-700 p-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                        <MessageSquare className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-sm">Comment Activities</p>
+                        <p className="text-white font-semibold">
+                          {activities.content.filter(a => a.type?.includes('COMMENT') || a.description?.toLowerCase().includes('comment')).length}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                  
+                  <Card className="bg-slate-800 border-slate-700 p-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+                        <Users className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-sm">User Activities</p>
+                        <p className="text-white font-semibold">
+                          {activities.content.filter(a => a.type?.includes('USER') || a.description?.toLowerCase().includes('user')).length}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                  
+                  <Card className="bg-slate-800 border-slate-700 p-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                        <Heart className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-sm">Like Activities</p>
+                        <p className="text-white font-semibold">
+                          {activities.content.filter(a => a.type?.includes('LIKE') || a.description?.toLowerCase().includes('like')).length}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Activity List */}
                 <div className="space-y-4">
-                  {activities.content.map(activity => (
-                    <Card key={activity.id} className="bg-slate-800 border-slate-700 p-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                          <Activity className="w-5 h-5 text-white" />
+                  {activities.content.length > 0 ? (
+                    activities.content.map((activity, index) => (
+                      <Card key={activity.id || index} className="bg-gradient-to-r from-slate-800 to-slate-700 border-slate-600 p-6 hover:from-slate-700 hover:to-slate-600 transition-all duration-300 shadow-lg">
+                        <div className="flex items-start space-x-5">
+                          <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
+                               style={{
+                                 background: (activity.type?.includes('SNIPPET') || activity.description?.toLowerCase().includes('snippet')) ? 'linear-gradient(135deg, #3b82f6, #1e40af)' :
+                                            (activity.type?.includes('COMMENT') || activity.description?.toLowerCase().includes('comment')) ? 'linear-gradient(135deg, #10b981, #047857)' :
+                                            (activity.type?.includes('LIKE') || activity.description?.toLowerCase().includes('like')) ? 'linear-gradient(135deg, #ef4444, #b91c1c)' :
+                                            (activity.type?.includes('USER') || activity.description?.toLowerCase().includes('user')) ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' :
+                                            'linear-gradient(135deg, #06b6d4, #0891b2)'
+                               }}>
+                            {(activity.type?.includes('SNIPPET') || activity.description?.toLowerCase().includes('snippet')) && <FileText className="w-7 h-7 text-white" />}
+                            {(activity.type?.includes('COMMENT') || activity.description?.toLowerCase().includes('comment')) && <MessageSquare className="w-7 h-7 text-white" />}
+                            {(activity.type?.includes('LIKE') || activity.description?.toLowerCase().includes('like')) && <Heart className="w-7 h-7 text-white" />}
+                            {(activity.type?.includes('USER') || activity.description?.toLowerCase().includes('user')) && <Users className="w-7 h-7 text-white" />}
+                            {!['snippet', 'comment', 'like', 'user'].some(type => 
+                              activity.type?.toLowerCase().includes(type) || 
+                              activity.description?.toLowerCase().includes(type)
+                            ) && <Activity className="w-7 h-7 text-white" />}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="text-white font-semibold text-lg mb-3">{activity.description}</h4>
+                                
+                                <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300 mb-4">
+                                  <div className="flex items-center space-x-2 bg-slate-600 px-3 py-1.5 rounded-full">
+                                    <Activity className="w-4 h-4" />
+                                    <span className="font-medium">{formatDate(activity.timestamp)}</span>
+                                  </div>
+                                  
+                                  {activity.type && (
+                                    <div className="flex items-center space-x-2 bg-cyan-600 px-3 py-1.5 rounded-full">
+                                      <Shield className="w-4 h-4" />
+                                      <span className="font-semibold">
+                                        {activity.type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                                      </span>
+                                    </div>
+                                  )}
+                                  
+                                  {activity.userUsername && (
+                                    <div className="flex items-center space-x-2 bg-blue-600 px-3 py-1.5 rounded-full">
+                                      <Users className="w-4 h-4" />
+                                      <span className="font-medium">@{activity.userUsername}</span>
+                                    </div>
+                                  )}
+
+                                  {activity.userEmail && (
+                                    <div className="flex items-center space-x-2 bg-green-600 px-3 py-1.5 rounded-full">
+                                      <MessageSquare className="w-4 h-4" />
+                                      <span className="font-medium">{activity.userEmail}</span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Additional Activity Details */}
+                                {activity.details && (
+                                  <div className="bg-slate-700 rounded-xl p-4 border border-slate-600">
+                                    <div className="flex items-center space-x-2 mb-2">
+                                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                                      <p className="text-gray-300 font-medium text-sm">Activity Details</p>
+                                    </div>
+                                    <pre className="text-gray-400 text-xs overflow-x-auto bg-slate-800 p-3 rounded-lg border border-slate-600">
+                                      {typeof activity.details === 'object' ? 
+                                        JSON.stringify(activity.details, null, 2) : 
+                                        activity.details}
+                                    </pre>
+                                  </div>
+                                )}
+
+                                {/* IP Address and User Agent */}
+                                {(activity.ipAddress || activity.userAgent) && (
+                                  <div className="bg-slate-700 rounded-xl p-4 border border-slate-600 mt-3">
+                                    <div className="flex items-center space-x-2 mb-2">
+                                      <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                                      <p className="text-gray-300 font-medium text-sm">Session Information</p>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                      {activity.ipAddress && (
+                                        <div className="bg-slate-800 p-2 rounded border border-slate-600">
+                                          <span className="text-gray-400">IP Address: </span>
+                                          <span className="text-gray-300 font-mono">{activity.ipAddress}</span>
+                                        </div>
+                                      )}
+                                      {activity.userAgent && (
+                                        <div className="bg-slate-800 p-2 rounded border border-slate-600">
+                                          <span className="text-gray-400">User Agent: </span>
+                                          <span className="text-gray-300 font-mono">{activity.userAgent}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="flex items-center space-x-3 ml-6">
+                                <Button 
+                                  onClick={() => viewActivityDetails(activity)}
+                                  className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-sm px-4 py-2 font-medium shadow-md transition-all duration-200"
+                                >
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  View Details
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <p className="text-white">{activity.description}</p>
-                          <p className="text-gray-400 text-sm">{formatDate(activity.timestamp)}</p>
+                      </Card>
+                    ))
+                  ) : (
+                    <Card className="bg-gradient-to-br from-slate-800 to-slate-700 border-slate-600 p-16 text-center shadow-xl">
+                      <div className="w-20 h-20 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <Activity className="w-10 h-10 text-white" />
+                      </div>
+                      <h4 className="text-xl font-bold text-white mb-3">No Activities Found</h4>
+                      <p className="text-gray-300 mb-6 text-lg">No system activities have been recorded yet.</p>
+                      <div className="bg-slate-700 rounded-xl p-6 border border-slate-600">
+                        <p className="text-gray-300 font-medium mb-4">Activities that will be tracked include:</p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <div className="flex items-center space-x-2 bg-slate-600 px-3 py-2 rounded-full">
+                            <FileText className="w-4 h-4 text-blue-400" />
+                            <span className="text-sm text-gray-200">Snippet creation</span>
+                          </div>
+                          <div className="flex items-center space-x-2 bg-slate-600 px-3 py-2 rounded-full">
+                            <MessageSquare className="w-4 h-4 text-green-400" />
+                            <span className="text-sm text-gray-200">Comment posting</span>
+                          </div>
+                          <div className="flex items-center space-x-2 bg-slate-600 px-3 py-2 rounded-full">
+                            <Users className="w-4 h-4 text-purple-400" />
+                            <span className="text-sm text-gray-200">User registration</span>
+                          </div>
+                          <div className="flex items-center space-x-2 bg-slate-600 px-3 py-2 rounded-full">
+                            <Heart className="w-4 h-4 text-red-400" />
+                            <span className="text-sm text-gray-200">Content liking</span>
+                          </div>
                         </div>
                       </div>
                     </Card>
-                  ))}
+                  )}
                 </div>
 
+                {/* Pagination */}
                 {activities.totalPages > 1 && (
-                  <div className="flex justify-center items-center space-x-4">
+                  <div className="flex justify-center items-center space-x-4 pt-6 border-t border-slate-700">
                     <Button
                       onClick={() => setActivityPage(Math.max(0, activityPage - 1))}
                       disabled={activityPage === 0}
-                      className="bg-slate-700 hover:bg-slate-600"
+                      className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 px-4 py-2 font-medium"
                     >
                       Previous
                     </Button>
-                    <span className="text-gray-400">
-                      Page {activityPage + 1} of {activities.totalPages}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-gray-400 text-sm">
+                        Page {activityPage + 1} of {activities.totalPages}
+                      </span>
+                      <span className="text-gray-500 text-xs">
+                        ({activities.totalElements} total activities)
+                      </span>
+                    </div>
                     <Button
                       onClick={() => setActivityPage(Math.min(activities.totalPages - 1, activityPage + 1))}
                       disabled={activityPage === activities.totalPages - 1}
-                      className="bg-slate-700 hover:bg-slate-600"
+                      className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 px-4 py-2 font-medium"
                     >
                       Next
                     </Button>

@@ -11,13 +11,17 @@ import {
   ArrowRight,
   TrendingUp,
   Clock,
-  Eye
+  Eye,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { Button, Card, Loading } from '../components/ui';
 import { snippetsAPI } from '../services/api';
 import { useSnippet } from '../contexts/SnippetContext';
 
 const Home = () => {  const { refreshTrigger } = useSnippet();
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(false);
   const [featuredSnippets, setFeaturedSnippets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [languages, setLanguages] = useState([
@@ -202,6 +206,25 @@ const Home = () => {  const { refreshTrigger } = useSnippet();
     loadLanguages();
     loadStats();  }, [refreshTrigger]);
 
+  // Scroll tracking effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const position = window.pageYOffset;
+      const documentHeight = document.documentElement.scrollHeight;
+      const windowHeight = window.innerHeight;
+      const scrollPercentage = position / (documentHeight - windowHeight);
+      
+      setShowScrollButton(position > 200); // Show button after scrolling 200px
+      setIsAtBottom(scrollPercentage > 0.8); // Consider "bottom" when 80% scrolled
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   // Helper function to get language color
   const getLanguageColor = (language) => {
     const colors = {
@@ -243,6 +266,22 @@ const Home = () => {  const { refreshTrigger } = useSnippet();
     
     const diffInWeeks = Math.floor(diffInDays / 7);
     if (diffInWeeks < 4) return `${diffInWeeks} weeks ago`;    return date.toLocaleDateString();
+  };
+
+  const handleScrollButtonClick = () => {
+    if (isAtBottom) {
+      // Scroll to top
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else {
+      // Scroll to bottom
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   };
 
   return (
@@ -521,6 +560,21 @@ const Home = () => {  const { refreshTrigger } = useSnippet();
           </motion.div>
         </div>
       </section>
+
+      {/* Scroll Button */}
+      {showScrollButton && (
+        <button
+          onClick={handleScrollButtonClick}
+          className="fixed bottom-6 right-6 bg-cyan-600 hover:bg-cyan-700 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-50"
+          aria-label={isAtBottom ? "Scroll to top" : "Scroll to bottom"}
+        >
+          {isAtBottom ? (
+            <ChevronUp className="w-6 h-6" />
+          ) : (
+            <ChevronDown className="w-6 h-6" />
+          )}
+        </button>
+      )}
     </div>
   );
 };

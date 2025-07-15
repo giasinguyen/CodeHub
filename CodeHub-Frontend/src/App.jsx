@@ -41,7 +41,7 @@ import {
   Licenses,
 } from "./pages";
 import UserDetail from "./components/admin/UserDetail";
-import { About, Blog, Careers, Contact } from "./pages/company";
+import { About, Contact } from "./pages/company";
 import "./App.css";
 
 // Protected Route Component
@@ -195,22 +195,6 @@ const AppRoutes = () => {
           </Layout>
         }
       />
-      <Route
-        path="/blog"
-        element={
-          <Layout>
-            <Blog />
-          </Layout>
-        }
-      />
-      <Route
-        path="/careers"
-        element={
-          <Layout>
-            <Careers />
-          </Layout>
-        }
-      />{" "}
       <Route
         path="/contact"
         element={

@@ -27,8 +27,6 @@ const Footer = () => {
       title: "Company",
       links: [
         { label: "About us", href: "/about" },
-        { label: "Blog", href: "/blog" },
-        { label: "Careers", href: "/careers" },
         { label: "Contact", href: "/contact" },
       ],
     },    support: {

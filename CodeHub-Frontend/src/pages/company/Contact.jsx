@@ -29,8 +29,8 @@ const Contact = () => {
       icon: Mail,
       title: "Email Us",
       description: "Send us an email and we'll respond within 24 hours",
-      contact: "hello@codehub.dev",
-      action: "mailto:hello@codehub.dev",
+      contact: "giasinguyentran@gmail.com",
+      action: "mailto:giasinguyentran@gmail.com",
     },
     {
       icon: MessageCircle,
@@ -43,15 +43,15 @@ const Contact = () => {
       icon: Github,
       title: "GitHub Issues",
       description: "Report bugs or request features",
-      contact: "github.com/codehub/issues",
-      action: "https://github.com/giasinguyen",
+      contact: "Github",
+      action: "https://github.com/giasinguyen/codehub/issues",
     },
     {
       icon: Phone,
       title: "Phone Support",
       description: "Call us for urgent matters",
-      contact: "+84 123 456 789",
-      action: "tel:+84123456789",
+      contact: "+84 34 899 6487",
+      action: "tel:+84348996487",
     },
   ];
 

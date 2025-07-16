@@ -42,6 +42,8 @@ import {
 } from "./pages";
 import UserDetail from "./components/admin/UserDetail";
 import { About, Contact } from "./pages/company";
+import ArticleDetail from "./components/support/ArticleDetail";
+import CategoryDetail from "./components/support/CategoryDetail";
 import "./App.css";
 
 // Protected Route Component
@@ -209,6 +211,22 @@ const AppRoutes = () => {
         element={
           <Layout>
             <HelpCenter />
+          </Layout>
+        }
+      />
+      <Route
+        path="/support/category/:categoryId"
+        element={
+          <Layout>
+            <CategoryDetail />
+          </Layout>
+        }
+      />
+      <Route
+        path="/support/article/:slug"
+        element={
+          <Layout>
+            <ArticleDetail />
           </Layout>
         }
       />

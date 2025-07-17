@@ -262,8 +262,8 @@ const PrivacyPolicy = () => {
             </p>
             <div className="flex items-center space-x-2 text-green-400">
               <Mail className="w-4 h-4" />
-              <a href="mailto:privacy@codehub.com" className="hover:underline">
-                privacy@codehub.com
+              <a href="mailto:giasinguyentran@gmail.com" className="hover:underline">
+                giasinguyentran@gmail.com
               </a>
             </div>
           </Card>

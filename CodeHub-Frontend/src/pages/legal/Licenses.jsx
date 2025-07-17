@@ -342,12 +342,12 @@ const Licenses = () => {
             </p>
             <div className="flex items-center space-x-2 text-purple-400">
               <Mail className="w-4 h-4" />
-              <a href="mailto:legal@codehub.com" className="hover:underline">
-                legal@codehub.com
+              <a href="mailto:giasinguyentran@gmail.com" className="hover:underline">
+                giasinguyentran@gmail.com
               </a>
             </div>
           </Card>
-
+ 
           {/* Related Legal Pages */}
           <Card className="p-6 mt-8 bg-slate-800/50 border-slate-700">
             <h3 className="text-lg font-semibold text-white mb-4">Related Legal Documents</h3>

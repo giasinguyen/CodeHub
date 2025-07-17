@@ -35,7 +35,6 @@ const Footer = () => {
         { label: "Help Center", href: "/support" },
         { label: "Report Bug", href: "/support/report-bug" },
         { label: "Feedback", href: "/support/feedback" },
-        { label: "Community", href: "/support/community" },
       ],
     },    legal: {
       title: "Legal",

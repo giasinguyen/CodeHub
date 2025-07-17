@@ -34,7 +34,6 @@ import {
   HelpCenter,
   ReportBug,
   Feedback,
-  Community,
   TermsOfService,
   PrivacyPolicy,
   CookiePolicy,
@@ -254,14 +253,6 @@ const AppRoutes = () => {
           </Layout>
         }
       />{" "}
-      <Route
-        path="/support/community"
-        element={
-          <Layout>
-            <Community />
-          </Layout>
-        }
-      />
       {/* Legal Pages */}
       <Route
         path="/legal/terms-of-service"

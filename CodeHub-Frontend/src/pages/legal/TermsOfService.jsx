@@ -183,8 +183,8 @@ const TermsOfService = () => {
             </p>
             <div className="flex items-center space-x-2 text-blue-400">
               <Mail className="w-4 h-4" />
-              <a href="mailto:legal@codehub.com" className="hover:underline">
-                legal@codehub.com
+              <a href="mailto:giasinguyentran@gmail.com" className="hover:underline">
+                giasinguyentran@gmail.com
               </a>
             </div>
           </Card>

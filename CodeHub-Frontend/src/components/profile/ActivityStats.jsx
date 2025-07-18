@@ -1,5 +1,5 @@
 import React from 'react';
-import { Code2, Star, MessageCircle, User, TrendingUp } from 'lucide-react';
+import { Code2, Star, MessageCircle, User, TrendingUp, Heart } from 'lucide-react';
 import { Card } from '../ui';
 
 const ActivityStats = ({ activities, isOwnProfile }) => {
@@ -7,6 +7,7 @@ const ActivityStats = ({ activities, isOwnProfile }) => {
     const stats = {
       snippetsCreated: 0,
       likesGiven: 0,
+      favoritesAdded: 0,
       commentsAdded: 0,
       profileUpdates: 0,
       totalActivity: activities.length
@@ -20,6 +21,9 @@ const ActivityStats = ({ activities, isOwnProfile }) => {
           break;
         case 'SNIPPET_LIKED':
           stats.likesGiven++;
+          break;
+        case 'SNIPPET_FAVORITED':
+          stats.favoritesAdded++;
           break;
         case 'COMMENT_ADDED':
           stats.commentsAdded++;
@@ -51,6 +55,12 @@ const ActivityStats = ({ activities, isOwnProfile }) => {
       color: 'text-yellow-400'
     },
     {
+      label: 'Favorites',
+      value: stats.favoritesAdded,
+      icon: <Heart className="w-5 h-5 text-red-400" />,
+      color: 'text-red-400'
+    },
+    {
       label: 'Comments',
       value: stats.commentsAdded,
       icon: <MessageCircle className="w-5 h-5 text-blue-400" />,
@@ -79,7 +89,7 @@ const ActivityStats = ({ activities, isOwnProfile }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {statItems.map((item, index) => (
             <div 
               key={index}

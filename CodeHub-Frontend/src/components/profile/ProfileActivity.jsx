@@ -99,6 +99,7 @@ const ProfileActivity = ({ userId, isOwnProfile }) => {
     if (filter === 'all') return true;
     if (filter === 'snippets') return ['SNIPPET_CREATED', 'SNIPPET_UPDATED'].includes(activity.type);
     if (filter === 'likes') return ['SNIPPET_LIKED', 'SNIPPET_UNLIKED'].includes(activity.type);
+    if (filter === 'favorites') return ['SNIPPET_FAVORITED', 'SNIPPET_UNFAVORITED'].includes(activity.type);
     if (filter === 'comments') return activity.type === 'COMMENT_ADDED';
     if (filter === 'profile') return activity.type === 'PROFILE_UPDATED';
     return true;
@@ -128,6 +129,7 @@ const ProfileActivity = ({ userId, isOwnProfile }) => {
             <option value="all">All Activity</option>
             <option value="snippets">Snippets</option>
             <option value="likes">Likes</option>
+            <option value="favorites">Favorites</option>
             <option value="comments">Comments</option>
             <option value="profile">Profile Updates</option>
           </select>

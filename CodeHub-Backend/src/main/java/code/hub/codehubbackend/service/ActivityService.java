@@ -324,7 +324,7 @@ public class ActivityService {
                 .targetId(activity.getTargetId())
                 .targetType(activity.getTargetType())
                 .data(data)
-                .createdAt(activity.getCreatedAt())
+                .createdAt(activity.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime())
                 .user(ActivityResponse.UserInfo.builder()
                         .id(activity.getUser().getId())
                         .username(activity.getUser().getUsername())

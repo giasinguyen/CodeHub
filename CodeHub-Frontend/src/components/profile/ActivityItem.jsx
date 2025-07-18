@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, MessageCircle, Code2, Eye, User } from 'lucide-react';
+import { Star, MessageCircle, Code2, Eye, User, Heart } from 'lucide-react';
 
 const ActivityItem = ({ activity }) => {
   const getActivityIcon = (type) => {
@@ -13,6 +13,10 @@ const ActivityItem = ({ activity }) => {
         return <Star className="w-5 h-5 text-yellow-400" />;
       case 'SNIPPET_UNLIKED':
         return <Star className="w-5 h-5 text-slate-400" />;
+      case 'SNIPPET_FAVORITED':
+        return <Heart className="w-5 h-5 text-red-400" />;
+      case 'SNIPPET_UNFAVORITED':
+        return <Heart className="w-5 h-5 text-slate-400" />;
       case 'COMMENT_ADDED':
         return <MessageCircle className="w-5 h-5 text-blue-400" />;
       case 'PROFILE_UPDATED':
@@ -76,6 +80,33 @@ const ActivityItem = ({ activity }) => {
         return (
           <span>
             Unliked{" "}
+            <Link 
+              to={`/snippets/${data.snippet?.id}`}
+              className="font-medium text-slate-400 hover:text-slate-300 transition-colors"
+            >
+              "{data.snippet?.title}"
+            </Link>
+          </span>
+        );
+      case 'SNIPPET_FAVORITED':
+        return (
+          <span>
+            Added to favorites{" "}
+            <Link 
+              to={`/snippets/${data.snippet?.id}`}
+              className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              "{data.snippet?.title}"
+            </Link>
+            {data.snippet?.author && (
+              <span> by <span className="text-cyan-400">@{data.snippet.author}</span></span>
+            )}
+          </span>
+        );
+      case 'SNIPPET_UNFAVORITED':
+        return (
+          <span>
+            Removed from favorites{" "}
             <Link 
               to={`/snippets/${data.snippet?.id}`}
               className="font-medium text-slate-400 hover:text-slate-300 transition-colors"

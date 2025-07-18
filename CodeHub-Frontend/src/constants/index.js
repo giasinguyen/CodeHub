@@ -124,6 +124,82 @@ export const POPULAR_LANGUAGES = [
   'markdown',
 ];
 
+// Language configuration with display names and file extensions
+export const LANGUAGE_CONFIG = {
+  // Programming Languages
+  javascript: { name: 'JavaScript', extension: 'js', category: 'language' },
+  python: { name: 'Python', extension: 'py', category: 'language' },
+  typescript: { name: 'TypeScript', extension: 'ts', category: 'language' },
+  java: { name: 'Java', extension: 'java', category: 'language' },
+  cpp: { name: 'C++', extension: 'cpp', category: 'language' },
+  csharp: { name: 'C#', extension: 'cs', category: 'language' },
+  go: { name: 'Go', extension: 'go', category: 'language' },
+  rust: { name: 'Rust', extension: 'rs', category: 'language' },
+  php: { name: 'PHP', extension: 'php', category: 'language' },
+  ruby: { name: 'Ruby', extension: 'rb', category: 'language' },
+  
+  // Frontend & UI
+  react: { name: 'React', extension: 'jsx', category: 'frontend' },
+  vue: { name: 'Vue.js', extension: 'vue', category: 'frontend' },
+  angular: { name: 'Angular', extension: 'ts', category: 'frontend' },
+  html: { name: 'HTML', extension: 'html', category: 'frontend' },
+  css: { name: 'CSS', extension: 'css', category: 'frontend' },
+  tailwind: { name: 'Tailwind CSS', extension: 'css', category: 'frontend' },
+  sass: { name: 'Sass', extension: 'scss', category: 'frontend' },
+  nextjs: { name: 'Next.js', extension: 'jsx', category: 'frontend' },
+  svelte: { name: 'Svelte', extension: 'svelte', category: 'frontend' },
+  
+  // Backend & API
+  nodejs: { name: 'Node.js', extension: 'js', category: 'backend' },
+  express: { name: 'Express', extension: 'js', category: 'backend' },
+  django: { name: 'Django', extension: 'py', category: 'backend' },
+  flask: { name: 'Flask', extension: 'py', category: 'backend' },
+  spring: { name: 'Spring Boot', extension: 'java', category: 'backend' },
+  laravel: { name: 'Laravel', extension: 'php', category: 'backend' },
+  rails: { name: 'Ruby on Rails', extension: 'rb', category: 'backend' },
+  aspnet: { name: 'ASP.NET', extension: 'cs', category: 'backend' },
+  
+  // Mobile Development
+  'react-native': { name: 'React Native', extension: 'jsx', category: 'mobile' },
+  flutter: { name: 'Flutter', extension: 'dart', category: 'mobile' },
+  ios: { name: 'iOS', extension: 'swift', category: 'mobile' },
+  android: { name: 'Android', extension: 'java', category: 'mobile' },
+  xamarin: { name: 'Xamarin', extension: 'cs', category: 'mobile' },
+  ionic: { name: 'Ionic', extension: 'ts', category: 'mobile' },
+  
+  // Databases & Storage
+  mysql: { name: 'MySQL', extension: 'sql', category: 'database' },
+  postgresql: { name: 'PostgreSQL', extension: 'sql', category: 'database' },
+  mongodb: { name: 'MongoDB', extension: 'js', category: 'database' },
+  redis: { name: 'Redis', extension: 'conf', category: 'database' },
+  sqlite: { name: 'SQLite', extension: 'sql', category: 'database' },
+  firebase: { name: 'Firebase', extension: 'js', category: 'database' },
+  supabase: { name: 'Supabase', extension: 'js', category: 'database' },
+  
+  // DevOps & Tools
+  docker: { name: 'Docker', extension: 'dockerfile', category: 'devops' },
+  kubernetes: { name: 'Kubernetes', extension: 'yaml', category: 'devops' },
+  aws: { name: 'AWS', extension: 'yaml', category: 'devops' },
+  azure: { name: 'Azure', extension: 'yaml', category: 'devops' },
+  gcp: { name: 'Google Cloud', extension: 'yaml', category: 'devops' },
+  git: { name: 'Git', extension: 'sh', category: 'devops' },
+  cicd: { name: 'CI/CD', extension: 'yaml', category: 'devops' },
+};
+
+// Get languages by category
+export const getLanguagesByCategory = (category) => {
+  return Object.entries(LANGUAGE_CONFIG)
+    .filter(([, config]) => config.category === category)
+    .map(([key, config]) => ({ key, ...config }));
+};
+
+// Get all available languages for select dropdown
+export const getAllLanguages = () => {
+  return Object.entries(LANGUAGE_CONFIG)
+    .map(([key, config]) => ({ key, ...config }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+};
+
 // Error Messages
 export const ERROR_MESSAGES = {
   NETWORK_ERROR: 'Network error. Please check your connection.',

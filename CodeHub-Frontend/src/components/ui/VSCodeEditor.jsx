@@ -32,32 +32,131 @@ const VSCodeEditor = ({
   const [currentColumn, setCurrentColumn] = useState(1);
   const [wordCount, setWordCount] = useState(0);
 
-  // Language configurations
+  // Language configurations - matching sidebar categories
   const languageConfigs = {
+    // Programming Languages
     javascript: { icon: '🟨', color: '#f7df1e', ext: 'js' },
-    typescript: { icon: '🔷', color: '#3178c6', ext: 'ts' },
-    python: { icon: '🐍', color: '#3776ab', ext: 'py' },
+    python: { icon: '�', color: '#3776ab', ext: 'py' },
+    typescript: { icon: '�', color: '#3178c6', ext: 'ts' },
     java: { icon: '☕', color: '#ed8b00', ext: 'java' },
     cpp: { icon: '⚡', color: '#00599c', ext: 'cpp' },
     csharp: { icon: '🟣', color: '#239120', ext: 'cs' },
-    php: { icon: '🐘', color: '#777bb4', ext: 'php' },
-    ruby: { icon: '💎', color: '#cc342d', ext: 'rb' },
-    go: { icon: '🐹', color: '#00add8', ext: 'go' },
+    go: { icon: '�', color: '#00add8', ext: 'go' },
     rust: { icon: '🦀', color: '#000000', ext: 'rs' },
+    php: { icon: '�', color: '#777bb4', ext: 'php' },
+    ruby: { icon: '💎', color: '#cc342d', ext: 'rb' },
+    
+    // Frontend & UI
+    react: { icon: '⚛️', color: '#61dafb', ext: 'jsx' },
+    vue: { icon: '🟢', color: '#4fc08d', ext: 'vue' },
+    angular: { icon: '🅰️', color: '#dd0031', ext: 'ts' },
     html: { icon: '🌐', color: '#e34f26', ext: 'html' },
     css: { icon: '🎨', color: '#1572b6', ext: 'css' },
-    sql: { icon: '🗄️', color: '#336791', ext: 'sql' },
-    shell: { icon: '🐚', color: '#89e051', ext: 'sh' },
-    json: { icon: '📄', color: '#000000', ext: 'json' },
-    yaml: { icon: '📋', color: '#cb171e', ext: 'yml' },
-    markdown: { icon: '📝', color: '#083fa1', ext: 'md' },
-    dockerfile: { icon: '🐳', color: '#2496ed', ext: 'dockerfile' },
-    docker: { icon: '🐳', color: '#2496ed', ext: 'dockerfile' }
+    tailwind: { icon: '🌊', color: '#06b6d4', ext: 'css' },
+    sass: { icon: '🔸', color: '#cf649a', ext: 'scss' },
+    nextjs: { icon: '▲', color: '#000000', ext: 'jsx' },
+    svelte: { icon: '🧡', color: '#ff3e00', ext: 'svelte' },
+    
+    // Backend & API
+    nodejs: { icon: '🟢', color: '#339933', ext: 'js' },
+    express: { icon: '🚀', color: '#000000', ext: 'js' },
+    django: { icon: '🐍', color: '#092e20', ext: 'py' },
+    flask: { icon: '🌶️', color: '#000000', ext: 'py' },
+    spring: { icon: '🍃', color: '#6db33f', ext: 'java' },
+    laravel: { icon: '🔴', color: '#ff2d20', ext: 'php' },
+    rails: { icon: '🛤️', color: '#cc0000', ext: 'rb' },
+    aspnet: { icon: '🟣', color: '#512bd4', ext: 'cs' },
+    
+    // Mobile Development
+    'react-native': { icon: '📱', color: '#61dafb', ext: 'jsx' },
+    flutter: { icon: '🦋', color: '#02569b', ext: 'dart' },
+    ios: { icon: '🍎', color: '#000000', ext: 'swift' },
+    android: { icon: '🤖', color: '#3ddc84', ext: 'java' },
+    xamarin: { icon: '🔷', color: '#3498db', ext: 'cs' },
+    ionic: { icon: '⚡', color: '#3880ff', ext: 'ts' },
+    
+    // Databases & Storage
+    mysql: { icon: '🐬', color: '#00618a', ext: 'sql' },
+    postgresql: { icon: '🐘', color: '#336791', ext: 'sql' },
+    mongodb: { icon: '🍃', color: '#4db33d', ext: 'js' },
+    redis: { icon: '🔴', color: '#d82c20', ext: 'conf' },
+    sqlite: { icon: '🗄️', color: '#003b57', ext: 'sql' },
+    firebase: { icon: '🔥', color: '#ffca28', ext: 'js' },
+    supabase: { icon: '⚡', color: '#3ecf8e', ext: 'js' },
+    
+    // DevOps & Tools
+    docker: { icon: '🐳', color: '#0db7ed', ext: 'dockerfile' },
+    kubernetes: { icon: '☸️', color: '#326ce5', ext: 'yaml' },
+    aws: { icon: '☁️', color: '#ff9900', ext: 'yaml' },
+    azure: { icon: '🌐', color: '#0078d4', ext: 'yaml' },
+    gcp: { icon: '☁️', color: '#4285f4', ext: 'yaml' },
+    git: { icon: '🌳', color: '#f05032', ext: 'sh' },
+    cicd: { icon: '🔄', color: '#2088ff', ext: 'yaml' },
   };
 
   // Normalize language to lowercase and get config
   const normalizedLanguage = language.toLowerCase();
   const currentLangConfig = languageConfigs[normalizedLanguage] || languageConfigs.javascript;
+
+  // Map language keys to Monaco Editor language IDs
+  const getMonacoLanguage = (lang) => {
+    const monacoMap = {
+      // Frontend frameworks map to their base languages
+      'react': 'javascript',
+      'react-native': 'javascript',
+      'vue': 'javascript',
+      'angular': 'typescript',
+      'nextjs': 'javascript',
+      'svelte': 'javascript',
+      'express': 'javascript',
+      'nodejs': 'javascript',
+      
+      // Backend frameworks
+      'django': 'python',
+      'flask': 'python',
+      'spring': 'java',
+      'laravel': 'php',
+      'rails': 'ruby',
+      'aspnet': 'csharp',
+      
+      // Mobile
+      'flutter': 'dart',
+      'ios': 'swift',
+      'android': 'java',
+      'xamarin': 'csharp',
+      'ionic': 'typescript',
+      
+      // Database
+      'mysql': 'sql',
+      'postgresql': 'sql',
+      'sqlite': 'sql',
+      'mongodb': 'javascript',
+      'redis': 'redis',
+      'firebase': 'javascript',
+      'supabase': 'javascript',
+      
+      // DevOps
+      'docker': 'dockerfile',
+      'kubernetes': 'yaml',
+      'aws': 'yaml',
+      'azure': 'yaml',
+      'gcp': 'yaml',
+      'git': 'shell',
+      'cicd': 'yaml',
+      'nginx': 'nginx',
+      'apache': 'apache',
+      'powershell': 'powershell',
+      'bash': 'shell',
+      
+      // Default mappings
+      'tailwind': 'css',
+      'sass': 'scss',
+    };
+    
+    return monacoMap[lang] || lang;
+  };
+
+  const monacoLanguage = getMonacoLanguage(normalizedLanguage);
 
   // Debug log to check if language prop updates
   useEffect(() => {
@@ -299,7 +398,7 @@ const VSCodeEditor = ({
       <div className="flex-1 bg-slate-900 overflow-hidden">
         <Editor
           height={isFullscreen ? "100%" : "500px"}
-          language={normalizedLanguage}
+          language={monacoLanguage}
           value={value}
           onChange={handleEditorChange}
           onMount={handleEditorDidMount}

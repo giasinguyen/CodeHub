@@ -47,6 +47,7 @@ import {
 import { Button, Input, Card, VSCodeEditor } from '../components/ui';
 import { snippetsAPI } from '../services/api';
 import { useSnippet } from '../contexts/SnippetContext';
+import { LANGUAGE_CONFIG, getLanguagesByCategory } from '../constants';
 import toast from 'react-hot-toast';
 
 const CreateSnippet = () => {
@@ -69,7 +70,6 @@ const CreateSnippet = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [isPreview, setIsPreview] = useState(false);
-  const [availableLanguages, setAvailableLanguages] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdSnippet, setCreatedSnippet] = useState(null);
@@ -86,23 +86,15 @@ const CreateSnippet = () => {
     description: 0, 
     code: 0 
   });
-  // Load available languages and tags on component mount
+  // Load available tags on component mount
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [languagesResponse, tagsResponse] = await Promise.all([
-          snippetsAPI.getLanguages(),
-          snippetsAPI.getTags()
-        ]);
-        setAvailableLanguages(languagesResponse.data || []);
+        const tagsResponse = await snippetsAPI.getTags();
         setAvailableTags(tagsResponse.data || []);
       } catch (error) {
-        console.error('Failed to load languages/tags:', error);
-        // Use default languages if API fails
-        setAvailableLanguages([
-          'javascript', 'typescript', 'python', 'java', 'cpp', 'csharp',
-          'php', 'ruby', 'go', 'rust', 'html', 'css', 'sql', 'shell'
-        ]);
+        console.error('Failed to load tags:', error);
+        // Use default tags if API fails
         setAvailableTags(['web', 'api', 'algorithm', 'frontend', 'backend', 'database']);
       }
     };
@@ -540,11 +532,60 @@ const CreateSnippet = () => {
                                 disabled={isLoading}
                               >
                                 <option value="">Select Language</option>
-                                {availableLanguages.map(lang => (
-                                  <option key={lang} value={lang}>
-                                    {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                                  </option>
-                                ))}
+                                
+                                {/* Programming Languages */}
+                                <optgroup label="Programming Languages">
+                                  {getLanguagesByCategory('language').map(lang => (
+                                    <option key={lang.key} value={lang.key}>
+                                      {lang.name}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                                
+                                {/* Frontend & UI */}
+                                <optgroup label="Frontend & UI">
+                                  {getLanguagesByCategory('frontend').map(lang => (
+                                    <option key={lang.key} value={lang.key}>
+                                      {lang.name}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                                
+                                {/* Backend & API */}
+                                <optgroup label="Backend & API">
+                                  {getLanguagesByCategory('backend').map(lang => (
+                                    <option key={lang.key} value={lang.key}>
+                                      {lang.name}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                                
+                                {/* Mobile Development */}
+                                <optgroup label="Mobile Development">
+                                  {getLanguagesByCategory('mobile').map(lang => (
+                                    <option key={lang.key} value={lang.key}>
+                                      {lang.name}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                                
+                                {/* Databases & Storage */}
+                                <optgroup label="Databases & Storage">
+                                  {getLanguagesByCategory('database').map(lang => (
+                                    <option key={lang.key} value={lang.key}>
+                                      {lang.name}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                                
+                                {/* DevOps & Tools */}
+                                <optgroup label="DevOps & Tools">
+                                  {getLanguagesByCategory('devops').map(lang => (
+                                    <option key={lang.key} value={lang.key}>
+                                      {lang.name}
+                                    </option>
+                                  ))}
+                                </optgroup>
                               </select>
                             </div>
                           </div>

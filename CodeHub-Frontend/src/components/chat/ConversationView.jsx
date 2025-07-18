@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
   MoreVertical, 
@@ -292,23 +293,34 @@ const ConversationView = ({
       );
     }
     
-    return conversation.participantAvatarUrl ? (
+    const avatarElement = conversation.participantAvatarUrl ? (
       <img
         src={conversation.participantAvatarUrl}
         alt={conversation.participantUsername}
-        className="w-10 h-10 rounded-full object-cover"
+        className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-cyan-500 transition-all cursor-pointer"
         onError={(e) => {
           e.target.style.display = 'none';
           e.target.nextSibling.style.display = 'flex';
         }}
       />
     ) : (
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center hover:ring-2 hover:ring-cyan-500 transition-all cursor-pointer">
         <span className="text-white font-semibold text-sm">
           {(conversation.participantUsername || 'U')[0].toUpperCase()}
         </span>
       </div>
     );
+
+    // Wrap avatar in Link if we have a participant username
+    if (conversation.participantUsername) {
+      return (
+        <Link to={`/users/${conversation.participantUsername}`}>
+          {avatarElement}
+        </Link>
+      );
+    }
+
+    return avatarElement;
   };
 
   if (!conversation) {
@@ -347,9 +359,17 @@ const ConversationView = ({
             {getConversationAvatar()}
             
             <div className="min-w-0">
-              <h3 className="font-semibold text-white truncate">
-                {getConversationDisplayName()}
-              </h3>
+              {conversation.participantUsername && conversation.roomType !== 'GROUP' ? (
+                <Link to={`/profile/${conversation.participantUsername}`}>
+                  <h3 className="font-semibold text-white truncate hover:text-cyan-400 transition-colors cursor-pointer">
+                    {getConversationDisplayName()}
+                  </h3>
+                </Link>
+              ) : (
+                <h3 className="font-semibold text-white truncate">
+                  {getConversationDisplayName()}
+                </h3>
+              )}
               <p className="text-sm text-slate-400 truncate">
                 {conversation.isOnline ? 'Đang online' : 
                  conversation.lastSeenAt ? 
